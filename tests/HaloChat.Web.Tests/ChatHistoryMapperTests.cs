@@ -56,4 +56,46 @@ public class ChatHistoryMapperTests
 
         Assert.Equal("Xin chào các bạn!", result[0].Content);
     }
+
+    [Fact]
+    public void MapToViewModels_WhenDecryptThrows_UsesPlaceholderAndStillDecryptsOtherMessages()
+    {
+        var badCipherText = new byte[] { 9, 9, 9 };
+        var goodPayload = new PlaintextMessageCipher().Encrypt("tin nhắn ổn", key: "");
+        var cipher = new ThrowingCipher(throwForCipherText: badCipherText);
+
+        var messages = new List<Message>
+        {
+            new() { SenderId = "a", ReceiverId = "b", CipherText = badCipherText, Algorithm = "none", SentAtUtc = new DateTime(2026, 1, 1) },
+            new() { SenderId = "a", ReceiverId = "b", CipherText = goodPayload.CipherText, Iv = goodPayload.Iv, Tag = goodPayload.Tag, Algorithm = goodPayload.Algorithm, SentAtUtc = new DateTime(2026, 1, 2) }
+        };
+
+        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, currentUserId: "a");
+
+        Assert.Equal("[không giải mã được]", result[0].Content);
+        Assert.Equal("tin nhắn ổn", result[1].Content);
+    }
+
+    private sealed class ThrowingCipher : IMessageCipher
+    {
+        private readonly byte[] _throwForCipherText;
+
+        public ThrowingCipher(byte[] throwForCipherText)
+        {
+            _throwForCipherText = throwForCipherText;
+        }
+
+        public EncryptedPayload Encrypt(string plaintext, string key)
+            => new PlaintextMessageCipher().Encrypt(plaintext, key);
+
+        public string Decrypt(EncryptedPayload payload, string key)
+        {
+            if (payload.CipherText.SequenceEqual(_throwForCipherText))
+            {
+                throw new InvalidOperationException("Không giải mã được — mô phỏng lỗi decrypt.");
+            }
+
+            return new PlaintextMessageCipher().Decrypt(payload, key);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 using HaloChat.Web.Data;
 using HaloChat.Web.Models;
+using HaloChat.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -47,7 +48,7 @@ public class MessageRepositoryTests
         await db.SaveChangesAsync();
 
         var conversation = await db.Messages
-            .Where(m => (m.SenderId == "a" && m.ReceiverId == "b") || (m.SenderId == "b" && m.ReceiverId == "a"))
+            .Where(MessageQueries.BetweenUsers("a", "b"))
             .ToListAsync();
 
         Assert.Equal(2, conversation.Count);

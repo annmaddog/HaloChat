@@ -56,9 +56,7 @@ public class ChatController : Controller
         }
 
         var messages = await _db.Messages
-            .Where(m =>
-                (m.SenderId == currentUserId && m.ReceiverId == id) ||
-                (m.SenderId == id && m.ReceiverId == currentUserId))
+            .Where(MessageQueries.BetweenUsers(currentUserId, id))
             .ToListAsync();
 
         var viewModel = new ConversationViewModel
