@@ -1,0 +1,73 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Trạng thái hiện tại
+
+Repo này **chưa có code** — mới chỉ có tài liệu đề tài và bản thiết kế. Chưa
+tồn tại file `.sln`/`.csproj` nào. Trước khi chạy bất kỳ lệnh build/test nào,
+kiểm tra xem solution đã được scaffold theo `docs/superpowers/specs/2026-09-06-chat-aes-web-scaffold-design.md`
+hay chưa.
+
+Nguồn yêu cầu gốc: `tài liệu đề tài cần làm.docx` (đề tài "Xây dựng ứng dụng
+chat an toàn sử dụng thuật toán mã hóa AES").
+
+## Bối cảnh dự án — đọc trước khi đụng vào phần mã hóa
+
+Đây là đồ án môn học, chia làm **hai giai đoạn do hai nhóm phụ trách khác nhau**:
+
+1. **Giai đoạn 1 (khung web)** — dựng chat 1–1 chạy đầy đủ (đăng ký/đăng
+   nhập, danh sách người dùng, chat thời gian thực, lưu lịch sử, trạng thái
+   online/offline), tin nhắn đi qua interface `IMessageCipher` với cài đặt
+   tạm `PlaintextMessageCipher` (chưa mã hóa thật).
+2. **Giai đoạn 2 (bảo mật, nhóm khác làm)** — cài AES thật (`AesMessageCipher`
+   implement `IMessageCipher`), sinh/quản lý khóa, và một console app riêng
+   `ChatApp.Benchmark` để đo thời gian mã hóa/giải mã + so sánh kích thước
+   plaintext/ciphertext cho AES-128/192/256 ở 4 mốc (100B/1KB/10KB/100KB).
+
+**Quy tắc quan trọng:** không tự ý cài AES thật hay logic quản lý khóa vào
+`ChatApp.Web` — mọi thứ liên quan mã hóa chỉ đi qua `IMessageCipher` trong
+`ChatApp.Security`, để nhóm bảo mật cắm vào sau mà không phải sửa web app.
+Benchmark AES chạy **độc lập ngoài web**, không tích hợp vào sản phẩm chat.
+
+Toàn bộ quyết định kiến trúc, data model, luồng dữ liệu, xử lý lỗi và kế
+hoạch test nằm trong
+`docs/superpowers/specs/2026-09-06-chat-aes-web-scaffold-design.md` — đọc
+file đó trước khi thay đổi kiến trúc, đừng suy đoán lại từ đầu.
+
+## Kiến trúc dự kiến (theo spec)
+
+```
+ChatApp.sln
+src/
+├─ ChatApp.Web/        # ASP.NET Core 8 MVC + Razor Pages (Identity) + SignalR
+└─ ChatApp.Security/   # class library dùng chung: IMessageCipher, EncryptedPayload,
+                        #   PlaintextMessageCipher (sau này thêm AesMessageCipher)
+```
+
+- `ChatApp.Web` tham chiếu `ChatApp.Security`.
+- `ChatApp.Benchmark` (console, nhóm bảo mật tạo ở giai đoạn 2) cũng sẽ tham
+  chiếu `ChatApp.Security`, tách biệt hoàn toàn với `ChatApp.Web`.
+- Real-time: `Hubs/ChatHub.cs` xử lý gửi/nhận tin nhắn và presence
+  online/offline; client JS ở `wwwroot/js/chat.js`.
+- Auth: ASP.NET Core Identity (Areas/Identity), không tự viết xác thực riêng.
+- Database: SQL Server (LocalDB/Express) qua EF Core; `Message` đã có sẵn
+  cột `CipherText`/`Iv`/`Tag`/`Algorithm` để giai đoạn 2 cắm AES vào mà
+  không cần migration mới.
+
+## Lệnh phát triển (áp dụng sau khi solution được scaffold theo spec)
+
+```bash
+dotnet build                                   # build toàn bộ solution
+dotnet run --project src/ChatApp.Web           # chạy web app
+dotnet test                                    # chạy toàn bộ test
+dotnet ef migrations add <Tên> -p src/ChatApp.Web  # thêm migration (EF Core)
+dotnet ef database update -p src/ChatApp.Web       # áp migration vào DB
+```
+
+## Ngôn ngữ
+
+Tài liệu đề tài, spec thiết kế và trao đổi trong dự án đều bằng tiếng Việt —
+giữ nguyên tiếng Việt khi viết/cập nhật tài liệu (`docs/`, comment giải
+thích nghiệp vụ); tên định danh trong code (class, method, biến) vẫn dùng
+tiếng Anh theo quy ước .NET thông thường.
