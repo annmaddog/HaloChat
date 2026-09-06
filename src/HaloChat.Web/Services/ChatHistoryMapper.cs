@@ -9,25 +9,25 @@ public static class ChatHistoryMapper
     public static List<MessageViewModel> MapToViewModels(
         IEnumerable<Message> messages,
         IMessageCipher cipher,
+        string key,
         string currentUserId)
     {
         return messages
             .OrderBy(m => m.SentAtUtc)
             .Select(m => new MessageViewModel
             {
-                Content = DecryptOrPlaceholder(m, cipher),
+                Content = DecryptOrPlaceholder(m, cipher, key),
                 IsMine = m.SenderId == currentUserId,
                 SentAtUtc = m.SentAtUtc
             })
             .ToList();
     }
 
-    private static string DecryptOrPlaceholder(Message m, IMessageCipher cipher)
+    private static string DecryptOrPlaceholder(Message m, IMessageCipher cipher, string key)
     {
         try
         {
-            // key rỗng — placeholder, nhóm bảo mật sẽ thay bằng khóa thật khi cắm AES vào
-            return cipher.Decrypt(new EncryptedPayload(m.CipherText, m.Iv, m.Tag, m.Algorithm), key: string.Empty);
+            return cipher.Decrypt(new EncryptedPayload(m.CipherText, m.Iv, m.Tag, m.Algorithm), key);
         }
         catch
         {

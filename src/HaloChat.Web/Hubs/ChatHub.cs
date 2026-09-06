@@ -13,17 +13,20 @@ public class ChatHub : Hub
 {
     private readonly ApplicationDbContext _db;
     private readonly IMessageCipher _cipher;
+    private readonly IConversationKeyProvider _keyProvider;
     private readonly IUserPresenceTracker _presence;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public ChatHub(
         ApplicationDbContext db,
         IMessageCipher cipher,
+        IConversationKeyProvider keyProvider,
         IUserPresenceTracker presence,
         UserManager<ApplicationUser> userManager)
     {
         _db = db;
         _cipher = cipher;
+        _keyProvider = keyProvider;
         _presence = presence;
         _userManager = userManager;
     }
@@ -75,8 +78,8 @@ public class ChatHub : Hub
                 throw new InvalidOperationException("Người nhận không tồn tại.");
             }
 
-            // key rỗng — placeholder, nhóm bảo mật sẽ thay bằng khóa thật khi cắm AES vào
-            var payload = _cipher.Encrypt(content, key: string.Empty);
+            var key = _keyProvider.GetKey(senderId, receiverId);
+            var payload = _cipher.Encrypt(content, key);
 
             var message = new Message
             {

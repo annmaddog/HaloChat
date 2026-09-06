@@ -15,12 +15,18 @@ public class ChatController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly IMessageCipher _cipher;
+    private readonly IConversationKeyProvider _keyProvider;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public ChatController(ApplicationDbContext db, IMessageCipher cipher, UserManager<ApplicationUser> userManager)
+    public ChatController(
+        ApplicationDbContext db,
+        IMessageCipher cipher,
+        IConversationKeyProvider keyProvider,
+        UserManager<ApplicationUser> userManager)
     {
         _db = db;
         _cipher = cipher;
+        _keyProvider = keyProvider;
         _userManager = userManager;
     }
 
@@ -59,11 +65,12 @@ public class ChatController : Controller
             .Where(MessageQueries.BetweenUsers(currentUserId, id))
             .ToListAsync();
 
+        var key = _keyProvider.GetKey(currentUserId, id);
         var viewModel = new ConversationViewModel
         {
             OtherUserId = otherUser.Id,
             OtherUserDisplayName = otherUser.UserName ?? otherUser.Email ?? otherUser.Id,
-            Messages = ChatHistoryMapper.MapToViewModels(messages, _cipher, currentUserId)
+            Messages = ChatHistoryMapper.MapToViewModels(messages, _cipher, key, currentUserId)
         };
 
         return View(viewModel);

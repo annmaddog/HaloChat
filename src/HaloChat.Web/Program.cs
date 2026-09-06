@@ -19,6 +19,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IMessageCipher, PlaintextMessageCipher>();
+builder.Services.AddSingleton<IConversationKeyProvider, NullConversationKeyProvider>();
 builder.Services.AddSingleton<IUserPresenceTracker, InMemoryUserPresenceTracker>();
 
 var app = builder.Build();

@@ -3,12 +3,14 @@ namespace HaloChat.Security;
 /// <summary>
 /// Giao diện mã hóa/giải mã tin nhắn — chỗ cắm cho nhóm bảo mật (giai đoạn 2).
 ///
-/// Hợp đồng về tham số <c>key</c>: interface này KHÔNG quy định cách lấy khóa.
-/// Giai đoạn 1 (PlaintextMessageCipher) bỏ qua tham số này hoàn toàn. Cài đặt
-/// AES thật ở giai đoạn 2 nên tự lấy khóa qua một service tiêm vào (DI) —
-/// KHÔNG nên yêu cầu caller (ChatHub, ChatHistoryMapper) truyền khóa thật vào
-/// tham số này, vì cả hai nơi gọi hiện tại luôn truyền <c>string.Empty</c> và
-/// sẽ không được sửa lại khi giai đoạn 2 triển khai.
+/// Hợp đồng về tham số <c>key</c>: caller (ChatHub, ChatController qua
+/// ChatHistoryMapper) luôn tính khóa bằng <see cref="IConversationKeyProvider"/>
+/// rồi truyền vào đây — cài đặt IMessageCipher KHÔNG tự lấy khóa qua DI.
+/// Giai đoạn 1 dùng placeholder <see cref="NullConversationKeyProvider"/>
+/// (trả về chuỗi rỗng) vì PlaintextMessageCipher bỏ qua tham số này; giai
+/// đoạn 2 chỉ cần thay 2 placeholder (IMessageCipher và
+/// IConversationKeyProvider) bằng cài đặt AES thật — không phải sửa lại
+/// ChatHub/ChatController.
 /// </summary>
 public interface IMessageCipher
 {

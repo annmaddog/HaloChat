@@ -19,7 +19,7 @@ public class ChatHistoryMapperTests
             new() { SenderId = "a", ReceiverId = "b", CipherText = earlier.CipherText, Algorithm = earlier.Algorithm, SentAtUtc = new DateTime(2026, 1, 1) }
         };
 
-        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, currentUserId: "a");
+        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, key: "", currentUserId: "a");
 
         Assert.Equal("tin nhắn trước", result[0].Content);
         Assert.Equal("tin nhắn sau", result[1].Content);
@@ -36,7 +36,7 @@ public class ChatHistoryMapperTests
             new() { SenderId = "them", ReceiverId = "me", CipherText = payload.CipherText, Algorithm = payload.Algorithm, SentAtUtc = DateTime.UtcNow }
         };
 
-        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, currentUserId: "me");
+        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, key: "", currentUserId: "me");
 
         Assert.True(result[0].IsMine);
         Assert.False(result[1].IsMine);
@@ -52,7 +52,7 @@ public class ChatHistoryMapperTests
             new() { SenderId = "a", ReceiverId = "b", CipherText = payload.CipherText, Iv = payload.Iv, Tag = payload.Tag, Algorithm = payload.Algorithm, SentAtUtc = DateTime.UtcNow }
         };
 
-        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, currentUserId: "a");
+        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, key: "", currentUserId: "a");
 
         Assert.Equal("Xin chào các bạn!", result[0].Content);
     }
@@ -70,7 +70,7 @@ public class ChatHistoryMapperTests
             new() { SenderId = "a", ReceiverId = "b", CipherText = goodPayload.CipherText, Iv = goodPayload.Iv, Tag = goodPayload.Tag, Algorithm = goodPayload.Algorithm, SentAtUtc = new DateTime(2026, 1, 2) }
         };
 
-        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, currentUserId: "a");
+        var result = ChatHistoryMapper.MapToViewModels(messages, cipher, key: "", currentUserId: "a");
 
         Assert.Equal("[không giải mã được]", result[0].Content);
         Assert.Equal("tin nhắn ổn", result[1].Content);
