@@ -22,12 +22,12 @@ chat an toàn sử dụng thuật toán mã hóa AES").
    tạm `PlaintextMessageCipher` (chưa mã hóa thật).
 2. **Giai đoạn 2 (bảo mật, nhóm khác làm)** — cài AES thật (`AesMessageCipher`
    implement `IMessageCipher`), sinh/quản lý khóa, và một console app riêng
-   `ChatApp.Benchmark` để đo thời gian mã hóa/giải mã + so sánh kích thước
+   `HaloChat.Benchmark` để đo thời gian mã hóa/giải mã + so sánh kích thước
    plaintext/ciphertext cho AES-128/192/256 ở 4 mốc (100B/1KB/10KB/100KB).
 
 **Quy tắc quan trọng:** không tự ý cài AES thật hay logic quản lý khóa vào
-`ChatApp.Web` — mọi thứ liên quan mã hóa chỉ đi qua `IMessageCipher` trong
-`ChatApp.Security`, để nhóm bảo mật cắm vào sau mà không phải sửa web app.
+`HaloChat.Web` — mọi thứ liên quan mã hóa chỉ đi qua `IMessageCipher` trong
+`HaloChat.Security`, để nhóm bảo mật cắm vào sau mà không phải sửa web app.
 Benchmark AES chạy **độc lập ngoài web**, không tích hợp vào sản phẩm chat.
 
 Toàn bộ quyết định kiến trúc, data model, luồng dữ liệu, xử lý lỗi và kế
@@ -38,16 +38,16 @@ file đó trước khi thay đổi kiến trúc, đừng suy đoán lại từ �
 ## Kiến trúc dự kiến (theo spec)
 
 ```
-ChatApp.sln
+HaloChat.sln
 src/
-├─ ChatApp.Web/        # ASP.NET Core 8 MVC + Razor Pages (Identity) + SignalR
-└─ ChatApp.Security/   # class library dùng chung: IMessageCipher, EncryptedPayload,
+├─ HaloChat.Web/        # ASP.NET Core 8 MVC + Razor Pages (Identity) + SignalR
+└─ HaloChat.Security/   # class library dùng chung: IMessageCipher, EncryptedPayload,
                         #   PlaintextMessageCipher (sau này thêm AesMessageCipher)
 ```
 
-- `ChatApp.Web` tham chiếu `ChatApp.Security`.
-- `ChatApp.Benchmark` (console, nhóm bảo mật tạo ở giai đoạn 2) cũng sẽ tham
-  chiếu `ChatApp.Security`, tách biệt hoàn toàn với `ChatApp.Web`.
+- `HaloChat.Web` tham chiếu `HaloChat.Security`.
+- `HaloChat.Benchmark` (console, nhóm bảo mật tạo ở giai đoạn 2) cũng sẽ tham
+  chiếu `HaloChat.Security`, tách biệt hoàn toàn với `HaloChat.Web`.
 - Real-time: `Hubs/ChatHub.cs` xử lý gửi/nhận tin nhắn và presence
   online/offline; client JS ở `wwwroot/js/chat.js`.
 - Auth: ASP.NET Core Identity (Areas/Identity), không tự viết xác thực riêng.
@@ -59,10 +59,10 @@ src/
 
 ```bash
 dotnet build                                   # build toàn bộ solution
-dotnet run --project src/ChatApp.Web           # chạy web app
+dotnet run --project src/HaloChat.Web           # chạy web app
 dotnet test                                    # chạy toàn bộ test
-dotnet ef migrations add <Tên> -p src/ChatApp.Web  # thêm migration (EF Core)
-dotnet ef database update -p src/ChatApp.Web       # áp migration vào DB
+dotnet ef migrations add <Tên> -p src/HaloChat.Web  # thêm migration (EF Core)
+dotnet ef database update -p src/HaloChat.Web       # áp migration vào DB
 ```
 
 ## Ngôn ngữ

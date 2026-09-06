@@ -17,16 +17,16 @@ không phải sửa kiến trúc.
 - Danh sách người dùng + trạng thái online/offline (SignalR presence).
 - Chat 1–1 thời gian thực, lưu lịch sử vào SQL Server.
 - Interface `IMessageCipher` + cài đặt tạm `PlaintextMessageCipher`, tách
-  riêng thành thư viện `ChatApp.Security` để dùng chung sau này.
+  riêng thành thư viện `HaloChat.Security` để dùng chung sau này.
 - Schema DB đã có sẵn cột cho `CipherText`, `IV`, `Tag`, `Algorithm`.
 
 **Ngoài phạm vi (nhóm bảo mật làm ở giai đoạn 2, không làm ở đây):**
 - Cài đặt AES thật (AES-128/192/256) và chọn chế độ mã hóa (mode).
 - Sinh/lưu trữ/trao đổi khóa.
-- Console app `ChatApp.Benchmark` đo thời gian mã hóa/giải mã và so sánh
+- Console app `HaloChat.Benchmark` đo thời gian mã hóa/giải mã và so sánh
   kích thước plaintext/ciphertext cho 4 mốc kích thước (100B, 1KB, 10KB,
   100KB) × 3 biến thể AES — **chạy độc lập ngoài web**, không tích hợp vào
-  web chat. Chỉ cần đảm bảo `ChatApp.Security` là thư viện riêng để console
+  web chat. Chỉ cần đảm bảo `HaloChat.Security` là thư viện riêng để console
   này tham chiếu được khi tới lượt làm.
 - Chat nhóm (>2 người).
 - Hạ tầng deploy production (tên miền riêng) — chưa chọn, tính sau.
@@ -46,9 +46,9 @@ không phải sửa kiến trúc.
 ## 3. Cấu trúc solution
 
 ```
-ChatApp.sln
+HaloChat.sln
 src/
-├─ ChatApp.Web/
+├─ HaloChat.Web/
 │  ├─ Areas/Identity/                 # Identity UI scaffolded (đăng ký/đăng nhập)
 │  ├─ Controllers/
 │  │  └─ ChatController.cs            # danh sách user, mở khung chat 1-1, load lịch sử
@@ -63,15 +63,15 @@ src/
 │  └─ Views/Chat/
 │     ├─ Index.cshtml                 # danh sách người dùng + trạng thái online
 │     └─ Conversation.cshtml          # khung chat 1-1
-└─ ChatApp.Security/                  # class library dùng chung
+└─ HaloChat.Security/                  # class library dùng chung
    ├─ IMessageCipher.cs
    ├─ EncryptedPayload.cs
    └─ PlaintextMessageCipher.cs
 ```
 
-`ChatApp.Web` tham chiếu `ChatApp.Security`. Sau này `ChatApp.Benchmark`
-(console, do nhóm bảo mật tạo) cũng tham chiếu `ChatApp.Security` — không
-đụng vào `ChatApp.Web`.
+`HaloChat.Web` tham chiếu `HaloChat.Security`. Sau này `HaloChat.Benchmark`
+(console, do nhóm bảo mật tạo) cũng tham chiếu `HaloChat.Security` — không
+đụng vào `HaloChat.Web`.
 
 ## 4. Luồng gửi/nhận tin nhắn
 
@@ -115,7 +115,7 @@ public class Message
 }
 ```
 
-## 7. Chỗ cắm mã hóa (`ChatApp.Security`)
+## 7. Chỗ cắm mã hóa (`HaloChat.Security`)
 
 ```csharp
 public interface IMessageCipher
@@ -136,10 +136,10 @@ public class PlaintextMessageCipher : IMessageCipher
 }
 ```
 
-Đăng ký DI trong `ChatApp.Web`: `services.AddScoped<IMessageCipher, PlaintextMessageCipher>();`
+Đăng ký DI trong `HaloChat.Web`: `services.AddScoped<IMessageCipher, PlaintextMessageCipher>();`
 
 Giai đoạn 2, nhóm bảo mật chỉ cần:
-1. Viết `AesMessageCipher : IMessageCipher` trong `ChatApp.Security` (chọn
+1. Viết `AesMessageCipher : IMessageCipher` trong `HaloChat.Security` (chọn
    mode, xử lý padding/IV/tag theo biến thể AES chọn cho chat thật).
 2. Thiết kế cách sinh/lưu/trao đổi `key` (không thuộc phạm vi interface này).
 3. Đổi dòng đăng ký DI sang `AesMessageCipher`.
@@ -148,8 +148,8 @@ Giai đoạn 2, nhóm bảo mật chỉ cần:
 
 Việc đo hiệu năng AES-128/192/256 (thời gian mã hóa/giải mã, so sánh kích
 thước plaintext/ciphertext ở 4 mốc 100B/1KB/10KB/100KB) làm ở
-`ChatApp.Benchmark` — console app riêng, gọi thẳng các class trong
-`ChatApp.Security`, không tích hợp vào web.
+`HaloChat.Benchmark` — console app riêng, gọi thẳng các class trong
+`HaloChat.Security`, không tích hợp vào web.
 
 ## 8. Xử lý lỗi
 
