@@ -1289,9 +1289,10 @@ EOF
 - Create: `src/HaloChat.Web/wwwroot/js/chat.js`
 - Modify: `src/HaloChat.Web/wwwroot/css/site.css`
 - Modify: `src/HaloChat.Web/Views/Shared/_Layout.cshtml`
+- Copy: `assets/halochat-logo.png` → `src/HaloChat.Web/wwwroot/img/halochat-logo.png`
 
 **Interfaces:**
-- Consumes: hub events/method từ Task 8 (`ReceiveMessage`, `PresenceChanged`, `SendFailed`, `SendMessage`, `GetOnlineUsers`), DOM elements từ Task 9 (`#user-list`, `#message-list[data-other-user-id]`, `#send-form`, `#message-input`, `#send-error`)
+- Consumes: hub events/method từ Task 8 (`ReceiveMessage`, `PresenceChanged`, `SendFailed`, `SendMessage`, `GetOnlineUsers`), DOM elements từ Task 9 (`#user-list`, `#message-list[data-other-user-id]`, `#send-form`, `#message-input`, `#send-error`), file logo có sẵn tại `assets/halochat-logo.png` (repo root)
 - Produces: khung web chạy được end-to-end (không có task nào phụ thuộc thêm)
 
 - [ ] **Step 1: Tạo chat.js**
@@ -1426,31 +1427,66 @@ Thêm ngay sau thẻ `</li>` đóng mục Privacy đó:
 }
 ```
 
-- [ ] **Step 4: Build**
+- [ ] **Step 4: Gắn logo HaloChat vào layout**
+
+Copy file logo có sẵn ở gốc repo vào wwwroot:
+
+```bash
+mkdir -p src/HaloChat.Web/wwwroot/img
+cp assets/halochat-logo.png src/HaloChat.Web/wwwroot/img/halochat-logo.png
+```
+
+Trong `src/HaloChat.Web/Views/Shared/_Layout.cshtml`, tìm dòng:
+
+```html
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+```
+
+Thêm ngay sau dòng đó (favicon):
+
+```html
+<link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
+```
+
+Tìm thẻ liên kết có class `navbar-brand` (dạng
+`<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">...</a>`,
+nội dung chữ bên trong có thể là tên project mặc định) và thay toàn bộ nội
+dung bên trong thẻ `<a>` đó bằng:
+
+```html
+<img src="~/img/halochat-logo.png" alt="HaloChat" height="28" class="d-inline-block align-text-top" />
+HaloChat
+```
+
+(Giữ nguyên các thuộc tính `class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"` của thẻ `<a>`, chỉ đổi nội dung bên trong.)
+
+- [ ] **Step 5: Build**
 
 Run: `dotnet build`
 Expected: `Build succeeded.`
 
-- [ ] **Step 5: Xác minh thủ công end-to-end (2 người dùng)**
+- [ ] **Step 6: Xác minh thủ công end-to-end (2 người dùng)**
 
 ```bash
 dotnet run --project src/HaloChat.Web
 ```
 
 1. Mở 2 cửa sổ trình duyệt khác nhau (một cửa sổ ẩn danh) trỏ tới URL app.
-2. Đăng ký 2 tài khoản khác nhau (User A ở cửa sổ 1, User B ở cửa sổ 2).
-3. Ở mỗi cửa sổ, vào menu "Chat" — xác nhận thấy tên người dùng còn lại
+2. Xác nhận logo HaloChat hiện ở góc trên bên trái (navbar brand) và ở tab
+   trình duyệt (favicon).
+3. Đăng ký 2 tài khoản khác nhau (User A ở cửa sổ 1, User B ở cửa sổ 2).
+4. Ở mỗi cửa sổ, vào menu "Chat" — xác nhận thấy tên người dùng còn lại
    trong danh sách, chấm presence chuyển xanh (online) cho cả hai.
-4. Click vào nhau để mở khung chat, gõ tin nhắn ở User A, bấm Gửi.
-5. Xác nhận: tin nhắn xuất hiện ngay ở cả 2 cửa sổ mà không cần tải lại
+5. Click vào nhau để mở khung chat, gõ tin nhắn ở User A, bấm Gửi.
+6. Xác nhận: tin nhắn xuất hiện ngay ở cả 2 cửa sổ mà không cần tải lại
    trang (đúng bên trái/phải theo `IsMine`).
-6. Tải lại trang chat ở cả 2 cửa sổ — xác nhận lịch sử tin nhắn hiển thị lại
+7. Tải lại trang chat ở cả 2 cửa sổ — xác nhận lịch sử tin nhắn hiển thị lại
    đúng thứ tự.
-7. Đóng một cửa sổ — xác nhận chấm presence của user đó chuyển xám ở cửa sổ
+8. Đóng một cửa sổ — xác nhận chấm presence của user đó chuyển xám ở cửa sổ
    còn lại (có thể mất vài giây do SignalR phát hiện disconnect).
-8. Dừng server (Ctrl+C).
+9. Dừng server (Ctrl+C).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/HaloChat.Web/wwwroot src/HaloChat.Web/Views/Shared/_Layout.cshtml

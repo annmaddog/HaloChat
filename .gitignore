@@ -17,3 +17,6 @@ obj/
 # OS
 .DS_Store
 Thumbs.db
+
+# Subagent-driven-development scratch workspace (ledgers, briefs, review packages)
+.superpowers/
