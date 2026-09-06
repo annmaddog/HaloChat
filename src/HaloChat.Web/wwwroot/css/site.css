@@ -20,3 +20,11 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.presence-dot { color: #adb5bd; font-size: 0.8rem; }
+.presence-dot.online { color: #28a745; }
+.presence-dot.offline { color: #adb5bd; }
+.message { margin-bottom: 0.5rem; }
+.message-mine { text-align: right; }
+.message-theirs { text-align: left; }
+.message-time { font-size: 0.75rem; color: #6c757d; margin-left: 0.5rem; }
