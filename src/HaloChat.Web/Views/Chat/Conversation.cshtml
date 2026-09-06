@@ -1,0 +1,28 @@
+@model HaloChat.Web.ViewModels.ConversationViewModel
+@{
+    ViewData["Title"] = $"Chat với {Model.OtherUserDisplayName}";
+}
+
+<h1>Chat với @Model.OtherUserDisplayName</h1>
+
+<div id="message-list" data-other-user-id="@Model.OtherUserId">
+    @foreach (var message in Model.Messages)
+    {
+        <div class="message @(message.IsMine ? "message-mine" : "message-theirs")">
+            <span class="message-content">@message.Content</span>
+            <span class="message-time">@message.SentAtUtc.ToLocalTime().ToString("HH:mm dd/MM")</span>
+        </div>
+    }
+</div>
+
+<div id="send-error" class="text-danger" style="display:none;"></div>
+
+<form id="send-form">
+    <input type="text" id="message-input" autocomplete="off" placeholder="Nhập tin nhắn..." />
+    <button type="submit">Gửi</button>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <script src="~/js/chat.js"></script>
+}

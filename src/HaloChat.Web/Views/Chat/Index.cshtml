@@ -1,0 +1,21 @@
+@model List<HaloChat.Web.ViewModels.UserListItemViewModel>
+@{
+    ViewData["Title"] = "Danh sách người dùng";
+}
+
+<h1>Danh sách người dùng</h1>
+
+<ul id="user-list" class="list-group">
+    @foreach (var user in Model)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center" data-user-id="@user.Id">
+            <a asp-action="Conversation" asp-route-id="@user.Id">@user.DisplayName</a>
+            <span class="presence-dot offline" title="offline">●</span>
+        </li>
+    }
+</ul>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <script src="~/js/chat.js"></script>
+}
