@@ -10,4 +10,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+
+    public DbSet<Message> Messages => Set<Message>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<Message>()
+            .HasIndex(m => new { m.SenderId, m.ReceiverId });
+    }
 }
