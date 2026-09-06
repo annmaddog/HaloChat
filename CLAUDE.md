@@ -4,13 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Trạng thái hiện tại
 
-Repo này **chưa có code** — mới chỉ có tài liệu đề tài và bản thiết kế. Chưa
-tồn tại file `.sln`/`.csproj` nào. Trước khi chạy bất kỳ lệnh build/test nào,
-kiểm tra xem solution đã được scaffold theo `docs/superpowers/specs/2026-09-06-chat-aes-web-scaffold-design.md`
-hay chưa.
-
-Nguồn yêu cầu gốc: `tài liệu đề tài cần làm.docx` (đề tài "Xây dựng ứng dụng
-chat an toàn sử dụng thuật toán mã hóa AES").
+Khung web (giai đoạn 1) đã hoàn thiện: đăng ký/đăng nhập, danh sách người
+dùng, chat 1–1 thời gian thực, lưu lịch sử, presence online/offline, và
+interface `IMessageCipher` sẵn sàng để nhóm bảo mật cắm AES thật vào (xem
+`docs/superpowers/specs/2026-09-06-chat-aes-web-scaffold-design.md`).
 
 ## Bối cảnh dự án — đọc trước khi đụng vào phần mã hóa
 
@@ -55,14 +52,14 @@ src/
   cột `CipherText`/`Iv`/`Tag`/`Algorithm` để giai đoạn 2 cắm AES vào mà
   không cần migration mới.
 
-## Lệnh phát triển (áp dụng sau khi solution được scaffold theo spec)
+## Lệnh phát triển
 
 ```bash
-dotnet build                                   # build toàn bộ solution
-dotnet run --project src/HaloChat.Web           # chạy web app
-dotnet test                                    # chạy toàn bộ test
-dotnet ef migrations add <Tên> -p src/HaloChat.Web  # thêm migration (EF Core)
-dotnet ef database update -p src/HaloChat.Web       # áp migration vào DB
+dotnet build                                        # build toàn bộ solution
+dotnet test                                         # chạy toàn bộ test (Security + Web)
+dotnet run --project src/HaloChat.Web                # chạy web app (cần SQL Server Express)
+dotnet ef migrations add <Tên> -p src/HaloChat.Web -s src/HaloChat.Web   # thêm migration
+dotnet ef database update -p src/HaloChat.Web -s src/HaloChat.Web       # áp migration vào DB
 ```
 
 ## Ngôn ngữ
