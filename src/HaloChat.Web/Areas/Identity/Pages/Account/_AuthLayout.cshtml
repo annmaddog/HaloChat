@@ -11,10 +11,24 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
     <style>
-        /* Hiệu ứng chuyển trang mượt giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng này).
-           Trình duyệt không hỗ trợ View Transitions API sẽ tự bỏ qua, không ảnh hưởng chức năng. */
-        @@view-transition {
-            navigation: auto;
+        /* Hiệu ứng lật thẻ khi chuyển giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng).
+           Thuần CSS + JS nhỏ, chạy được trên mọi trình duyệt (không phụ thuộc View Transitions API). */
+        .hc-auth-card {
+            animation: hc-flip-in 0.45s ease both;
+        }
+
+        @@keyframes hc-flip-in {
+            from { opacity: 0; transform: perspective(1400px) rotateY(-14deg) scale(0.96); }
+            to   { opacity: 1; transform: perspective(1400px) rotateY(0deg) scale(1); }
+        }
+
+        .hc-auth-card.hc-flip-out {
+            animation: hc-flip-out 0.32s ease forwards;
+        }
+
+        @@keyframes hc-flip-out {
+            from { opacity: 1; transform: perspective(1400px) rotateY(0deg) scale(1); }
+            to   { opacity: 0; transform: perspective(1400px) rotateY(14deg) scale(0.96); }
         }
     </style>
 </head>
@@ -24,6 +38,23 @@
     </main>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var card = document.querySelector(".hc-auth-card");
+            var toggleLink = document.querySelector(".hc-auth-ghost-btn");
+            if (!card || !toggleLink) {
+                return;
+            }
+            toggleLink.addEventListener("click", function (e) {
+                e.preventDefault();
+                var href = toggleLink.getAttribute("href");
+                card.classList.add("hc-flip-out");
+                setTimeout(function () {
+                    window.location.href = href;
+                }, 300);
+            });
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
