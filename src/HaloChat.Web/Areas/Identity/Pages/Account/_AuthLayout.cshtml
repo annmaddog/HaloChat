@@ -11,24 +11,51 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
     <style>
-        /* Hiệu ứng lật thẻ khi chuyển giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng).
-           Thuần CSS + JS nhỏ, chạy được trên mọi trình duyệt (không phụ thuộc View Transitions API). */
+        /* Hiệu ứng trượt ngang khi chuyển giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng).
+           Trượt 2D (translateX) — không dùng phối cảnh 3D để tránh lỗi render bo góc và đỡ rối mắt. */
         .hc-auth-card {
-            animation: hc-flip-in 0.45s ease both;
+            animation: hc-fade-in 0.3s ease both;
         }
 
-        @@keyframes hc-flip-in {
-            from { opacity: 0; transform: perspective(1400px) rotateY(-14deg) scale(0.96); }
-            to   { opacity: 1; transform: perspective(1400px) rotateY(0deg) scale(1); }
+        @@keyframes hc-fade-in {
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
-        .hc-auth-card.hc-flip-out {
-            animation: hc-flip-out 0.32s ease forwards;
+        .hc-auth-card.hc-slide-in-right {
+            animation: hc-slide-in-right 0.38s ease both;
         }
 
-        @@keyframes hc-flip-out {
-            from { opacity: 1; transform: perspective(1400px) rotateY(0deg) scale(1); }
-            to   { opacity: 0; transform: perspective(1400px) rotateY(14deg) scale(0.96); }
+        @@keyframes hc-slide-in-right {
+            from { opacity: 0; transform: translateX(56px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .hc-auth-card.hc-slide-in-left {
+            animation: hc-slide-in-left 0.38s ease both;
+        }
+
+        @@keyframes hc-slide-in-left {
+            from { opacity: 0; transform: translateX(-56px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .hc-auth-card.hc-slide-out-left {
+            animation: hc-slide-out-left 0.24s ease forwards;
+        }
+
+        @@keyframes hc-slide-out-left {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(-56px); }
+        }
+
+        .hc-auth-card.hc-slide-out-right {
+            animation: hc-slide-out-right 0.24s ease forwards;
+        }
+
+        @@keyframes hc-slide-out-right {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(56px); }
         }
     </style>
 </head>
@@ -42,17 +69,32 @@
         (function () {
             var card = document.querySelector(".hc-auth-card");
             var toggleLink = document.querySelector(".hc-auth-ghost-btn");
-            if (!card || !toggleLink) {
+            if (!card) {
                 return;
             }
-            toggleLink.addEventListener("click", function (e) {
-                e.preventDefault();
-                var href = toggleLink.getAttribute("href");
-                card.classList.add("hc-flip-out");
-                setTimeout(function () {
-                    window.location.href = href;
-                }, 300);
-            });
+
+            // "forward" = Đăng nhập -> Đăng ký (trượt sang trái rồi trang mới trượt vào từ phải)
+            // "backward" = Đăng ký -> Đăng nhập (ngược lại)
+            var incomingDirection = sessionStorage.getItem("hc-auth-dir");
+            sessionStorage.removeItem("hc-auth-dir");
+            if (incomingDirection === "forward") {
+                card.classList.add("hc-slide-in-right");
+            } else if (incomingDirection === "backward") {
+                card.classList.add("hc-slide-in-left");
+            }
+
+            if (toggleLink) {
+                toggleLink.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    var href = toggleLink.getAttribute("href");
+                    var goingForward = card.dataset.authPage === "login";
+                    sessionStorage.setItem("hc-auth-dir", goingForward ? "forward" : "backward");
+                    card.classList.add(goingForward ? "hc-slide-out-left" : "hc-slide-out-right");
+                    setTimeout(function () {
+                        window.location.href = href;
+                    }, 220);
+                });
+            }
         })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
