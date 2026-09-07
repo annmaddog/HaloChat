@@ -11,10 +11,11 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
     <style>
-        /* Hiệu ứng trượt ngang khi chuyển giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng).
-           Trượt 2D (translateX) — không dùng phối cảnh 3D để tránh lỗi render bo góc và đỡ rối mắt. */
+        /* Hiệu ứng hoán đổi vị trí thẻ trắng (form) và thẻ xanh (pitch) khi chuyển giữa
+           Đăng nhập <-> Đăng ký: 2 thẻ trượt đan chéo qua nhau. Chỉ translateX 2D, không
+           dùng phối cảnh 3D (tránh lỗi render bo góc + đỡ rối mắt). */
         .hc-auth-card {
-            animation: hc-fade-in 0.3s ease both;
+            animation: hc-fade-in 0.25s ease both;
         }
 
         @@keyframes hc-fade-in {
@@ -22,40 +23,26 @@
             to   { opacity: 1; }
         }
 
-        .hc-auth-card.hc-slide-in-right {
-            animation: hc-slide-in-right 0.38s ease both;
+        .hc-auth-form-pane, .hc-auth-pitch-pane {
+            transition: transform 0.32s ease, opacity 0.32s ease;
         }
 
-        @@keyframes hc-slide-in-right {
-            from { opacity: 0; transform: translateX(56px); }
-            to   { opacity: 1; transform: translateX(0); }
+        /* Thẻ đang ở bên trái thoát sang phải, thẻ đang ở bên phải thoát sang trái — đan chéo nhau */
+        .hc-pane-left.hc-swap-exit { transform: translateX(120%); opacity: 0; }
+        .hc-pane-right.hc-swap-exit { transform: translateX(-120%); opacity: 0; }
+
+        /* Trang đích: thẻ sẽ nằm bên trái thì vào từ bên phải, thẻ nằm bên phải thì vào từ bên trái */
+        .hc-pane-left.hc-swap-enter { animation: hc-pane-enter-from-right 0.38s ease both; }
+        .hc-pane-right.hc-swap-enter { animation: hc-pane-enter-from-left 0.38s ease both; }
+
+        @@keyframes hc-pane-enter-from-right {
+            from { transform: translateX(120%); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
         }
 
-        .hc-auth-card.hc-slide-in-left {
-            animation: hc-slide-in-left 0.38s ease both;
-        }
-
-        @@keyframes hc-slide-in-left {
-            from { opacity: 0; transform: translateX(-56px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        .hc-auth-card.hc-slide-out-left {
-            animation: hc-slide-out-left 0.24s ease forwards;
-        }
-
-        @@keyframes hc-slide-out-left {
-            from { opacity: 1; transform: translateX(0); }
-            to   { opacity: 0; transform: translateX(-56px); }
-        }
-
-        .hc-auth-card.hc-slide-out-right {
-            animation: hc-slide-out-right 0.24s ease forwards;
-        }
-
-        @@keyframes hc-slide-out-right {
-            from { opacity: 1; transform: translateX(0); }
-            to   { opacity: 0; transform: translateX(56px); }
+        @@keyframes hc-pane-enter-from-left {
+            from { transform: translateX(-120%); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
@@ -67,32 +54,29 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         (function () {
-            var card = document.querySelector(".hc-auth-card");
+            var formPane = document.querySelector(".hc-auth-form-pane");
+            var pitchPane = document.querySelector(".hc-auth-pitch-pane");
             var toggleLink = document.querySelector(".hc-auth-ghost-btn");
-            if (!card) {
+            if (!formPane || !pitchPane) {
                 return;
             }
 
-            // "forward" = Đăng nhập -> Đăng ký (trượt sang trái rồi trang mới trượt vào từ phải)
-            // "backward" = Đăng ký -> Đăng nhập (ngược lại)
-            var incomingDirection = sessionStorage.getItem("hc-auth-dir");
-            sessionStorage.removeItem("hc-auth-dir");
-            if (incomingDirection === "forward") {
-                card.classList.add("hc-slide-in-right");
-            } else if (incomingDirection === "backward") {
-                card.classList.add("hc-slide-in-left");
+            if (sessionStorage.getItem("hc-auth-swap") === "1") {
+                formPane.classList.add("hc-swap-enter");
+                pitchPane.classList.add("hc-swap-enter");
             }
+            sessionStorage.removeItem("hc-auth-swap");
 
             if (toggleLink) {
                 toggleLink.addEventListener("click", function (e) {
                     e.preventDefault();
                     var href = toggleLink.getAttribute("href");
-                    var goingForward = card.dataset.authPage === "login";
-                    sessionStorage.setItem("hc-auth-dir", goingForward ? "forward" : "backward");
-                    card.classList.add(goingForward ? "hc-slide-out-left" : "hc-slide-out-right");
+                    sessionStorage.setItem("hc-auth-swap", "1");
+                    formPane.classList.add("hc-swap-exit");
+                    pitchPane.classList.add("hc-swap-exit");
                     setTimeout(function () {
                         window.location.href = href;
-                    }, 220);
+                    }, 260);
                 });
             }
         })();
