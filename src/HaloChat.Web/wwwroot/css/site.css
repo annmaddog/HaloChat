@@ -346,3 +346,177 @@ a {
   color: var(--hc-text-muted);
   background: transparent;
 }
+
+/* ===== Trang đăng nhập / đăng ký (Areas/Identity/.../Account) ===== */
+.hc-auth-body {
+  margin-bottom: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #eaf2ff, var(--hc-bg) 60%);
+  padding: 2rem 1rem;
+}
+
+.hc-auth-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.hc-auth-card {
+  display: flex;
+  width: 100%;
+  max-width: 920px;
+  min-height: 560px;
+  background: var(--hc-surface);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(16, 24, 47, 0.12);
+  overflow: hidden;
+}
+
+.hc-auth-form-pane {
+  flex: 1 1 55%;
+  padding: 3rem 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hc-auth-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+}
+
+.hc-auth-logo img { width: 32px; height: 32px; }
+
+.hc-auth-title {
+  font-weight: 700;
+  color: var(--hc-navy);
+  font-size: 1.7rem;
+  margin-bottom: 0.3rem;
+}
+
+.hc-auth-subtitle {
+  color: var(--hc-text-muted);
+  margin-bottom: 1.75rem;
+}
+
+.hc-field { margin-bottom: 1.1rem; }
+
+.hc-field-label {
+  display: block;
+  font-weight: 500;
+  color: var(--hc-navy);
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.hc-field-input {
+  width: 100%;
+  border: 1px solid var(--hc-border);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+  background: #fbfcfe;
+}
+
+.hc-field-input:focus {
+  outline: none;
+  border-color: var(--hc-blue);
+  box-shadow: 0 0 0 3px rgba(31, 111, 224, 0.15);
+}
+
+.hc-auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  font-size: 0.88rem;
+}
+
+.hc-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--hc-text-muted);
+  font-weight: 400;
+}
+
+.hc-auth-link { color: var(--hc-blue); text-decoration: none; }
+.hc-auth-link:hover { text-decoration: underline; }
+
+.hc-auth-submit {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+}
+
+.hc-auth-submit:hover { filter: brightness(1.05); }
+
+.hc-auth-pitch-pane {
+  flex: 1 1 45%;
+  background: linear-gradient(160deg, var(--hc-blue-light), var(--hc-blue-dark) 70%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hc-auth-pitch-pane::after {
+  content: "";
+  position: absolute;
+  inset: -20% -20% auto auto;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
+}
+
+.hc-auth-pitch-pane h2 {
+  font-weight: 700;
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.hc-auth-pitch-pane p {
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 1.75rem;
+  max-width: 320px;
+}
+
+.hc-auth-ghost-btn {
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.55rem 1.6rem;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+.hc-auth-ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .hc-auth-card { flex-direction: column; min-height: 0; }
+  .hc-auth-pitch-pane { order: -1; padding: 2rem; text-align: center; align-items: center; }
+  .hc-auth-pitch-pane p { max-width: none; }
+  .hc-auth-ghost-btn { align-self: center; }
+  .hc-auth-form-pane { padding: 2.25rem 1.75rem; }
+}

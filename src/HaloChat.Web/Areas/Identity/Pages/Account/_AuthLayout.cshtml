@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HaloChat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
+    <style>
+        /* Hiệu ứng chuyển trang mượt giữa Đăng nhập <-> Đăng ký (chỉ 2 trang này dùng layout riêng này).
+           Trình duyệt không hỗ trợ View Transitions API sẽ tự bỏ qua, không ảnh hưởng chức năng. */
+        @@view-transition {
+            navigation: auto;
+        }
+    </style>
+</head>
+<body class="hc-auth-body">
+    <main class="hc-auth-shell">
+        @RenderBody()
+    </main>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
