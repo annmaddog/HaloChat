@@ -1,3 +1,18 @@
+/* ===== HaloChat design tokens (theo màu logo: xanh dương gradient + navy + vàng halo) ===== */
+:root {
+  --hc-blue-light: #3aa6f0;
+  --hc-blue: #1f6fe0;
+  --hc-blue-dark: #124fb0;
+  --hc-navy: #10182f;
+  --hc-amber: #f7ab2e;
+  --hc-bg: #f4f7fc;
+  --hc-surface: #ffffff;
+  --hc-border: #e3e9f4;
+  --hc-text-muted: #6b7590;
+  --hc-radius: 16px;
+  --hc-shadow: 0 8px 24px rgba(16, 24, 47, 0.06);
+}
+
 html {
   font-size: 14px;
 }
@@ -8,8 +23,11 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+body {
+  margin-bottom: 60px;
+  background: var(--hc-bg);
+  color: var(--hc-navy);
+  font-family: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -17,14 +35,314 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
+a {
+  color: var(--hc-blue);
 }
 
-.presence-dot { color: #adb5bd; font-size: 0.8rem; }
-.presence-dot.online { color: #28a745; }
-.presence-dot.offline { color: #adb5bd; }
-.message { margin-bottom: 0.5rem; }
-.message-mine { text-align: right; }
-.message-theirs { text-align: left; }
-.message-time { font-size: 0.75rem; color: #6c757d; margin-left: 0.5rem; }
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem #fff, 0 0 0 0.25rem rgba(31, 111, 224, 0.35);
+}
+
+/* ===== Navbar ===== */
+.hc-navbar {
+  background: var(--hc-surface) !important;
+  border-bottom: 1px solid var(--hc-border);
+  box-shadow: none !important;
+}
+
+.hc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.hc-brand-halo { color: var(--hc-navy); }
+.hc-brand-chat { color: var(--hc-blue); }
+
+.hc-navbar .nav-link {
+  font-weight: 500;
+  color: var(--hc-navy) !important;
+}
+
+.hc-navbar .nav-link:hover {
+  color: var(--hc-blue) !important;
+}
+
+.hc-btn-primary {
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+  border: none;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+}
+
+.hc-btn-primary:hover { filter: brightness(1.05); color: #fff !important; }
+
+.hc-btn-outline {
+  border: 1px solid var(--hc-border);
+  color: var(--hc-navy) !important;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+  background: transparent;
+}
+
+.hc-btn-outline:hover { border-color: var(--hc-blue); color: var(--hc-blue) !important; }
+
+.hc-user-chip {
+  color: var(--hc-navy) !important;
+  font-weight: 500;
+}
+
+/* ===== Buttons & forms (áp dụng cả cho trang Identity mặc định) ===== */
+.btn-primary {
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+  border: none;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background: linear-gradient(135deg, var(--hc-blue), var(--hc-blue-dark));
+}
+
+/* ===== Landing page (Home/Index) ===== */
+.hc-hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.hc-hero img { width: 88px; height: 88px; margin-bottom: 1rem; }
+
+.hc-hero h1 {
+  font-weight: 700;
+  color: var(--hc-navy);
+  font-size: 2.2rem;
+}
+
+.hc-hero p.lead {
+  color: var(--hc-text-muted);
+  max-width: 560px;
+  margin: 0.75rem auto 1.75rem;
+}
+
+.hc-hero .btn { margin: 0 0.35rem; }
+
+.hc-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.hc-feature-card {
+  background: var(--hc-surface);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  padding: 1.5rem 1.25rem;
+  text-align: left;
+  box-shadow: var(--hc-shadow);
+}
+
+.hc-feature-card h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--hc-navy);
+  margin-bottom: 0.4rem;
+}
+
+.hc-feature-card p {
+  color: var(--hc-text-muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* ===== Danh sách người dùng (Chat/Index) ===== */
+.hc-page-title {
+  font-weight: 700;
+  color: var(--hc-navy);
+  margin-bottom: 1.25rem;
+}
+
+#user-list {
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  overflow: hidden;
+  box-shadow: var(--hc-shadow);
+  background: var(--hc-surface);
+}
+
+#user-list .list-group-item {
+  border: none;
+  border-bottom: 1px solid var(--hc-border);
+  padding: 0.9rem 1.1rem;
+}
+
+#user-list .list-group-item:last-child { border-bottom: none; }
+
+.hc-user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: var(--hc-navy);
+  flex: 1;
+}
+
+.hc-user-row:hover { color: var(--hc-blue); }
+
+.hc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.hc-empty-state {
+  text-align: center;
+  color: var(--hc-text-muted);
+  padding: 2.5rem 1rem;
+  background: var(--hc-surface);
+  border: 1px dashed var(--hc-border);
+  border-radius: var(--hc-radius);
+}
+
+.presence-dot { color: #c3cbdd; font-size: 0.7rem; }
+.presence-dot.online { color: #2fb872; }
+.presence-dot.offline { color: #c3cbdd; }
+
+/* ===== Cửa sổ chat (Chat/Conversation) ===== */
+.hc-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.hc-back-link {
+  color: var(--hc-text-muted);
+  text-decoration: none;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.hc-back-link:hover { color: var(--hc-blue); }
+
+.hc-chat-title {
+  font-weight: 700;
+  color: var(--hc-navy);
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+#message-list {
+  background: var(--hc-surface);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  box-shadow: var(--hc-shadow);
+  padding: 1.25rem;
+  height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.message {
+  margin-bottom: 0;
+  max-width: 72%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-content {
+  display: inline-block;
+  padding: 0.55rem 0.9rem;
+  border-radius: 16px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.message-mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message-mine .message-content {
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message-theirs {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.message-theirs .message-content {
+  background: #eef1f8;
+  color: var(--hc-navy);
+  border-bottom-left-radius: 4px;
+}
+
+.message-time {
+  font-size: 0.72rem;
+  color: var(--hc-text-muted);
+  margin: 0.2rem 0.2rem 0;
+}
+
+#send-error { margin-top: 0.5rem; }
+
+#send-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  background: var(--hc-surface);
+  border: 1px solid var(--hc-border);
+  border-radius: 999px;
+  padding: 0.4rem 0.5rem 0.4rem 1.1rem;
+  box-shadow: var(--hc-shadow);
+}
+
+#message-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  padding: 0.4rem 0;
+}
+
+.hc-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--hc-blue-light), var(--hc-blue-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hc-send-btn:hover { filter: brightness(1.05); }
+.hc-send-btn svg { width: 18px; height: 18px; }
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  color: var(--hc-text-muted);
+  background: transparent;
+}

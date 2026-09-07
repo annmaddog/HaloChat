@@ -32,6 +32,8 @@
         const messageInput = document.getElementById("message-input");
         const sendErrorEl = document.getElementById("send-error");
 
+        messageListEl.scrollTop = messageListEl.scrollHeight; // cuộn xuống tin nhắn mới nhất khi mở cuộc trò chuyện
+
         connection.on("ReceiveMessage", function (message) {
             const belongsToThisConversation =
                 message.senderId === otherUserId || message.receiverId === otherUserId;
@@ -54,6 +56,7 @@
             div.appendChild(contentSpan);
             div.appendChild(timeSpan);
             messageListEl.appendChild(div);
+            messageListEl.scrollTop = messageListEl.scrollHeight; // cuộn xuống khi có tin nhắn mới
         });
 
         connection.on("SendFailed", function (errorMessage) {

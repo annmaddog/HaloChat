@@ -3,7 +3,11 @@
     ViewData["Title"] = $"Chat với {Model.OtherUserDisplayName}";
 }
 
-<h1>Chat với @Model.OtherUserDisplayName</h1>
+<div class="hc-chat-header">
+    <a asp-action="Index" class="hc-back-link" title="Quay lại danh sách">&larr;</a>
+    <span class="hc-avatar">@Model.OtherUserDisplayName.Substring(0, 1).ToUpper()</span>
+    <h1 class="hc-chat-title">@Model.OtherUserDisplayName</h1>
+</div>
 
 <div id="message-list" data-other-user-id="@Model.OtherUserId">
     @foreach (var message in Model.Messages)
@@ -19,7 +23,11 @@
 
 <form id="send-form">
     <input type="text" id="message-input" autocomplete="off" placeholder="Nhập tin nhắn..." />
-    <button type="submit">Gửi</button>
+    <button type="submit" class="hc-send-btn" title="Gửi" aria-label="Gửi">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+        </svg>
+    </button>
 </form>
 
 @section Scripts {
