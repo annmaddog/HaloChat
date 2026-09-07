@@ -11,38 +11,25 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
     <style>
-        /* Hiệu ứng hoán đổi vị trí thẻ trắng (form) và thẻ xanh (pitch) khi chuyển giữa
-           Đăng nhập <-> Đăng ký: 2 thẻ trượt đan chéo qua nhau. Chỉ translateX 2D, không
-           dùng phối cảnh 3D (tránh lỗi render bo góc + đỡ rối mắt). */
-        .hc-auth-card {
-            animation: hc-fade-in 0.25s ease both;
+        /* Hiệu ứng nhẹ khi trang Đăng nhập/Đăng ký xuất hiện: thẻ trắng và thẻ xanh trượt vào
+           từ 2 hướng ngược nhau, biên độ nhỏ (không quét hết chiều ngang) nên không chồng nội
+           dung và không cần chờ trước khi điều hướng — bấm là chuyển trang ngay, không delay. */
+        .hc-pane-left {
+            animation: hc-pane-in-left 0.24s ease both;
         }
 
-        @@keyframes hc-fade-in {
-            from { opacity: 0; }
-            to   { opacity: 1; }
+        .hc-pane-right {
+            animation: hc-pane-in-right 0.24s ease both;
         }
 
-        .hc-auth-form-pane, .hc-auth-pitch-pane {
-            transition: transform 0.32s ease, opacity 0.32s ease;
+        @@keyframes hc-pane-in-left {
+            from { opacity: 0; transform: translateX(-18px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
 
-        /* Thẻ đang ở bên trái thoát sang phải, thẻ đang ở bên phải thoát sang trái — đan chéo nhau */
-        .hc-pane-left.hc-swap-exit { transform: translateX(120%); opacity: 0; }
-        .hc-pane-right.hc-swap-exit { transform: translateX(-120%); opacity: 0; }
-
-        /* Trang đích: thẻ sẽ nằm bên trái thì vào từ bên phải, thẻ nằm bên phải thì vào từ bên trái */
-        .hc-pane-left.hc-swap-enter { animation: hc-pane-enter-from-right 0.38s ease both; }
-        .hc-pane-right.hc-swap-enter { animation: hc-pane-enter-from-left 0.38s ease both; }
-
-        @@keyframes hc-pane-enter-from-right {
-            from { transform: translateX(120%); opacity: 0; }
-            to   { transform: translateX(0); opacity: 1; }
-        }
-
-        @@keyframes hc-pane-enter-from-left {
-            from { transform: translateX(-120%); opacity: 0; }
-            to   { transform: translateX(0); opacity: 1; }
+        @@keyframes hc-pane-in-right {
+            from { opacity: 0; transform: translateX(18px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
     </style>
 </head>
@@ -52,35 +39,6 @@
     </main>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        (function () {
-            var formPane = document.querySelector(".hc-auth-form-pane");
-            var pitchPane = document.querySelector(".hc-auth-pitch-pane");
-            var toggleLink = document.querySelector(".hc-auth-ghost-btn");
-            if (!formPane || !pitchPane) {
-                return;
-            }
-
-            if (sessionStorage.getItem("hc-auth-swap") === "1") {
-                formPane.classList.add("hc-swap-enter");
-                pitchPane.classList.add("hc-swap-enter");
-            }
-            sessionStorage.removeItem("hc-auth-swap");
-
-            if (toggleLink) {
-                toggleLink.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    var href = toggleLink.getAttribute("href");
-                    sessionStorage.setItem("hc-auth-swap", "1");
-                    formPane.classList.add("hc-swap-exit");
-                    pitchPane.classList.add("hc-swap-exit");
-                    setTimeout(function () {
-                        window.location.href = href;
-                    }, 260);
-                });
-            }
-        })();
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
