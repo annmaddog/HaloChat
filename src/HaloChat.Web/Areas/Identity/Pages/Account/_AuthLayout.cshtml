@@ -11,25 +11,29 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/img/halochat-logo.png" />
     <style>
-        /* Hiệu ứng nhẹ khi trang Đăng nhập/Đăng ký xuất hiện: thẻ trắng và thẻ xanh trượt vào
-           từ 2 hướng ngược nhau, biên độ nhỏ (không quét hết chiều ngang) nên không chồng nội
-           dung và không cần chờ trước khi điều hướng — bấm là chuyển trang ngay, không delay. */
-        .hc-pane-left {
-            animation: hc-pane-in-left 0.24s ease both;
+        /* Thẻ trắng (form) và thẻ xanh (pitch) đổi chỗ cho nhau một cách mượt mà khi chuyển
+           giữa Đăng nhập <-> Đăng ký, dùng View Transitions API của trình duyệt thay vì JS
+           tự canh thời gian: trình duyệt tự "morph" từng thẻ từ vị trí cũ sang vị trí mới
+           NGAY TRONG LÚC điều hướng — không có khoảng chờ, không có khoảng trắng, vì hiệu ứng
+           là một phần của việc chuyển trang chứ không phải delay thêm vào trước khi chuyển.
+           Trình duyệt chưa hỗ trợ (Firefox/Safari hiện tại) sẽ tự chuyển trang bình thường,
+           không lỗi, chỉ là không có hiệu ứng. */
+        @@view-transition {
+            navigation: auto;
         }
 
-        .hc-pane-right {
-            animation: hc-pane-in-right 0.24s ease both;
+        .hc-auth-form-pane {
+            view-transition-name: hc-auth-form-pane;
         }
 
-        @@keyframes hc-pane-in-left {
-            from { opacity: 0; transform: translateX(-18px); }
-            to   { opacity: 1; transform: translateX(0); }
+        .hc-auth-pitch-pane {
+            view-transition-name: hc-auth-pitch-pane;
         }
 
-        @@keyframes hc-pane-in-right {
-            from { opacity: 0; transform: translateX(18px); }
-            to   { opacity: 1; transform: translateX(0); }
+        ::view-transition-group(hc-auth-form-pane),
+        ::view-transition-group(hc-auth-pitch-pane) {
+            animation-duration: 0.5s;
+            animation-timing-function: ease-in-out;
         }
     </style>
 </head>
