@@ -98,4 +98,17 @@ public class DichVuNguoiDungTests
 
         Assert.NotNull(token);
     }
+
+    [Fact]
+    public async Task LayDanhSachNguoiDung_KhongBaoGomChinhMinh()
+    {
+        var (dichVu, kho) = TaoDichVu();
+        kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguyenAn", Email = "a@gmail.com" });
+        kho.DanhSach.Add(new NguoiDung { Id = "2", TenTaiKhoan = "TranBinh", Email = "b@gmail.com" });
+
+        var danhSach = await dichVu.LayDanhSachNguoiDung("1");
+
+        var duyNhat = Assert.Single(danhSach);
+        Assert.Equal("TranBinh", duyNhat.TenTaiKhoan);
+    }
 }

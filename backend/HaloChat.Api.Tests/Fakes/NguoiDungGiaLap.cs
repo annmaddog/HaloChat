@@ -24,4 +24,6 @@ public class NguoiDungGiaLap : INguoiDungRepository
         var ketQua = DanhSach.FirstOrDefault(nd => nd.TenTaiKhoan == tenDangNhap || nd.Email == tenDangNhap);
         return Task.FromResult(ketQua);
     }
+
+    public Task<List<NguoiDung>> LayTatCaAsync() => Task.FromResult(DanhSach.ToList());
 }

@@ -57,4 +57,13 @@ public class DichVuNguoiDung : IDichVuNguoiDung
 
         return _dichVuJwt.TaoJwt(nguoiDung);
     }
+
+    public async Task<List<NguoiDungTomTatDto>> LayDanhSachNguoiDung(string idHienTai)
+    {
+        var tatCa = await _kho.LayTatCaAsync();
+        return tatCa
+            .Where(nd => nd.Id != idHienTai)
+            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email))
+            .ToList();
+    }
 }

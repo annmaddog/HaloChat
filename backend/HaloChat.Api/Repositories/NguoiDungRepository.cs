@@ -35,4 +35,9 @@ public class NguoiDungRepository : INguoiDungRepository
 
         return await _collection.Find(boLoc).FirstOrDefaultAsync();
     }
+
+    public async Task<List<NguoiDung>> LayTatCaAsync()
+    {
+        return await _collection.Find(FilterDefinition<NguoiDung>.Empty).ToListAsync();
+    }
 }

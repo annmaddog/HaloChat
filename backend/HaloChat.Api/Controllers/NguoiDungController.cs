@@ -1,5 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using HaloChat.Api.Dto;
 using HaloChat.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HaloChat.Api.Controllers;
@@ -37,5 +39,19 @@ public class NguoiDungController : ControllerBase
         }
 
         return Ok(new DangNhapResponse(token));
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> LayDanhSach()
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var danhSach = await _dichVu.LayDanhSachNguoiDung(idHienTai);
+        return Ok(danhSach);
     }
 }
