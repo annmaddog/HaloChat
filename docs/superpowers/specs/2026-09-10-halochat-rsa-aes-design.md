@@ -37,17 +37,35 @@ Người nhận: RSA-OAEP giải mã Session Key bằng Private Key → AES-256-
 
 ## 3. Cấu trúc repo & solution
 
+Tách 2 thư mục gốc độc lập `backend/` và `frontend/` để đóng gói/triển khai riêng từng phần cho
+khách (mỗi thư mục tự chứa đủ để build/deploy mà không phụ thuộc thư mục còn lại):
+
 ```
-HaloChat.sln
-src/
-  HaloChat.Api/            # ASP.NET Core Web API + SignalR Hub, JWT, MongoDB driver
-  HaloChat.Security/       # Class library: DichVuMaHoa (stub AES/RSA cho GĐ6), băm mật khẩu (thật)
-halochat-web/               # React + TypeScript (Vite) — không đưa vào .sln
+backend/
+  HaloChat.sln
+  HaloChat.Api/             # ASP.NET Core Web API + SignalR Hub, JWT, MongoDB driver
+  HaloChat.Security/        # Class library: DichVuMaHoa (stub AES/RSA cho GĐ6), băm mật khẩu (thật)
+frontend/
+  (React + TypeScript, Vite)
 docs/superpowers/specs|plans/...
 ```
 
 Tách `HaloChat.Security` riêng khỏi `HaloChat.Api` để: (a) dễ unit test độc lập, (b) đánh dấu rõ
 ràng đây là ranh giới nơi nhóm sẽ viết mã hóa thật, không lẫn vào logic API.
+
+### Cấu hình kết nối & bí mật (secrets)
+
+Chuỗi kết nối MongoDB (có username/password thật) **không bao giờ được commit vào Git**:
+
+- Local dev: lưu bằng `dotnet user-secrets` cho project `HaloChat.Api` (bí mật nằm ngoài repo,
+  riêng theo từng máy) — không dùng `appsettings.json` cho giá trị thật.
+- Repo chỉ commit file mẫu (`appsettings.Development.json.example` hoặc tương tự) chứa placeholder,
+  kèm hướng dẫn cách tự set secret cục bộ.
+- `.gitignore` (khôi phục lại, đã bị xóa khỏi working tree) bổ sung loại trừ: file cấu hình chứa
+  secret thật, `bin/`, `obj/`, `node_modules/`, `uploads/` (dữ liệu người dùng tải lên — không
+  commit dữ liệu thật của người dùng vào source control).
+- Khi bàn giao khách/triển khai thật, secret được cấu hình qua biến môi trường của môi trường host
+  (không đổi cách này).
 
 ## 4. Mô hình dữ liệu (MongoDB)
 
