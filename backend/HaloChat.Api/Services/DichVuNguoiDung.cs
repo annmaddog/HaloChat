@@ -8,11 +8,13 @@ public class DichVuNguoiDung : IDichVuNguoiDung
 {
     private readonly INguoiDungRepository _kho;
     private readonly IDichVuMatKhau _dichVuMatKhau;
+    private readonly IDichVuJwt _dichVuJwt;
 
-    public DichVuNguoiDung(INguoiDungRepository kho, IDichVuMatKhau dichVuMatKhau)
+    public DichVuNguoiDung(INguoiDungRepository kho, IDichVuMatKhau dichVuMatKhau, IDichVuJwt dichVuJwt)
     {
         _kho = kho;
         _dichVuMatKhau = dichVuMatKhau;
+        _dichVuJwt = dichVuJwt;
     }
 
     public async Task<KetQuaDangKyDto> DangKyTaiKhoan(string tenTaiKhoan, string email, string matKhau)
@@ -38,5 +40,21 @@ public class DichVuNguoiDung : IDichVuNguoiDung
 
         await _kho.ThemMoiAsync(nguoiDungMoi);
         return new KetQuaDangKyDto(true, "Đăng ký thành công.");
+    }
+
+    public async Task<string?> DangNhap(string tenDangNhap, string matKhau)
+    {
+        var nguoiDung = await _kho.TimTheoTenTaiKhoanHoacEmailAsync(tenDangNhap);
+        if (nguoiDung is null)
+        {
+            return null;
+        }
+
+        if (!_dichVuMatKhau.KiemTraMatKhau(matKhau, nguoiDung.Salt, nguoiDung.MatKhauBam))
+        {
+            return null;
+        }
+
+        return _dichVuJwt.TaoJwt(nguoiDung);
     }
 }

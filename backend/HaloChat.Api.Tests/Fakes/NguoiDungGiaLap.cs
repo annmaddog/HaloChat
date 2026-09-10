@@ -18,4 +18,10 @@ public class NguoiDungGiaLap : INguoiDungRepository
         DanhSach.Add(nguoiDung);
         return Task.CompletedTask;
     }
+
+    public Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap)
+    {
+        var ketQua = DanhSach.FirstOrDefault(nd => nd.TenTaiKhoan == tenDangNhap || nd.Email == tenDangNhap);
+        return Task.FromResult(ketQua);
+    }
 }

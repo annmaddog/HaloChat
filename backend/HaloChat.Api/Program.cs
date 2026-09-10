@@ -1,7 +1,10 @@
+using System.Text;
 using HaloChat.Api.Options;
 using HaloChat.Api.Repositories;
 using HaloChat.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -19,7 +22,29 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 
 builder.Services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
 builder.Services.AddScoped<IDichVuMatKhau, DichVuMatKhau>();
+builder.Services.AddScoped<IDichVuJwt, DichVuJwt>();
 builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
+
+builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));
+var tuyChonJwt = builder.Configuration.GetSection(TuyChonJwt.TenMuc).Get<TuyChonJwt>()
+    ?? throw new InvalidOperationException("Thiếu cấu hình Jwt trong appsettings/user-secrets.");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = tuyChonJwt.NguoiPhatHanh,
+            ValidateAudience = true,
+            ValidAudience = tuyChonJwt.DoiTuong,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tuyChonJwt.ChuoiBiMat)),
+        };
+    });
+builder.Services.AddAuthorization();
 
 const string TenChinhSachCors = "ChoPhepFrontend";
 builder.Services.AddCors(options =>
@@ -34,7 +59,22 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "Nhập: Bearer {token}",
+    });
+    options.AddSecurityRequirement(document => new Microsoft.OpenApi.OpenApiSecurityRequirement
+    {
+        [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>(),
+    });
+});
 
 var app = builder.Build();
 
@@ -46,6 +86,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors(TenChinhSachCors);
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

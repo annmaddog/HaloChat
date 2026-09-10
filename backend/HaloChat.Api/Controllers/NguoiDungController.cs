@@ -26,4 +26,16 @@ public class NguoiDungController : ControllerBase
 
         return Ok(new { thongBao = ketQua.ThongBao });
     }
+
+    [HttpPost("dang-nhap")]
+    public async Task<IActionResult> DangNhap([FromBody] DangNhapRequest yeuCau)
+    {
+        var token = await _dichVu.DangNhap(yeuCau.TenDangNhap, yeuCau.MatKhau);
+        if (token is null)
+        {
+            return Unauthorized(new { thongBao = "Sai tên đăng nhập hoặc mật khẩu." });
+        }
+
+        return Ok(new DangNhapResponse(token));
+    }
 }

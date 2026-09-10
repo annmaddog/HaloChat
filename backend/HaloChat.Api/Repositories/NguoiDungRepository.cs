@@ -26,4 +26,13 @@ public class NguoiDungRepository : INguoiDungRepository
     {
         await _collection.InsertOneAsync(nguoiDung);
     }
+
+    public async Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Or(
+            Builders<NguoiDung>.Filter.Eq(nd => nd.TenTaiKhoan, tenDangNhap),
+            Builders<NguoiDung>.Filter.Eq(nd => nd.Email, tenDangNhap));
+
+        return await _collection.Find(boLoc).FirstOrDefaultAsync();
+    }
 }
