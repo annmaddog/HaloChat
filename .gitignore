@@ -1,2 +1,24 @@
 # Subagent-driven-development scratch workspace (ledger, briefs, reports, reviews)
 .superpowers/
+
+# .NET
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+
+# Node / frontend (thêm khi làm plan Frontend)
+frontend/node_modules/
+frontend/dist/
+
+# Bí mật — không commit giá trị thật
+**/appsettings.*.local.json
+.env
+.env.*
+
+# Dữ liệu người dùng tải lên (thêm khi làm GĐ5)
+backend/HaloChat.Api/uploads/
+
+# Editor / OS
+.vs/
+.vscode/
+*.DS_Store
