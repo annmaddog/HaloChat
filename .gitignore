@@ -1,22 +1,2 @@
-# .NET
-bin/
-obj/
-*.user
-*.suo
-.vs/
-
-# EF Core
-*.db
-*.db-shm
-*.db-wal
-
-# IDE
-.idea/
-*.swp
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Subagent-driven-development scratch workspace (ledgers, briefs, review packages)
+# Subagent-driven-development scratch workspace (ledger, briefs, reports, reviews)
 .superpowers/
