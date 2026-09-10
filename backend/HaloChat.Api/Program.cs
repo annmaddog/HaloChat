@@ -1,4 +1,6 @@
 using HaloChat.Api.Options;
+using HaloChat.Api.Repositories;
+using HaloChat.Api.Services;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -14,6 +16,10 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     var client = new MongoClient(tuyChon.ChuoiKetNoi);
     return client.GetDatabase(tuyChon.TenCoSoDuLieu);
 });
+
+builder.Services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
+builder.Services.AddScoped<IDichVuMatKhau, DichVuMatKhau>();
+builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
 
 const string TenChinhSachCors = "ChoPhepFrontend";
 builder.Services.AddCors(options =>
