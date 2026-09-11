@@ -67,6 +67,33 @@ Chuỗi kết nối MongoDB (có username/password thật) **không bao giờ đ
 - Khi bàn giao khách/triển khai thật, secret được cấu hình qua biến môi trường của môi trường host
   (không đổi cách này).
 
+### Thương hiệu
+
+Tên sản phẩm chính thức: **HaloChat** (khớp với `HaloChat.Api`/`HaloChat.Security` đã dùng xuyên
+suốt code). Logo: bong bóng chat gradient xanh dương kèm vòng hào quang (halo) màu vàng cam, wordmark
+"HaloChat" (chữ "Halo" xanh navy đậm, chữ "Chat" xanh dương). File gốc: `assets/halochat-logo.png`
+(commit cùng Task 1 của plan frontend). Bảng màu chủ đạo cho giao diện: xanh dương gradient
+(`#2F7BF6` → `#1A56C4`) làm màu chính, xanh navy đậm (`#101B33`) cho chữ, nền trang dùng gradient
+xanh rất nhạt. Font chữ: "Be Vietnam Pro" (hỗ trợ đầy đủ dấu tiếng Việt, thiết kế riêng cho tiếng
+Việt — phù hợp sản phẩm tiếng Việt).
+
+### Mở rộng phạm vi GĐ5 (quyết định 2026-09-11)
+
+Ban đầu GĐ5 chỉ gồm chat 1-1 + gửi ảnh/file (xem §7 tài liệu gốc). Đã quyết định **mở rộng thêm**:
+
+- **Hệ thống kết bạn**: gửi lời mời kết bạn, chấp nhận/từ chối, danh sách bạn bè.
+- **Nhóm chat**: tạo nhóm, chat nhiều người trong 1 nhóm.
+- Bảng thông báo (lời mời kết bạn mới, tin nhắn mới...) hiển thị dạng dropdown/toast, không phải
+  trang riêng.
+
+Đây là **quyết định ghi nhận phạm vi**, chưa thiết kế chi tiết (mô hình dữ liệu MongoDB cho lời mời
+kết bạn/nhóm, API endpoints, luồng SignalR cho nhóm...) — phần thiết kế chi tiết sẽ làm khi
+brainstorm/viết plan riêng cho GĐ5, dùng 2 ảnh giao diện mẫu (đã chia sẻ trong hội thoại, không lưu
+file — mô tả: sidebar trái gồm Tin nhắn/Bạn bè/Nhóm/Cài đặt, khung chat giữa, panel thông tin liên
+hệ bên phải, có bản mobile riêng) làm tham chiếu bố cục. Không lùi lại làm ngay bây giờ — plan hiện
+tại (Frontend nền tảng GĐ4) chỉ dùng ảnh mẫu đăng nhập/đăng ký (thẻ trắng bo tròn, tab chuyển
+đổi, icon trong ô nhập) làm tham chiếu thiết kế, không đụng tới kết bạn/nhóm.
+
 ## 4. Mô hình dữ liệu (MongoDB)
 
 **Collection `NguoiDung`**
