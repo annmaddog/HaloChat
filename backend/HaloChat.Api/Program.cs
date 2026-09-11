@@ -3,6 +3,7 @@ using HaloChat.Api.Options;
 using HaloChat.Api.Repositories;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
@@ -122,6 +123,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors(TenChinhSachCors);
+
+// File tải lên phục vụ công khai qua đường dẫn tĩnh, không cần JWT — thẻ
+// <img>/<a> không tự đính kèm được header Authorization. Tên file là GUID
+// ngẫu nhiên nên chỉ ai có đúng đường link (nhận qua tin nhắn) mới xem được.
+var thuMucTaiLen = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(thuMucTaiLen);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(thuMucTaiLen),
+    RequestPath = "/uploads",
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
