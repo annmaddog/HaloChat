@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DangKy, DangNhap, LayDanhSachNguoiDung } from './DichVuApi';
+import { DangKy, DangNhap, LayDanhSachNguoiDung, LoiGoiApi } from './DichVuApi';
 
 describe('DichVuApi', () => {
   beforeEach(() => {
@@ -80,5 +80,32 @@ describe('DichVuApi', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 401 })));
 
     await expect(LayDanhSachNguoiDung('token-sai')).rejects.toMatchObject({ trangThai: 401 });
+  });
+
+  it('ném LoiGoiApi với thông báo kết nối khi fetch thất bại (mất mạng/CORS)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+
+    const loi = await DangNhap('NguyenAn', 'MatKhau123').catch((e) => e);
+
+    expect(loi).toBeInstanceOf(LoiGoiApi);
+    expect(loi).toMatchObject({
+      trangThai: 0,
+      message: 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra backend đang chạy.',
+    });
+  });
+
+  it('ném LoiGoiApi với thông báo mặc định khi phản hồi không phải JSON hợp lệ', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('<!DOCTYPE html><html><body>Lỗi máy chủ</body></html>', { status: 500 })),
+    );
+
+    const loi = await DangNhap('NguyenAn', 'MatKhau123').catch((e) => e);
+
+    expect(loi).toBeInstanceOf(LoiGoiApi);
+    expect(loi).toMatchObject({
+      trangThai: 500,
+      message: 'Đã có lỗi xảy ra, vui lòng thử lại.',
+    });
   });
 });

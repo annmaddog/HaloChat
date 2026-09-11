@@ -12,12 +12,27 @@ export class LoiGoiApi extends Error {
   }
 }
 
-async function xuLyPhanHoi<T>(phanHoi: Response): Promise<T> {
+async function goiApi<T>(duongDan: string, tuyChon?: RequestInit): Promise<T> {
+  let phanHoi: Response;
+  try {
+    phanHoi = await fetch(`${DIA_CHI_GOC_API}${duongDan}`, tuyChon);
+  } catch {
+    throw new LoiGoiApi(0, 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra backend đang chạy.');
+  }
+
   const vanBan = await phanHoi.text();
-  const duLieu = vanBan ? JSON.parse(vanBan) : null;
+  let duLieu: unknown = null;
+  if (vanBan) {
+    try {
+      duLieu = JSON.parse(vanBan);
+    } catch {
+      duLieu = null;
+    }
+  }
 
   if (!phanHoi.ok) {
-    const thongBao = duLieu?.thongBao ?? 'Đã có lỗi xảy ra, vui lòng thử lại.';
+    const thongBao =
+      (duLieu as { thongBao?: string } | null)?.thongBao ?? 'Đã có lỗi xảy ra, vui lòng thử lại.';
     throw new LoiGoiApi(phanHoi.status, thongBao);
   }
 
@@ -25,26 +40,23 @@ async function xuLyPhanHoi<T>(phanHoi: Response): Promise<T> {
 }
 
 export async function DangKy(tenTaiKhoan: string, email: string, matKhau: string): Promise<KetQuaDangKy> {
-  const phanHoi = await fetch(`${DIA_CHI_GOC_API}/nguoidung/dang-ky`, {
+  return goiApi<KetQuaDangKy>('/nguoidung/dang-ky', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tenTaiKhoan, email, matKhau }),
   });
-  return xuLyPhanHoi<KetQuaDangKy>(phanHoi);
 }
 
 export async function DangNhap(tenDangNhap: string, matKhau: string): Promise<KetQuaDangNhap> {
-  const phanHoi = await fetch(`${DIA_CHI_GOC_API}/nguoidung/dang-nhap`, {
+  return goiApi<KetQuaDangNhap>('/nguoidung/dang-nhap', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tenDangNhap, matKhau }),
   });
-  return xuLyPhanHoi<KetQuaDangNhap>(phanHoi);
 }
 
 export async function LayDanhSachNguoiDung(token: string): Promise<NguoiDungTomTat[]> {
-  const phanHoi = await fetch(`${DIA_CHI_GOC_API}/nguoidung`, {
+  return goiApi<NguoiDungTomTat[]>('/nguoidung', {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return xuLyPhanHoi<NguoiDungTomTat[]>(phanHoi);
 }
