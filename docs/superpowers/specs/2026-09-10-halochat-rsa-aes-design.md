@@ -86,13 +86,13 @@ Ban đầu GĐ5 chỉ gồm chat 1-1 + gửi ảnh/file (xem §7 tài liệu g�
 - Bảng thông báo (lời mời kết bạn mới, tin nhắn mới...) hiển thị dạng dropdown/toast, không phải
   trang riêng.
 
-Đây là **quyết định ghi nhận phạm vi**, chưa thiết kế chi tiết (mô hình dữ liệu MongoDB cho lời mời
-kết bạn/nhóm, API endpoints, luồng SignalR cho nhóm...) — phần thiết kế chi tiết sẽ làm khi
-brainstorm/viết plan riêng cho GĐ5, dùng 2 ảnh giao diện mẫu (đã chia sẻ trong hội thoại, không lưu
-file — mô tả: sidebar trái gồm Tin nhắn/Bạn bè/Nhóm/Cài đặt, khung chat giữa, panel thông tin liên
-hệ bên phải, có bản mobile riêng) làm tham chiếu bố cục. Không lùi lại làm ngay bây giờ — plan hiện
-tại (Frontend nền tảng GĐ4) chỉ dùng ảnh mẫu đăng nhập/đăng ký (thẻ trắng bo tròn, tab chuyển
-đổi, icon trong ô nhập) làm tham chiếu thiết kế, không đụng tới kết bạn/nhóm.
+Bố cục tham chiếu (2 ảnh giao diện mẫu chia sẻ trong hội thoại, không lưu file): sidebar trái gồm
+Tin nhắn/Bạn bè/Nhóm/Cài đặt, khung chat giữa, panel thông tin liên hệ bên phải, có bản mobile
+riêng. Plan Frontend nền tảng (GĐ4) chỉ dùng ảnh mẫu đăng nhập/đăng ký (thẻ trắng bo tròn, tab
+chuyển đổi, icon trong ô nhập) — không đụng tới kết bạn/nhóm.
+
+Thiết kế chi tiết (mô hình dữ liệu, API, luồng SignalR, quyền hạn) cho phần mở rộng này nằm ở
+**§10 Thiết kế chi tiết GĐ5** bên dưới (quyết định 2026-09-11, buổi brainstorm thứ hai).
 
 ## 4. Mô hình dữ liệu (MongoDB)
 
@@ -108,6 +108,7 @@ tại (Frontend nền tảng GĐ4) chỉ dùng ảnh mẫu đăng nhập/đăng 
 | `KhoaCongKhai` | string | RSA Public Key (PEM/Base64) |
 | `KhoaBiMat` | string | RSA Private Key — sinh cùng lúc đăng ký (xem lưu ý §9) |
 | `NgayTao` | DateTime | |
+| `ChoPhepTinNhanTuNguoiLa` | bool, default `false` | thêm ở GĐ5 (§10) — bật trong trang Cài đặt, cho phép người **không phải bạn bè** nhắn tin 1-1 |
 
 Trường phục vụ quên mật khẩu (`MaOtp`, `ThoiHanOtp`, ...) được thêm khi làm module GĐ7, không
 thêm trước để tránh field thừa không dùng.
@@ -118,7 +119,8 @@ thêm trước để tránh field thừa không dùng.
 |---|---|---|
 | `_id` | ObjectId | |
 | `NguoiGuiId` | ObjectId | |
-| `NguoiNhanId` | ObjectId | |
+| `NguoiNhanId` | ObjectId? | tin nhắn 1-1 — null nếu là tin nhắn nhóm (xem `NhomId`) |
+| `NhomId` | ObjectId? | thêm ở GĐ5 (§10) — tin nhắn nhóm; null nếu là tin nhắn 1-1. **Đúng một trong hai field `NguoiNhanId`/`NhomId` có giá trị, không bao giờ cả hai hoặc không cái nào** |
 | `LoaiTinNhan` | enum: `Text` \| `Anh` \| `File` | |
 | `NoiDungTinNhan` | string | plaintext ở GĐ3-5; ở GĐ6 nhóm chuyển sang lưu ciphertext |
 | `CiphertextTinNhan`, `KhoaPhienDaMaHoa`, `Nonce`, `AuthTag` | string, để trống ở GĐ3-5 | dự phòng cho GĐ6, không dùng tới trước đó |
@@ -126,6 +128,7 @@ thêm trước để tránh field thừa không dùng.
 | `TenFileGoc` | string? | tên file gốc người dùng upload |
 | `KichThuocFile` | long? | bytes |
 | `LoaiFile` | string? | MIME type |
+| `DaDoc` | bool, default `false` | thêm ở GĐ5 (§10) — phục vụ badge "chưa đọc" trong dropdown thông báo |
 | `ThoiGianTao` | DateTime | |
 
 ## 5. Trình tự triển khai theo giai đoạn
@@ -141,10 +144,13 @@ sang giai đoạn kế:
   JWT thật), quản lý người dùng cơ bản (danh sách người dùng).
 - **GĐ4 (Frontend)** — trang đăng ký/đăng nhập, danh sách người dùng, khung giao diện chat
   (React + TypeScript, Vite).
-- **GĐ5 (Chat realtime + ảnh/file)** — SignalR `GuiTinNhan()`/`NhanTinNhan()`, lưu lịch sử vào
+- **GĐ5a (Chat realtime lõi)** — SignalR `GuiTinNhan()`/`NhanTinNhan()`, lưu lịch sử vào
   `TinNhan` dạng **plaintext**; upload ảnh/file qua endpoint REST riêng (không qua SignalR), lưu
-  đĩa + metadata Mongo (chi tiết §9-10). **Mốc kiểm tra:** gửi thử tin nhắn + ảnh/file, mở MongoDB
+  đĩa + metadata Mongo (chi tiết §9, §10). **Mốc kiểm tra:** gửi thử tin nhắn + ảnh/file, mở MongoDB
   xác nhận dữ liệu được lưu thật.
+- **GĐ5b (Mở rộng xã hội)** — kết bạn, nhóm chat, thông báo real-time, xây trên nền Hub của GĐ5a
+  (chi tiết §10). **Mốc kiểm tra:** gửi lời mời kết bạn → chấp nhận → nhắn tin được; tạo nhóm →
+  nhắn tin nhóm realtime; dropdown thông báo cập nhật không cần F5.
 - **GĐ6 (Bảo mật — nhóm tự viết)** — `DichVuMaHoa.MaHoaTinNhan()/GiaiMaTinNhan()` (AES-256-GCM) và
   mã hóa khóa phiên (RSA-OAEP) hiện chỉ là stub có chú thích `[BẢO MẬT - GĐ6]`, **chưa được gọi**
   trong luồng gửi/nhận. Khi nhóm viết xong, chỉ cần nối lệnh gọi vào Hub/Controller để chuyển từ
@@ -231,34 +237,138 @@ vì server có khả năng truy cập Private Key) — theo đúng thiết kế 
 sang mô hình lưu khóa phía client. Điểm này nên được nêu rõ như một giới hạn đã biết khi viết phần
 "Đánh giá mức độ an toàn" trong báo cáo.
 
-## 10. Quên mật khẩu (module riêng, làm sau)
+## 10. Thiết kế chi tiết GĐ5 (SignalR, kết bạn, nhóm chat, thông báo)
+
+Quyết định 2026-09-11 (buổi brainstorm thứ hai). Áp dụng cho cả GĐ5a và GĐ5b (§5).
+
+### 10.1. Ruling — nhắn tin với người lạ
+
+Mặc định **phải là bạn bè** mới nhắn tin 1-1 được. Ngoại lệ: mỗi người dùng có 1 cờ cài đặt
+`ChoPhepTinNhanTuNguoiLa` (§4, mặc định `false`) — khi bật, người khác nhắn tin 1-1 cho họ được dù
+chưa kết bạn. Gửi tin nhắn cho người lạ **không** tự động tạo quan hệ bạn bè; kết bạn vẫn là hành
+động riêng biệt qua `LoiMoiKetBan`.
+
+### 10.2. Mô hình dữ liệu bổ sung
+
+**Collection `LoiMoiKetBan`**
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `_id` | ObjectId | |
+| `NguoiGuiId` | ObjectId | |
+| `NguoiNhanId` | ObjectId | |
+| `TrangThai` | enum: `ChoDuyet` \| `DaChapNhan` \| `DaTuChoi` | |
+| `ThoiGianTao` | DateTime | |
+
+Danh sách bạn bè = truy vấn `LoiMoiKetBan` với `TrangThai = DaChapNhan` liên quan tới user (không
+tạo collection `BanBe` riêng — tránh 2 nguồn sự thật lệch nhau khi 1 người bị xóa/chặn sau này).
+Unique index (`NguoiGuiId`, `NguoiNhanId`) theo cặp không thứ tự (kiểm tra ở tầng service khi tạo
+lời mời, vì Mongo compound index không tự chuẩn hóa thứ tự cặp) để chặn gửi trùng lời mời.
+
+**Collection `Nhom`**
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `_id` | ObjectId | |
+| `TenNhom` | string | |
+| `NguoiTaoId` | ObjectId | admin duy nhất — chỉ người này thêm/xóa thành viên, đổi tên, giải tán nhóm |
+| `ThanhVienIds` | List\<ObjectId\> | nhúng thẳng trong document (quy mô đồ án nhỏ, không cần collection join riêng); luôn gồm cả `NguoiTaoId` |
+| `ThoiGianTao` | DateTime | |
+
+Thay đổi ở `NguoiDung` và `TinNhan` xem §4 (đã cập nhật: `ChoPhepTinNhanTuNguoiLa`, `NhomId`,
+`DaDoc`).
+
+### 10.3. SignalR Hub (`ChatHub`)
+
+- **Auth qua WebSocket:** JWT truyền qua query string `?access_token=` (WebSocket không set được
+  header `Authorization`) — cấu hình `JwtBearerEvents.OnMessageReceived` đọc token khi
+  `path.StartsWithSegments("/hub/chat")`.
+- **Định danh user cho `Clients.User(id)`:** viết `IUserIdProvider` tùy chỉnh đọc claim
+  `JwtRegisteredClaimNames.Sub` — khớp đúng cách `DichVuJwt` đang phát hành token (không đổi claim
+  hiện có, không dựa vào `ClaimTypes.NameIdentifier` mặc định của SignalR).
+- **`OnConnectedAsync`:** load danh sách `Nhom` mà user thuộc về, `Groups.AddToGroupAsync(connectionId,
+  "nhom-" + id)` cho từng nhóm — để nhận tin nhắn nhóm qua `Clients.Group(...)`.
+- **Hub method (client gọi):**
+  - `GuiTinNhan(nguoiNhanId?, nhomId?, loaiTinNhan, noiDung, duongDanFile?)` — kiểm tra quyền
+    (bạn bè, HOẶC người nhận bật `ChoPhepTinNhanTuNguoiLa`, HOẶC là thành viên `ThanhVienIds` của
+    nhóm) → lưu Mongo → gọi `Clients.User(nguoiNhanId)` hoặc `Clients.Group("nhom-"+nhomId)`
+    `.NhanTinNhan(tinNhan)`. Từ chối (throw `HubException`) nếu không đủ điều kiện.
+  - `DanhDauDaDoc(nguoiKiaId?, nhomId?)` — set `DaDoc = true` cho các tin nhắn liên quan tới hội
+    thoại đó mà user hiện tại là người nhận.
+- **Server đẩy xuống client** (gọi từ Controller qua `IHubContext<ChatHub>` khi sự kiện đến từ
+  REST, không qua Hub method):
+  - `NhanLoiMoiKetBan(loiMoi)` — khi có lời mời kết bạn mới.
+  - `LoiMoiKetBanDuocChapNhan(nguoiDung)` — khi lời mời của mình được chấp nhận.
+  - `DuocThemVaoNhom(nhom)` — khi bị/được thêm vào nhóm (đồng thời gọi
+    `Groups.AddToGroupAsync` cho mọi connection hiện tại của user đó, nếu online).
+
+### 10.4. API REST
+
+- **Kết bạn:** `POST /api/ketban/loi-moi/{nguoiNhanId}`, `POST /api/ketban/{id}/chap-nhan`,
+  `POST /api/ketban/{id}/tu-choi`, `GET /api/ketban/ban-be`, `GET /api/ketban/loi-moi-den`,
+  `GET /api/ketban/loi-moi-gui`.
+- **Nhóm:** `POST /api/nhom` (tên + danh sách thành viên ban đầu), `GET /api/nhom` (nhóm của
+  user hiện tại), `GET /api/nhom/{id}`, `POST /api/nhom/{id}/thanh-vien` (chỉ admin),
+  `DELETE /api/nhom/{id}/thanh-vien/{userId}` (chỉ admin), `POST /api/nhom/{id}/roi-nhom` (tự rời
+  — admin rời thì nhóm giải tán, vì không có cơ chế chuyển quyền admin ở phạm vi đồ án này).
+- **Lịch sử tin nhắn (phân trang, tải thêm khi cuộn lên):**
+  `GET /api/tinnhan/nguoi-dung/{id}?truoc=&soLuong=30`,
+  `GET /api/tinnhan/nhom/{id}?truoc=&soLuong=30` (`truoc` = id tin nhắn cũ nhất đã tải, để trống
+  ở lần gọi đầu).
+- **Upload file/ảnh:** `POST /api/tinnhan/upload` (multipart, đúng thiết kế §7 đã chốt) → trả về
+  `DuongDanFile`/`TenFileGoc`/`KichThuocFile`/`LoaiFile`; client gọi `GuiTinNhan` qua Hub với các
+  giá trị đó và `LoaiTinNhan = Anh | File`.
+- **Cài đặt:** `PUT /api/nguoidung/cai-dat` (bật/tắt `ChoPhepTinNhanTuNguoiLa`).
+- Toàn bộ endpoint trên (trừ trường hợp có ghi chú khác) yêu cầu JWT hợp lệ, theo đúng mẫu
+  `[Authorize]` đã dùng ở `NguoiDungController`.
+
+### 10.5. Frontend
+
+- Layout mới `KhungChinh` (thay thế `TrangDanhSachNguoiDung` hiện tại làm trang chính sau đăng
+  nhập): sidebar trái (Tin nhắn / Bạn bè / Nhóm / Cài đặt — đúng bố cục ảnh mẫu, §3 "Mở rộng phạm
+  vi GĐ5"), khung chat giữa, panel thông tin liên hệ phải (ẩn trên mobile, có nút toggle riêng).
+- `DichVuSignalR.ts` bọc thư viện `@microsoft/signalr`, kết nối 1 lần ngay sau đăng nhập trong
+  `NguCanhChat.tsx` (context mới, tách khỏi `NguCanhXacThuc` để không phình trách nhiệm), tự
+  reconnect khi rớt kết nối, ngắt kết nối khi đăng xuất.
+- Dropdown thông báo (không phải trang riêng, theo đúng ghi chú §3 "Mở rộng phạm vi GĐ5"): gộp lời mời
+  kết bạn đang chờ (`GET /api/ketban/loi-moi-den`) + hội thoại có tin nhắn `DaDoc=false`, cập nhật
+  realtime qua các event Hub ở §10.3.
+- Trang Cài đặt (`/cai-dat`): toggle `ChoPhepTinNhanTuNguoiLa`.
+
+## 11. Quên mật khẩu (module riêng, làm sau)
 
 Email → Server tạo OTP → gửi OTP qua Email → xác thực OTP → nhập mật khẩu mới → SHA-256 + Salt →
 cập nhật `NguoiDung`. Không gửi mật khẩu cũ qua email. Thực hiện sau khi chat chính (GĐ3-6) hoàn
 thành, theo đúng thứ tự trong tài liệu.
 
-## 11. Kiểm thử
+## 12. Kiểm thử
 
 Swagger cho toàn bộ API. Test theo đúng danh sách tài liệu: đăng ký/đăng nhập, gửi/nhận tin nhắn,
-gửi ảnh/file, mã hóa/giải mã (sau GĐ6), OTP, các trường hợp lỗi (sai mật khẩu, file quá khổ, loại
-file bị chặn, token hết hạn...).
+gửi ảnh/file, kết bạn, nhóm chat, thông báo realtime, mã hóa/giải mã (sau GĐ6), OTP, các trường
+hợp lỗi (sai mật khẩu, file quá khổ, loại file bị chặn, token hết hạn, gửi tin cho người lạ chưa
+bật cho phép, thao tác nhóm không phải admin...).
 
-## 12. Quy ước đặt tên
+## 13. Quy ước đặt tên
 
 - Biến: camelCase, tiếng Việt không dấu (`tenTaiKhoan`, `email`, `matKhau`, `noiDungTinNhan`,
-  `maOtp`, `khoaMaHoa`, `tinNhanDaMaHoa`).
+  `maOtp`, `khoaMaHoa`, `tinNhanDaMaHoa`, `choPhepTinNhanTuNguoiLa`, `thanhVienIds`).
 - Hàm: PascalCase, tiếng Việt không dấu (`DangKyTaiKhoan()`, `DangNhap()`, `GuiTinNhan()`,
   `NhanTinNhan()`, `MaHoaTinNhan()`, `GiaiMaTinNhan()`, `KiemTraMatKhau()`, `GuiMaOtp()`,
-  `DatLaiMatKhau()`).
-- Class: PascalCase, tiếng Việt không dấu (`NguoiDung`, `TinNhan`, `PhienChat`, `DichVuMaHoa`,
-  `DichVuNguoiDung`, `DichVuTinNhan`).
+  `DatLaiMatKhau()`, `GuiLoiMoiKetBan()`, `ChapNhanLoiMoiKetBan()`, `TuChoiLoiMoiKetBan()`,
+  `TaoNhom()`, `ThemThanhVien()`, `XoaThanhVien()`, `RoiNhom()`, `DanhDauDaDoc()`).
+- Class: PascalCase, tiếng Việt không dấu (`NguoiDung`, `TinNhan`, `LoiMoiKetBan`, `Nhom`,
+  `PhienChat`, `DichVuMaHoa`, `DichVuNguoiDung`, `DichVuTinNhan`, `DichVuKetBan`, `DichVuNhom`,
+  `ChatHub`).
 - Giữ nguyên thuật ngữ kỹ thuật quen thuộc: JWT, SignalR, MongoDB, AES256, RSA, SHA256, OTP.
 - Tên project/namespace (`HaloChat.Api`, `HaloChat.Security`) giữ tiếng Anh vì là tên sản phẩm,
   không thuộc phạm vi quy ước biến/hàm/class nghiệp vụ.
 
-## 13. Ngoài phạm vi bản thiết kế này
+## 14. Ngoài phạm vi bản thiết kế này
 
 - Cài đặt thật AES-256-GCM/RSA-OAEP vào luồng chat (GĐ6) — nhóm tự làm, bản này chỉ dựng chỗ trống
   và chú thích.
-- Module quên mật khẩu (GĐ7) — thiết kế đã nêu ở §10, triển khai sau khi chat chính xong.
+- Module quên mật khẩu (GĐ7) — thiết kế đã nêu ở §11, triển khai sau khi chat chính xong.
 - Hạ tầng chịu tải nâng cao (CDN, hàng đợi, lưu trữ phân tán) — không cần cho phạm vi đồ án (§8).
+- Chuyển quyền admin nhóm, chặn/report người dùng, trạng thái online/offline (presence), read-
+  receipt gửi ngược cho người gửi — không nêu trong ảnh mẫu/yêu cầu, để ngoài phạm vi GĐ5b; có thể
+  làm thêm ở GĐ9 nếu còn thời gian.
