@@ -34,6 +34,7 @@ describe('TrangDangNhap', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
 
     expect(await screen.findByText('Trang người dùng')).toBeInTheDocument();
+    expect(localStorage.getItem('haloChatToken')).toBe('token-gia-lap');
   });
 
   it('sai mật khẩu hiển thị lỗi, không điều hướng', async () => {
