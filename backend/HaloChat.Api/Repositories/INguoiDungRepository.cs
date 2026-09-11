@@ -8,4 +8,5 @@ public interface INguoiDungRepository
     Task ThemMoiAsync(NguoiDung nguoiDung);
     Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap);
     Task<List<NguoiDung>> LayTatCaAsync();
+    Task<NguoiDung?> TimTheoIdAsync(string id);
 }

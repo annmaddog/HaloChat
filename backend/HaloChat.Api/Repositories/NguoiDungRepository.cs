@@ -46,4 +46,9 @@ public class NguoiDungRepository : INguoiDungRepository
     {
         return await _collection.Find(FilterDefinition<NguoiDung>.Empty).ToListAsync();
     }
+
+    public async Task<NguoiDung?> TimTheoIdAsync(string id)
+    {
+        return await _collection.Find(nd => nd.Id == id).FirstOrDefaultAsync();
+    }
 }

@@ -23,4 +23,7 @@ public class NguoiDungGiaLap : INguoiDungRepository
     }
 
     public Task<List<NguoiDung>> LayTatCaAsync() => Task.FromResult(DanhSach.ToList());
+
+    public Task<NguoiDung?> TimTheoIdAsync(string id) =>
+        Task.FromResult(DanhSach.FirstOrDefault(nd => nd.Id == id));
 }
