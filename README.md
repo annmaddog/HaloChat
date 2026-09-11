@@ -6,10 +6,9 @@
 ## Chạy backend
 
 ```bash
-cd backend
-dotnet user-secrets set "MongoDb:ChuoiKetNoi" "<chuoi-ket-noi-mongodb-that-cua-ban>" --project HaloChat.Api
-dotnet user-secrets set "Jwt:ChuoiBiMat" "<chuoi-ngau-nhien-toi-thieu-32-ky-tu>" --project HaloChat.Api
-ASPNETCORE_ENVIRONMENT=Development dotnet run --project HaloChat.Api --launch-profile http
+dotnet user-secrets set "MongoDb:ChuoiKetNoi" "<chuoi-ket-noi-mongodb-that-cua-ban>" --project backend/HaloChat.Api
+dotnet user-secrets set "Jwt:ChuoiBiMat" "<chuoi-ngau-nhien-toi-thieu-32-ky-tu>" --project backend/HaloChat.Api
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/HaloChat.Api --launch-profile http
 ```
 
 Xem `backend/HaloChat.Api/appsettings.Development.json.example` để biết đúng định dạng 2 giá trị trên.
@@ -20,9 +19,8 @@ Chạy test: `dotnet test backend/HaloChat.sln`
 ## Chạy frontend
 
 ```bash
-cd frontend
-npm install
-npm run dev
+npm install --prefix frontend
+npm run dev --prefix frontend
 ```
 
 Frontend chạy tại `http://localhost:5173`, gọi thẳng vào backend ở `http://localhost:5231`.
