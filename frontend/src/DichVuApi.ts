@@ -1,6 +1,7 @@
-import type { KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat } from './KieuDuLieu';
+import type { KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen } from './KieuDuLieu';
 
-const DIA_CHI_GOC_API = 'http://localhost:5231/api';
+export const DIA_CHI_GOC = 'http://localhost:5231';
+const DIA_CHI_GOC_API = `${DIA_CHI_GOC}/api`;
 
 export class LoiGoiApi extends Error {
   trangThai: number;
@@ -59,4 +60,51 @@ export async function LayDanhSachNguoiDung(token: string): Promise<NguoiDungTomT
   return goiApi<NguoiDungTomTat[]>('/nguoidung', {
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export async function LayLichSuTinNhan(
+  token: string,
+  nguoiKiaId: string,
+  truoc?: string,
+  soLuong = 30,
+): Promise<TinNhan[]> {
+  const thamSo = new URLSearchParams({ soLuong: String(soLuong) });
+  if (truoc) thamSo.set('truoc', truoc);
+  return goiApi<TinNhan[]>(`/tinnhan/nguoi-dung/${nguoiKiaId}?${thamSo.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function TaiLenTep(token: string, tep: File): Promise<TepTinDaTaiLen> {
+  const duLieu = new FormData();
+  duLieu.append('tep', tep);
+
+  let phanHoi: Response;
+  try {
+    phanHoi = await fetch(`${DIA_CHI_GOC_API}/tinnhan/upload`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: duLieu,
+    });
+  } catch {
+    throw new LoiGoiApi(0, 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra backend đang chạy.');
+  }
+
+  const vanBan = await phanHoi.text();
+  let ketQua: unknown = null;
+  if (vanBan) {
+    try {
+      ketQua = JSON.parse(vanBan);
+    } catch {
+      ketQua = null;
+    }
+  }
+
+  if (!phanHoi.ok) {
+    const thongBao =
+      (ketQua as { thongBao?: string } | null)?.thongBao ?? 'Tải file lên thất bại, vui lòng thử lại.';
+    throw new LoiGoiApi(phanHoi.status, thongBao);
+  }
+
+  return ketQua as TepTinDaTaiLen;
 }

@@ -66,4 +66,22 @@ describe('NguCanhXacThuc', () => {
     expect(screen.getByText('chua-dang-nhap')).toBeInTheDocument();
     expect(localStorage.getItem('haloChatToken')).toBeNull();
   });
+
+  it('nguoiDungHienTai giải mã đúng từ token trong localStorage', () => {
+    const than = btoa(JSON.stringify({ sub: '42', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
+    localStorage.setItem('haloChatToken', `header.${than}.chuky`);
+
+    function ThanhPhanNguoiDungHienTai() {
+      const { nguoiDungHienTai } = useXacThuc();
+      return <span>{nguoiDungHienTai?.tenTaiKhoan ?? 'khong-co'}</span>;
+    }
+
+    render(
+      <NhaCungCapXacThuc>
+        <ThanhPhanNguoiDungHienTai />
+      </NhaCungCapXacThuc>,
+    );
+
+    expect(screen.getByText('NguyenAn')).toBeInTheDocument();
+  });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DangKy, DangNhap, LayDanhSachNguoiDung, LoiGoiApi } from './DichVuApi';
+import { DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi } from './DichVuApi';
 
 describe('DichVuApi', () => {
   beforeEach(() => {
@@ -106,6 +106,48 @@ describe('DichVuApi', () => {
     expect(loi).toMatchObject({
       trangThai: 500,
       message: 'Đã có lỗi xảy ra, vui lòng thử lại.',
+    });
+  });
+
+  it('LayLichSuTinNhan gửi kèm Bearer token và query đúng', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    await LayLichSuTinNhan('token-gia-lap', 'nguoi-kia-id', 'truoc-id', 10);
+
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/tinnhan/nguoi-dung/nguoi-kia-id?soLuong=10&truoc=truoc-id'),
+      expect.objectContaining({ headers: { Authorization: 'Bearer token-gia-lap' } }),
+    );
+  });
+
+  it('TaiLenTep gửi FormData và trả về metadata khi thành công', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ duongDanFile: '/uploads/x.png', tenFileGoc: 'x.png', kichThuocFile: 10, loaiFile: 'image/png' }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+    const tep = new File(['abc'], 'x.png', { type: 'image/png' });
+
+    const ketQua = await TaiLenTep('token-gia-lap', tep);
+
+    expect(ketQua.duongDanFile).toBe('/uploads/x.png');
+    const [, tuyChon] = fetchGiaLap.mock.calls[0];
+    expect(tuyChon.body).toBeInstanceOf(FormData);
+  });
+
+  it('TaiLenTep ném LoiGoiApi khi file bị từ chối (400)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ thongBao: 'Định dạng file không được hỗ trợ.' }), { status: 400 })),
+    );
+    const tep = new File(['abc'], 'x.exe', { type: 'application/octet-stream' });
+
+    await expect(TaiLenTep('token-gia-lap', tep)).rejects.toMatchObject({
+      trangThai: 400,
+      message: 'Định dạng file không được hỗ trợ.',
     });
   });
 });
