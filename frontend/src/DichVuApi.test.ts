@@ -1,0 +1,84 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DangKy, DangNhap, LayDanhSachNguoiDung } from './DichVuApi';
+
+describe('DichVuApi', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('DangKy gửi đúng request và trả về kết quả khi thành công', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ thongBao: 'Đăng ký thành công.' }), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await DangKy('NguyenAn', 'nguyenan@gmail.com', 'MatKhau123');
+
+    expect(ketQua.thongBao).toBe('Đăng ký thành công.');
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/dang-ky'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ tenTaiKhoan: 'NguyenAn', email: 'nguyenan@gmail.com', matKhau: 'MatKhau123' }),
+      }),
+    );
+  });
+
+  it('DangKy ném LoiGoiApi kèm thongBao khi trùng tên tài khoản (409)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ thongBao: 'Tên tài khoản đã tồn tại.' }), { status: 409 }),
+      ),
+    );
+
+    await expect(DangKy('NguyenAn', 'a@gmail.com', 'x')).rejects.toMatchObject({
+      trangThai: 409,
+      message: 'Tên tài khoản đã tồn tại.',
+    });
+  });
+
+  it('DangNhap trả về token khi đăng nhập đúng', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ token: 'abc.def.ghi' }), { status: 200 })),
+    );
+
+    const ketQua = await DangNhap('NguyenAn', 'MatKhau123');
+
+    expect(ketQua.token).toBe('abc.def.ghi');
+  });
+
+  it('DangNhap ném LoiGoiApi khi sai mật khẩu (401)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ thongBao: 'Sai tên đăng nhập hoặc mật khẩu.' }), { status: 401 }),
+      ),
+    );
+
+    await expect(DangNhap('NguyenAn', 'Sai')).rejects.toMatchObject({ trangThai: 401 });
+  });
+
+  it('LayDanhSachNguoiDung gửi kèm Bearer token và trả về danh sách', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([{ id: '1', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }]), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const danhSach = await LayDanhSachNguoiDung('token-gia-lap');
+
+    expect(danhSach).toHaveLength(1);
+    expect(danhSach[0].tenTaiKhoan).toBe('TranBinh');
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung'),
+      expect.objectContaining({ headers: { Authorization: 'Bearer token-gia-lap' } }),
+    );
+  });
+
+  it('LayDanhSachNguoiDung ném LoiGoiApi khi không có token hợp lệ (401)', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 401 })));
+
+    await expect(LayDanhSachNguoiDung('token-sai')).rejects.toMatchObject({ trangThai: 401 });
+  });
+});
