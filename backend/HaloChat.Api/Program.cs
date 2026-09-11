@@ -26,6 +26,8 @@ builder.Services.AddScoped<IDichVuJwt, DichVuJwt>();
 builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
 builder.Services.AddScoped<ITinNhanRepository, TinNhanRepository>();
 builder.Services.AddScoped<IDichVuTinNhan, DichVuTinNhan>();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, HaloChat.Api.Services.NguoiDungIdProvider>();
 
 builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));
 var tuyChonJwt = builder.Configuration.GetSection(TuyChonJwt.TenMuc).Get<TuyChonJwt>()
@@ -44,6 +46,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tuyChonJwt.ChuoiBiMat)),
+        };
+        // SignalR qua WebSocket/LongPolling không set được header Authorization —
+        // client truyền JWT qua query string ?access_token=, chỉ chấp nhận cho
+        // đúng đường dẫn Hub (spec §10.3).
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    context.HttpContext.Request.Path.StartsWithSegments("/hub/chat"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
         };
     });
 builder.Services.AddAuthorization();
@@ -107,6 +125,7 @@ app.UseCors(TenChinhSachCors);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<HaloChat.Api.Hubs.ChatHub>("/hub/chat");
 
 app.MapGet("/api/kiem-tra-suc-khoe", async (IMongoDatabase csdl) =>
 {

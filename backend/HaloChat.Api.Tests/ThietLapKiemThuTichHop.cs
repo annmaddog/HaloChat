@@ -27,6 +27,7 @@ namespace HaloChat.Api.Tests;
 public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
 {
     public NguoiDungGiaLap KhoGiaLap { get; } = new();
+    public TinNhanGiaLap KhoTinNhanGiaLap { get; } = new();
 
     static ThietLapKiemThuTichHop()
     {
@@ -52,6 +53,8 @@ public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
         {
             dichVu.RemoveAll<INguoiDungRepository>();
             dichVu.AddSingleton<INguoiDungRepository>(KhoGiaLap);
+            dichVu.RemoveAll<ITinNhanRepository>();
+            dichVu.AddSingleton<ITinNhanRepository>(KhoTinNhanGiaLap);
         });
     }
 }
