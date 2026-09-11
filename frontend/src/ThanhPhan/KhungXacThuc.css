@@ -1,0 +1,60 @@
+.khung-xac-thuc {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.the-xac-thuc {
+  width: 100%;
+  max-width: 400px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-the);
+  box-shadow: var(--bong-the);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.logo-xac-thuc {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.tieu-de-xac-thuc {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.khau-hieu-xac-thuc {
+  color: var(--mau-chu-phu);
+  margin: 6px 0 24px;
+  font-size: 14px;
+}
+
+.tab-xac-thuc {
+  display: flex;
+  background: #eef2f9;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.tab-xac-thuc__nut {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--mau-chu-phu);
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-xac-thuc__nut--dang-chon {
+  background: var(--mau-chinh);
+  color: #fff;
+}

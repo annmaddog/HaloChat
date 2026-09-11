@@ -1,0 +1,53 @@
+.truong-nhap {
+  display: block;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.truong-nhap__nhan {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mau-chu-dam);
+  margin-bottom: 6px;
+}
+
+.truong-nhap__o {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  padding: 0 12px;
+  background: #fbfcfe;
+}
+
+.truong-nhap__o:focus-within {
+  border-color: var(--mau-chinh);
+  box-shadow: 0 0 0 3px rgba(47, 123, 246, 0.15);
+}
+
+.truong-nhap__bieu-tuong {
+  color: var(--mau-chu-phu);
+  display: flex;
+}
+
+.truong-nhap__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 12px 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--mau-chu-dam);
+  outline: none;
+}
+
+.truong-nhap__nut-an {
+  border: none;
+  background: transparent;
+  color: var(--mau-chu-phu);
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+}
