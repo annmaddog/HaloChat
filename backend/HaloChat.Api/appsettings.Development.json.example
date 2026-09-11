@@ -1,0 +1,8 @@
+{
+  "MongoDb": {
+    "ChuoiKetNoi": "mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?appName=<app>"
+  },
+  "Jwt": {
+    "ChuoiBiMat": "<chuoi-ngau-nhien-toi-thieu-32-ky-tu>"
+  }
+}
