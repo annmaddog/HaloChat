@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LayDanhSachNguoiDung } from '../DichVuApi';
+import { LayDanhSachNguoiDung, LoiGoiApi } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import type { NguoiDungTomTat } from '../KieuDuLieu';
 import './TrangDanhSachNguoiDung.css';
@@ -14,8 +14,15 @@ export function TrangDanhSachNguoiDung() {
     if (!token) return;
     LayDanhSachNguoiDung(token)
       .then(setDanhSach)
-      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Đã có lỗi xảy ra.'))
+      .catch((loiBat) => {
+        if (loiBat instanceof LoiGoiApi && loiBat.trangThai === 401) {
+          dangXuat();
+          return;
+        }
+        setLoi(loiBat instanceof Error ? loiBat.message : 'Đã có lỗi xảy ra.');
+      })
       .finally(() => setDangTai(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   return (
