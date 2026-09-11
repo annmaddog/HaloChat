@@ -1,27 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { NhaCungCapXacThuc } from './NguCanh/NguCanhXacThuc';
-import { TuyenDuongRieng } from './ThanhPhan/TuyenDuongRieng';
-import { TrangDangKy } from './Trang/TrangDangKy';
-import { TrangDangNhap } from './Trang/TrangDangNhap';
-import { TrangDanhSachNguoiDung } from './Trang/TrangDanhSachNguoiDung';
+import { DinhTuyen } from './DinhTuyen';
 
 function App() {
   return (
     <BrowserRouter>
       <NhaCungCapXacThuc>
-        <Routes>
-          <Route path="/dang-ky" element={<TrangDangKy />} />
-          <Route path="/dang-nhap" element={<TrangDangNhap />} />
-          <Route
-            path="/nguoi-dung"
-            element={
-              <TuyenDuongRieng>
-                <TrangDanhSachNguoiDung />
-              </TuyenDuongRieng>
-            }
-          />
-          <Route path="*" element={<Navigate to="/dang-nhap" replace />} />
-        </Routes>
+        <DinhTuyen />
       </NhaCungCapXacThuc>
     </BrowserRouter>
   );
