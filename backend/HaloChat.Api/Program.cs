@@ -25,6 +25,7 @@ builder.Services.AddScoped<IDichVuMatKhau, DichVuMatKhau>();
 builder.Services.AddScoped<IDichVuJwt, DichVuJwt>();
 builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
 builder.Services.AddScoped<ITinNhanRepository, TinNhanRepository>();
+builder.Services.AddScoped<IDichVuTinNhan, DichVuTinNhan>();
 
 builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));
 var tuyChonJwt = builder.Configuration.GetSection(TuyChonJwt.TenMuc).Get<TuyChonJwt>()
