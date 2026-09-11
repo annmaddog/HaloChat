@@ -19,12 +19,12 @@ public class DichVuNguoiDung : IDichVuNguoiDung
 
     public async Task<KetQuaDangKyDto> DangKyTaiKhoan(string tenTaiKhoan, string email, string matKhau)
     {
-        if (await _kho.TonTaiTenTaiKhoanAsync(tenTaiKhoan))
+        if (await _kho.TonTaiDinhDanhAsync(tenTaiKhoan))
         {
             return new KetQuaDangKyDto(false, "Tên tài khoản đã tồn tại.");
         }
 
-        if (await _kho.TonTaiEmailAsync(email))
+        if (await _kho.TonTaiDinhDanhAsync(email))
         {
             return new KetQuaDangKyDto(false, "Email đã được sử dụng.");
         }
@@ -38,7 +38,15 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             MatKhauBam = _dichVuMatKhau.BamMatKhau(matKhau, salt),
         };
 
-        await _kho.ThemMoiAsync(nguoiDungMoi);
+        try
+        {
+            await _kho.ThemMoiAsync(nguoiDungMoi);
+        }
+        catch (TrungLapDinhDanhException)
+        {
+            return new KetQuaDangKyDto(false, "Tên tài khoản hoặc email đã tồn tại.");
+        }
+
         return new KetQuaDangKyDto(true, "Đăng ký thành công.");
     }
 

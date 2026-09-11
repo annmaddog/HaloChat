@@ -4,8 +4,7 @@ namespace HaloChat.Api.Repositories;
 
 public interface INguoiDungRepository
 {
-    Task<bool> TonTaiTenTaiKhoanAsync(string tenTaiKhoan);
-    Task<bool> TonTaiEmailAsync(string email);
+    Task<bool> TonTaiDinhDanhAsync(string dinhDanh);
     Task ThemMoiAsync(NguoiDung nguoiDung);
     Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap);
     Task<List<NguoiDung>> LayTatCaAsync();

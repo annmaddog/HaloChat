@@ -78,6 +78,22 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+if (!app.Configuration.GetValue<bool>("BoQuaKhoiTaoChiMuc"))
+{
+    using var scope = app.Services.CreateScope();
+    var csdl = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+    var nguoiDungCollection = csdl.GetCollection<HaloChat.Api.Models.NguoiDung>("NguoiDung");
+    var collation = new Collation("en", strength: CollationStrength.Secondary); // Không phân biệt hoa/thường
+    var indexKeys1 = Builders<HaloChat.Api.Models.NguoiDung>.IndexKeys.Ascending(nd => nd.TenTaiKhoan);
+    var indexKeys2 = Builders<HaloChat.Api.Models.NguoiDung>.IndexKeys.Ascending(nd => nd.Email);
+    var indexOptions = new CreateIndexOptions { Unique = true, Collation = collation };
+    await nguoiDungCollection.Indexes.CreateManyAsync(new[]
+    {
+        new CreateIndexModel<HaloChat.Api.Models.NguoiDung>(indexKeys1, indexOptions),
+        new CreateIndexModel<HaloChat.Api.Models.NguoiDung>(indexKeys2, indexOptions),
+    });
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -104,3 +120,9 @@ app.MapGet("/api/kiem-tra-suc-khoe", async (IMongoDatabase csdl) =>
 });
 
 app.Run();
+
+// Cho phép WebApplicationFactory<Program> trong dự án kiểm thử tích hợp
+// truy cập lớp Program ngầm định sinh ra từ top-level statements.
+public partial class Program
+{
+}

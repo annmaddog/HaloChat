@@ -12,19 +12,25 @@ public class NguoiDungRepository : INguoiDungRepository
         _collection = csdl.GetCollection<NguoiDung>("NguoiDung");
     }
 
-    public async Task<bool> TonTaiTenTaiKhoanAsync(string tenTaiKhoan)
+    public async Task<bool> TonTaiDinhDanhAsync(string dinhDanh)
     {
-        return await _collection.Find(nd => nd.TenTaiKhoan == tenTaiKhoan).AnyAsync();
-    }
+        var boLoc = Builders<NguoiDung>.Filter.Or(
+            Builders<NguoiDung>.Filter.Eq(nd => nd.TenTaiKhoan, dinhDanh),
+            Builders<NguoiDung>.Filter.Eq(nd => nd.Email, dinhDanh));
 
-    public async Task<bool> TonTaiEmailAsync(string email)
-    {
-        return await _collection.Find(nd => nd.Email == email).AnyAsync();
+        return await _collection.Find(boLoc).AnyAsync();
     }
 
     public async Task ThemMoiAsync(NguoiDung nguoiDung)
     {
-        await _collection.InsertOneAsync(nguoiDung);
+        try
+        {
+            await _collection.InsertOneAsync(nguoiDung);
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            throw new TrungLapDinhDanhException();
+        }
     }
 
     public async Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap)

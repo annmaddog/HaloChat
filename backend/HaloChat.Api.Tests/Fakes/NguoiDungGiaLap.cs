@@ -7,11 +7,8 @@ public class NguoiDungGiaLap : INguoiDungRepository
 {
     public List<NguoiDung> DanhSach { get; } = new();
 
-    public Task<bool> TonTaiTenTaiKhoanAsync(string tenTaiKhoan) =>
-        Task.FromResult(DanhSach.Any(nd => nd.TenTaiKhoan == tenTaiKhoan));
-
-    public Task<bool> TonTaiEmailAsync(string email) =>
-        Task.FromResult(DanhSach.Any(nd => nd.Email == email));
+    public Task<bool> TonTaiDinhDanhAsync(string dinhDanh) =>
+        Task.FromResult(DanhSach.Any(nd => nd.TenTaiKhoan == dinhDanh || nd.Email == dinhDanh));
 
     public Task ThemMoiAsync(NguoiDung nguoiDung)
     {

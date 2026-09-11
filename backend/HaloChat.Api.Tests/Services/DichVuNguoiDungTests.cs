@@ -43,6 +43,30 @@ public class DichVuNguoiDungTests
     }
 
     [Fact]
+    public async Task DangKyTaiKhoan_TenTaiKhoanTrungEmailNguoiKhac_TraVeThatBai()
+    {
+        var (dichVu, kho) = TaoDichVu();
+        kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "TranBinh", Email = "trung@gmail.com" });
+
+        // Đăng ký với TenTaiKhoan trùng Email của người đã tồn tại (va chạm chéo trường).
+        var ketQua = await dichVu.DangKyTaiKhoan("trung@gmail.com", "moi@gmail.com", "MatKhau123");
+
+        Assert.False(ketQua.ThanhCong);
+    }
+
+    [Fact]
+    public async Task DangKyTaiKhoan_EmailTrungTenTaiKhoanNguoiKhac_TraVeThatBai()
+    {
+        var (dichVu, kho) = TaoDichVu();
+        kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "TranBinh", Email = "khac@gmail.com" });
+
+        // Đăng ký với Email trùng TenTaiKhoan của người đã tồn tại (va chạm chéo trường).
+        var ketQua = await dichVu.DangKyTaiKhoan("NguoiMoi", "TranBinh", "MatKhau123");
+
+        Assert.False(ketQua.ThanhCong);
+    }
+
+    [Fact]
     public async Task DangKyTaiKhoan_HopLe_LuuMatKhauDaBamKhongLuuBanRo()
     {
         var (dichVu, kho) = TaoDichVu();
