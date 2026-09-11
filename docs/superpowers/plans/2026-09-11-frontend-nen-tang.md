@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Dựng React + TypeScript (Vite) trong `frontend/`, hoàn thiện GĐ4 của tài liệu: trang đăng ký, trang đăng nhập, danh sách người dùng (route được bảo vệ) — gọi thật vào backend GĐ3 đã hoàn thành (`backend/HaloChat.Api`, đang chạy tại `http://localhost:5231`).
+**Goal:** Dựng React + TypeScript (Vite) trong `frontend/`, hoàn thiện GĐ4 của tài liệu: trang đăng ký, trang đăng nhập, danh sách người dùng (route được bảo vệ) — gọi thật vào backend GĐ3 đã hoàn thành (`backend/HaloChat.Api`, đang chạy tại `http://localhost:5231`) — với giao diện mang thương hiệu HaloChat (logo, màu sắc, font) theo đúng ảnh thiết kế mẫu đã duyệt.
 
-**Architecture:** Vite + React 19 + TypeScript. Một lớp `DichVuApi` (fetch thuần, không dùng thư viện HTTP ngoài) bọc 3 endpoint đã có (`dang-ky`, `dang-nhap`, `nguoidung`). Một `NguCanhXacThuc` (React Context) giữ JWT trong `localStorage` và cung cấp `dangNhap`/`dangXuat` cho toàn app. `react-router-dom` điều hướng giữa 3 trang, với `TuyenDuongRieng` chặn truy cập trang danh sách người dùng khi chưa đăng nhập. Test bằng Vitest + React Testing Library (không cần chạy backend thật để chạy test).
+**Architecture:** Vite + React 19 + TypeScript. Một lớp `DichVuApi` (fetch thuần) bọc 3 endpoint đã có (`dang-ky`, `dang-nhap`, `nguoidung`). Một `NguCanhXacThuc` (React Context) giữ JWT trong `localStorage`. `react-router-dom` điều hướng giữa 3 trang, với `TuyenDuongRieng` chặn truy cập trang danh sách người dùng khi chưa đăng nhập. Một bộ thành phần giao diện dùng chung (`KhungXacThuc`, `TruongNhap`, `BieuTuong`) dựng khung thẻ trắng bo tròn + tab chuyển đổi đăng nhập/đăng ký đúng theo ảnh mẫu, dùng chung giữa 2 trang xác thực — tránh lặp code. Test bằng Vitest + React Testing Library (không cần chạy backend thật để chạy test).
 
-**Tech Stack:** Vite, React 19 + TypeScript, react-router-dom, Vitest, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, jsdom.
+**Tech Stack:** Vite, React 19 + TypeScript, react-router-dom, Vitest, @testing-library/react, @testing-library/jest-dom, @testing-library/user-event, jsdom, font Google Fonts "Be Vietnam Pro".
 
-**Spec:** `docs/superpowers/specs/2026-09-10-halochat-rsa-aes-design.md`
+**Spec:** `docs/superpowers/specs/2026-09-10-halochat-rsa-aes-design.md` (đặc biệt mục "Thương hiệu" vừa thêm)
 
 ## Global Constraints
 
@@ -22,20 +22,24 @@
 - Quy ước đặt tên: biến camelCase / hàm & component PascalCase, tiếng Việt không dấu; giữ nguyên thuật ngữ kỹ thuật quen thuộc (API, JWT...). Tên thư mục/file theo vai trò: `Trang/` (pages), `ThanhPhan/` (components dùng chung), `NguCanh/` (React Context).
 - JWT lưu ở `localStorage` (đơn giản hóa hợp lý cho phạm vi đồ án — không phải sản phẩm thực tế nhiều thiết bị).
 - Không dùng thư viện quản lý state ngoài (Redux/Zustand...) — React Context + `useState` là đủ cho phạm vi GĐ4 (YAGNI).
+- Thương hiệu: tên hiển thị **"HaloChat"**, logo tại `assets/halochat-logo.png` (gốc repo, đã commit), màu chính xanh dương gradient `#2F7BF6` → `#1A56C4`, chữ đậm `#101B33`, font "Be Vietnam Pro" (Google Fonts). Bố cục trang đăng nhập/đăng ký: thẻ trắng bo tròn giữa màn hình, logo + tên + khẩu hiệu ở đầu thẻ, tab chuyển đổi Đăng nhập/Đăng ký, ô nhập có icon, nút submit gradient — đúng theo ảnh mẫu đã duyệt trong hội thoại brainstorming (không phải phạm vi kết bạn/nhóm — đó là GĐ5, ngoài phạm vi plan này).
 
 ---
 
-## Task 1: Scaffold frontend (Vite + React + TypeScript + Vitest)
+## Task 1: Scaffold frontend (Vite + React + TypeScript + Vitest) + logo
 
 **Files:**
 - Create: `frontend/` (toàn bộ do `npm create vite` sinh ra)
 - Modify: `frontend/vite.config.ts`
 - Create: `frontend/src/thietLapKiemThu.ts`
 - Modify: `frontend/package.json` (thêm script `test`)
+- Modify: `frontend/index.html` (tiêu đề, favicon, `lang`)
+- Create: `frontend/public/halochat-logo.png` (copy từ `assets/halochat-logo.png` ở gốc repo)
+- Delete: `frontend/public/vite.svg` (favicon mặc định, không dùng)
 
 **Interfaces:**
-- Consumes: không có (task đầu tiên của plan này).
-- Produces: dev server chạy được tại `http://localhost:5173`; `npm run test --prefix frontend` chạy được (chưa có test nào — pass nhờ `passWithNoTests`); `npm run build --prefix frontend` biên dịch TypeScript sạch. Các task sau tạo file trong `frontend/src/`.
+- Consumes: `assets/halochat-logo.png` (đã có sẵn ở gốc repo, xem spec mục "Thương hiệu").
+- Produces: dev server chạy được tại `http://localhost:5173`; `npm run test --prefix frontend` chạy được (chưa có test nào — pass nhờ `passWithNoTests`); `npm run build --prefix frontend` biên dịch TypeScript sạch; file logo có sẵn tại `frontend/public/halochat-logo.png` (dùng bởi Task 4 qua đường dẫn `/halochat-logo.png`, không cần import JS). Các task sau tạo file trong `frontend/src/`.
 
 - [ ] **Bước 1: Scaffold project bằng Vite**
 
@@ -82,7 +86,32 @@ Mở `frontend/package.json`, trong object `"scripts"`, thêm dòng sau (giữ n
 "test": "vitest run"
 ```
 
-- [ ] **Bước 6: Xác nhận build và test chạy được**
+- [ ] **Bước 6: Copy logo vào `frontend/public/`, xóa favicon mặc định**
+
+```bash
+cp assets/halochat-logo.png frontend/public/halochat-logo.png
+rm -f frontend/public/vite.svg
+```
+
+- [ ] **Bước 7: Viết lại toàn bộ `frontend/index.html`**
+
+```html
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/halochat-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HaloChat</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+- [ ] **Bước 8: Xác nhận build và test chạy được**
 
 Run: `npm run build --prefix frontend`
 Expected: biên dịch thành công, không lỗi TypeScript.
@@ -90,17 +119,17 @@ Expected: biên dịch thành công, không lỗi TypeScript.
 Run: `npm run test --prefix frontend`
 Expected: pass (chưa có file test nào, `passWithNoTests: true` nên không báo lỗi).
 
-- [ ] **Bước 7: Xác nhận dev server chạy được**
+- [ ] **Bước 9: Xác nhận dev server chạy được**
 
 Run: `npm run dev --prefix frontend -- --port 5173` (dùng timeout ngắn, đây là tiến trình chạy mãi — dừng sau khi xác nhận)
-Expected: log hiện `Local: http://localhost:5173/`. Gọi `curl http://localhost:5173` → HTML chứa `<div id="root">`.
+Expected: log hiện `Local: http://localhost:5173/`. Gọi `curl http://localhost:5173` → HTML chứa `<div id="root">` và `<title>HaloChat</title>`.
 
-- [ ] **Bước 8: Commit**
+- [ ] **Bước 10: Commit**
 
 ```bash
 git add -A
 git commit -m "$(cat <<'EOF'
-Scaffold frontend: Vite + React + TypeScript + Vitest
+Scaffold frontend: Vite + React + TypeScript + Vitest + logo HaloChat
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 EOF
@@ -118,7 +147,7 @@ EOF
 
 **Interfaces:**
 - Consumes: backend API thật (không gọi trong test — test mock `global.fetch`).
-- Produces: `NguoiDungTomTat { id, tenTaiKhoan, email }`; `KetQuaDangKy { thongBao }`; `KetQuaDangNhap { token }`; `class LoiGoiApi extends Error { trangThai: number }`; hàm `DangKy(tenTaiKhoan, email, matKhau): Promise<KetQuaDangKy>`, `DangNhap(tenDangNhap, matKhau): Promise<KetQuaDangNhap>`, `LayDanhSachNguoiDung(token): Promise<NguoiDungTomTat[]>`. Task 3-6 import các hàm và kiểu này.
+- Produces: `NguoiDungTomTat { id, tenTaiKhoan, email }`; `KetQuaDangKy { thongBao }`; `KetQuaDangNhap { token }`; `class LoiGoiApi extends Error { trangThai: number }`; hàm `DangKy(tenTaiKhoan, email, matKhau): Promise<KetQuaDangKy>`, `DangNhap(tenDangNhap, matKhau): Promise<KetQuaDangNhap>`, `LayDanhSachNguoiDung(token): Promise<NguoiDungTomTat[]>`. Task 3, 5, 6, 7 import các hàm và kiểu này.
 
 - [ ] **Bước 1: Tạo `frontend/src/KieuDuLieu.ts`**
 
@@ -314,7 +343,7 @@ EOF
 
 **Interfaces:**
 - Consumes: `DangNhap` từ `DichVuApi` (Task 2).
-- Produces: component `NhaCungCapXacThuc({ children })`; hook `useXacThuc(): { token: string | null; daDangNhap: boolean; dangNhap(tenDangNhap, matKhau): Promise<void>; dangXuat(): void }`. Task 4-6 dùng hook này (`TrangDangNhap` gọi `dangNhap`, `TuyenDuongRieng`/`TrangDanhSachNguoiDung` đọc `daDangNhap`/`token`/`dangXuat`).
+- Produces: component `NhaCungCapXacThuc({ children })`; hook `useXacThuc(): { token: string | null; daDangNhap: boolean; dangNhap(tenDangNhap, matKhau): Promise<void>; dangXuat(): void }`. Task 5-7 dùng hook này.
 
 - [ ] **Bước 1: Viết test trước — tạo `frontend/src/NguCanh/NguCanhXacThuc.test.tsx`**
 
@@ -457,15 +486,434 @@ EOF
 
 ---
 
-## Task 4: Trang đăng ký (TrangDangKy)
+## Task 4: Hệ thống thiết kế dùng chung (màu sắc, font, khung xác thực, ô nhập, biểu tượng)
+
+Task này dựng bộ giao diện dùng chung cho 2 trang xác thực (đăng ký/đăng nhập) theo đúng ảnh mẫu
+đã duyệt: thẻ trắng bo tròn giữa nền gradient xanh nhạt, logo HaloChat + tên + khẩu hiệu ở đầu thẻ,
+tab chuyển đổi Đăng nhập/Đăng ký, ô nhập có icon bên trái + nút ẩn/hiện mật khẩu.
+
+**Files:**
+- Create: `frontend/src/index.css` (viết lại toàn bộ — token màu/font + reset)
+- Create: `frontend/src/ThanhPhan/BieuTuong.tsx` (icon SVG: người dùng, email, khóa, mũi tên)
+- Create: `frontend/src/ThanhPhan/TruongNhap.tsx` + `TruongNhap.css`
+- Create: `frontend/src/ThanhPhan/TruongNhap.test.tsx`
+- Create: `frontend/src/ThanhPhan/KhungXacThuc.tsx` + `KhungXacThuc.css`
+
+**Interfaces:**
+- Consumes: `frontend/public/halochat-logo.png` (Task 1, đường dẫn tĩnh `/halochat-logo.png`).
+- Produces: `TruongNhap({ nhan, bieuTuong, coTheAn?, ...các thuộc tính input khác }): JSX` — input có nhãn + icon, `coTheAn` bật nút ẩn/hiện mật khẩu; `BieuTuongNguoiDung`, `BieuTuongEmail`, `BieuTuongKhoa`, `BieuTuongMuiTen` (component icon không nhận props); `KhungXacThuc({ children }): JSX` — khung thẻ + logo + tab Đăng nhập/Đăng ký, `children` là nội dung form. Các class CSS dùng chung mà Task 5-6 sẽ dùng trên form/nút/thông báo lỗi của chính chúng: `.nut-chinh` (nút submit gradient), `.thong-bao-loi` (hộp lỗi). Task 5 và 6 import `KhungXacThuc` và `TruongNhap`, bọc form của chúng trong `KhungXacThuc`, dùng class `.nut-chinh`/`.thong-bao-loi` — không đổi nhãn (label text) hay chữ trên nút mà Task 5/6 đã quy định, chỉ đổi cách trình bày.
+
+- [ ] **Bước 1: Viết lại toàn bộ `frontend/src/index.css`**
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --mau-nen-tren: #eaf1fd;
+  --mau-nen-duoi: #dde9fc;
+  --mau-chinh-nhat: #55a6ff;
+  --mau-chinh: #2f7bf6;
+  --mau-chinh-dam: #1a56c4;
+  --mau-chu-dam: #101b33;
+  --mau-chu-phu: #6b7684;
+  --mau-vien: #e1e6ee;
+  --mau-nen-the: #ffffff;
+  --mau-loi: #d64545;
+  --ban-kinh-the: 24px;
+  --ban-kinh-o: 14px;
+  --bong-the: 0 24px 60px -20px rgba(31, 66, 135, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  color: var(--mau-chu-dam);
+  background: linear-gradient(180deg, var(--mau-nen-tren) 0%, var(--mau-nen-duoi) 100%);
+}
+
+.nut-chinh {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--ban-kinh-o);
+  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.nut-chinh:hover {
+  filter: brightness(1.05);
+}
+
+.nut-chinh:active {
+  transform: translateY(1px);
+}
+
+.nut-chinh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.thong-bao-loi {
+  background: #fdecec;
+  color: var(--mau-loi);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin: 0 0 16px;
+  text-align: left;
+}
+```
+
+- [ ] **Bước 2: Tạo `frontend/src/ThanhPhan/BieuTuong.tsx`**
+
+```tsx
+export function BieuTuongNguoiDung() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </svg>
+  );
+}
+
+export function BieuTuongEmail() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 6 10 7 10-7" />
+    </svg>
+  );
+}
+
+export function BieuTuongKhoa() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
+export function BieuTuongMuiTen() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function BieuTuongMat() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function BieuTuongAnMat() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.61 3.53M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+```
+
+- [ ] **Bước 3: Viết test trước cho `TruongNhap` — tạo `frontend/src/ThanhPhan/TruongNhap.test.tsx`**
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect } from 'vitest';
+import { TruongNhap } from './TruongNhap';
+import { BieuTuongKhoa } from './BieuTuong';
+
+describe('TruongNhap', () => {
+  it('mặc định ẩn mật khẩu, bấm biểu tượng để hiện rồi ẩn lại', async () => {
+    render(
+      <TruongNhap nhan="Mật khẩu" bieuTuong={<BieuTuongKhoa />} coTheAn value="MatKhau123" onChange={() => {}} />,
+    );
+
+    const oNhap = screen.getByLabelText('Mật khẩu');
+    expect(oNhap).toHaveAttribute('type', 'password');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Hiện mật khẩu' }));
+    expect(oNhap).toHaveAttribute('type', 'text');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Ẩn mật khẩu' }));
+    expect(oNhap).toHaveAttribute('type', 'password');
+  });
+
+  it('trường không bật coTheAn thì không có nút ẩn/hiện', () => {
+    render(<TruongNhap nhan="Tên tài khoản" bieuTuong={<BieuTuongKhoa />} value="" onChange={() => {}} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+});
+```
+
+- [ ] **Bước 4: Chạy test, xác nhận thất bại**
+
+Run: `npm run test --prefix frontend`
+Expected: lỗi vì `./TruongNhap` chưa tồn tại.
+
+- [ ] **Bước 5: Tạo `frontend/src/ThanhPhan/TruongNhap.css`**
+
+```css
+.truong-nhap {
+  display: block;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.truong-nhap__nhan {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mau-chu-dam);
+  margin-bottom: 6px;
+}
+
+.truong-nhap__o {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  padding: 0 12px;
+  background: #fbfcfe;
+}
+
+.truong-nhap__o:focus-within {
+  border-color: var(--mau-chinh);
+  box-shadow: 0 0 0 3px rgba(47, 123, 246, 0.15);
+}
+
+.truong-nhap__bieu-tuong {
+  color: var(--mau-chu-phu);
+  display: flex;
+}
+
+.truong-nhap__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 12px 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--mau-chu-dam);
+  outline: none;
+}
+
+.truong-nhap__nut-an {
+  border: none;
+  background: transparent;
+  color: var(--mau-chu-phu);
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+}
+```
+
+- [ ] **Bước 6: Tạo `frontend/src/ThanhPhan/TruongNhap.tsx`**
+
+```tsx
+import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { BieuTuongMat, BieuTuongAnMat } from './BieuTuong';
+import './TruongNhap.css';
+
+interface TruongNhapProps extends InputHTMLAttributes<HTMLInputElement> {
+  nhan: string;
+  bieuTuong: ReactNode;
+  coTheAn?: boolean;
+}
+
+export function TruongNhap({ nhan, bieuTuong, coTheAn, type, id, ...conLai }: TruongNhapProps) {
+  const idTuSinh = useId();
+  const [hienMatKhau, setHienMatKhau] = useState(false);
+  const maId = id ?? idTuSinh;
+  const loaiThucTe = coTheAn ? (hienMatKhau ? 'text' : 'password') : type;
+
+  return (
+    <label className="truong-nhap" htmlFor={maId}>
+      <span className="truong-nhap__nhan">{nhan}</span>
+      <span className="truong-nhap__o">
+        <span className="truong-nhap__bieu-tuong">{bieuTuong}</span>
+        <input id={maId} type={loaiThucTe} className="truong-nhap__input" {...conLai} />
+        {coTheAn && (
+          <button
+            type="button"
+            className="truong-nhap__nut-an"
+            onClick={() => setHienMatKhau((truoc) => !truoc)}
+            aria-label={hienMatKhau ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          >
+            {hienMatKhau ? <BieuTuongAnMat /> : <BieuTuongMat />}
+          </button>
+        )}
+      </span>
+    </label>
+  );
+}
+```
+
+- [ ] **Bước 7: Chạy lại test, xác nhận pass**
+
+Run: `npm run test --prefix frontend -- TruongNhap`
+Expected: 2/2 pass.
+
+- [ ] **Bước 8: Tạo `frontend/src/ThanhPhan/KhungXacThuc.css`**
+
+```css
+.khung-xac-thuc {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.the-xac-thuc {
+  width: 100%;
+  max-width: 400px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-the);
+  box-shadow: var(--bong-the);
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.logo-xac-thuc {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.tieu-de-xac-thuc {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.khau-hieu-xac-thuc {
+  color: var(--mau-chu-phu);
+  margin: 6px 0 24px;
+  font-size: 14px;
+}
+
+.tab-xac-thuc {
+  display: flex;
+  background: #eef2f9;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.tab-xac-thuc__nut {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--mau-chu-phu);
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tab-xac-thuc__nut--dang-chon {
+  background: var(--mau-chinh);
+  color: #fff;
+}
+```
+
+- [ ] **Bước 9: Tạo `frontend/src/ThanhPhan/KhungXacThuc.tsx`**
+
+```tsx
+import type { ReactNode } from 'react';
+import { NavLink } from 'react-router-dom';
+import './KhungXacThuc.css';
+
+export function KhungXacThuc({ children }: { children: ReactNode }) {
+  return (
+    <div className="khung-xac-thuc">
+      <div className="the-xac-thuc">
+        <img src="/halochat-logo.png" alt="HaloChat" className="logo-xac-thuc" />
+        <h1 className="tieu-de-xac-thuc">HaloChat</h1>
+        <p className="khau-hieu-xac-thuc">Kết nối và trò chuyện an toàn</p>
+        <nav className="tab-xac-thuc" aria-label="Chuyển đổi đăng nhập hoặc đăng ký">
+          <NavLink
+            to="/dang-nhap"
+            className={({ isActive }) => `tab-xac-thuc__nut${isActive ? ' tab-xac-thuc__nut--dang-chon' : ''}`}
+          >
+            Đăng nhập
+          </NavLink>
+          <NavLink
+            to="/dang-ky"
+            className={({ isActive }) => `tab-xac-thuc__nut${isActive ? ' tab-xac-thuc__nut--dang-chon' : ''}`}
+          >
+            Đăng ký
+          </NavLink>
+        </nav>
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+
+- [ ] **Bước 10: Build + chạy toàn bộ test**
+
+Run: `npm run build --prefix frontend`
+Expected: biên dịch thành công.
+
+Run: `npm run test --prefix frontend`
+Expected: tất cả pass — tổng cộng 11/11 toàn dự án (9 từ Task 2-3 + 2 từ `TruongNhap`).
+
+- [ ] **Bước 11: Commit**
+
+```bash
+git add -A
+git commit -m "$(cat <<'EOF'
+Thêm hệ thống thiết kế dùng chung: KhungXacThuc, TruongNhap, biểu tượng
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 5: Trang đăng ký (TrangDangKy)
 
 **Files:**
 - Create: `frontend/src/Trang/TrangDangKy.tsx`
 - Create: `frontend/src/Trang/TrangDangKy.test.tsx`
 
 **Interfaces:**
-- Consumes: `DangKy` từ `DichVuApi` (Task 2).
-- Produces: component `TrangDangKy` — điều hướng sang `/dang-nhap` sau khi đăng ký thành công. Task 7 gắn route `/dang-ky` vào component này.
+- Consumes: `DangKy` từ `DichVuApi` (Task 2); `KhungXacThuc`, `TruongNhap`, `BieuTuongNguoiDung`/`BieuTuongEmail`/`BieuTuongKhoa`/`BieuTuongMuiTen`, class `.nut-chinh`/`.thong-bao-loi` (Task 4).
+- Produces: component `TrangDangKy` — điều hướng sang `/dang-nhap` sau khi đăng ký thành công. Task 8 gắn route `/dang-ky` vào component này.
+
+**Lưu ý quan trọng:** `TruongNhap` (Task 4) render input bên trong `<label>` — `screen.getByLabelText('Tên tài khoản')` vẫn hoạt động đúng vì toàn bộ chữ trong `<label>` (trừ giá trị input) tính vào tên nhãn. Nút submit vẫn phải giữ đúng chữ `"Đăng ký"` (có thể kèm icon mũi tên cạnh chữ, icon không có text nên không ảnh hưởng đến tên accessible của nút) để khớp với test bên dưới.
 
 - [ ] **Bước 1: Viết test trước — tạo `frontend/src/Trang/TrangDangKy.test.tsx`**
 
@@ -527,8 +975,11 @@ Expected: lỗi vì `./TrangDangKy` chưa tồn tại.
 
 ```tsx
 import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DangKy } from '../DichVuApi';
+import { KhungXacThuc } from '../ThanhPhan/KhungXacThuc';
+import { TruongNhap } from '../ThanhPhan/TruongNhap';
+import { BieuTuongNguoiDung, BieuTuongEmail, BieuTuongKhoa, BieuTuongMuiTen } from '../ThanhPhan/BieuTuong';
 
 export function TrangDangKy() {
   const [tenTaiKhoan, setTenTaiKhoan] = useState('');
@@ -553,28 +1004,44 @@ export function TrangDangKy() {
   }
 
   return (
-    <form onSubmit={xuLySubmit}>
-      <h1>Đăng ký</h1>
-      {loi && <p role="alert">{loi}</p>}
-      <label>
-        Tên tài khoản
-        <input value={tenTaiKhoan} onChange={(e) => setTenTaiKhoan(e.target.value)} required />
-      </label>
-      <label>
-        Email
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      </label>
-      <label>
-        Mật khẩu
-        <input type="password" value={matKhau} onChange={(e) => setMatKhau(e.target.value)} required />
-      </label>
-      <button type="submit" disabled={dangGui}>
-        Đăng ký
-      </button>
-      <p>
-        Đã có tài khoản? <Link to="/dang-nhap">Đăng nhập</Link>
-      </p>
-    </form>
+    <KhungXacThuc>
+      <form onSubmit={xuLySubmit}>
+        {loi && (
+          <p className="thong-bao-loi" role="alert">
+            {loi}
+          </p>
+        )}
+        <TruongNhap
+          nhan="Tên tài khoản"
+          bieuTuong={<BieuTuongNguoiDung />}
+          value={tenTaiKhoan}
+          onChange={(e) => setTenTaiKhoan(e.target.value)}
+          placeholder="Nhập tên tài khoản..."
+          required
+        />
+        <TruongNhap
+          nhan="Email"
+          bieuTuong={<BieuTuongEmail />}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Nhập email..."
+          required
+        />
+        <TruongNhap
+          nhan="Mật khẩu"
+          bieuTuong={<BieuTuongKhoa />}
+          coTheAn
+          value={matKhau}
+          onChange={(e) => setMatKhau(e.target.value)}
+          placeholder="Nhập mật khẩu..."
+          required
+        />
+        <button type="submit" className="nut-chinh" disabled={dangGui}>
+          Đăng ký <BieuTuongMuiTen />
+        </button>
+      </form>
+    </KhungXacThuc>
   );
 }
 ```
@@ -582,14 +1049,14 @@ export function TrangDangKy() {
 - [ ] **Bước 4: Chạy lại test, xác nhận pass**
 
 Run: `npm run test --prefix frontend`
-Expected: 2/2 pass (file này) — tổng cộng 11/11 pass toàn dự án.
+Expected: 2/2 pass (file này) — tổng cộng 13/13 pass toàn dự án.
 
 - [ ] **Bước 5: Commit**
 
 ```bash
 git add -A
 git commit -m "$(cat <<'EOF'
-Thêm trang đăng ký (TrangDangKy)
+Thêm trang đăng ký (TrangDangKy) theo giao diện HaloChat
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 EOF
@@ -598,15 +1065,15 @@ EOF
 
 ---
 
-## Task 5: Trang đăng nhập (TrangDangNhap)
+## Task 6: Trang đăng nhập (TrangDangNhap)
 
 **Files:**
 - Create: `frontend/src/Trang/TrangDangNhap.tsx`
 - Create: `frontend/src/Trang/TrangDangNhap.test.tsx`
 
 **Interfaces:**
-- Consumes: `useXacThuc` từ `NguCanhXacThuc` (Task 3).
-- Produces: component `TrangDangNhap` — điều hướng sang `/nguoi-dung` sau khi đăng nhập thành công. Task 7 gắn route `/dang-nhap` vào component này.
+- Consumes: `useXacThuc` từ `NguCanhXacThuc` (Task 3); `KhungXacThuc`, `TruongNhap`, biểu tượng, class dùng chung (Task 4).
+- Produces: component `TrangDangNhap` — điều hướng sang `/nguoi-dung` sau khi đăng nhập thành công. Task 8 gắn route `/dang-nhap` vào component này.
 
 - [ ] **Bước 1: Viết test trước — tạo `frontend/src/Trang/TrangDangNhap.test.tsx`**
 
@@ -671,8 +1138,11 @@ Expected: lỗi vì `./TrangDangNhap` chưa tồn tại.
 
 ```tsx
 import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
+import { KhungXacThuc } from '../ThanhPhan/KhungXacThuc';
+import { TruongNhap } from '../ThanhPhan/TruongNhap';
+import { BieuTuongNguoiDung, BieuTuongKhoa, BieuTuongMuiTen } from '../ThanhPhan/BieuTuong';
 
 export function TrangDangNhap() {
   const [tenDangNhap, setTenDangNhap] = useState('');
@@ -697,24 +1167,35 @@ export function TrangDangNhap() {
   }
 
   return (
-    <form onSubmit={xuLySubmit}>
-      <h1>Đăng nhập</h1>
-      {loi && <p role="alert">{loi}</p>}
-      <label>
-        Tên tài khoản hoặc Email
-        <input value={tenDangNhap} onChange={(e) => setTenDangNhap(e.target.value)} required />
-      </label>
-      <label>
-        Mật khẩu
-        <input type="password" value={matKhau} onChange={(e) => setMatKhau(e.target.value)} required />
-      </label>
-      <button type="submit" disabled={dangGui}>
-        Đăng nhập
-      </button>
-      <p>
-        Chưa có tài khoản? <Link to="/dang-ky">Đăng ký</Link>
-      </p>
-    </form>
+    <KhungXacThuc>
+      <form onSubmit={xuLySubmit}>
+        {loi && (
+          <p className="thong-bao-loi" role="alert">
+            {loi}
+          </p>
+        )}
+        <TruongNhap
+          nhan="Tên tài khoản hoặc Email"
+          bieuTuong={<BieuTuongNguoiDung />}
+          value={tenDangNhap}
+          onChange={(e) => setTenDangNhap(e.target.value)}
+          placeholder="Nhập tên đăng nhập..."
+          required
+        />
+        <TruongNhap
+          nhan="Mật khẩu"
+          bieuTuong={<BieuTuongKhoa />}
+          coTheAn
+          value={matKhau}
+          onChange={(e) => setMatKhau(e.target.value)}
+          placeholder="Nhập mật khẩu..."
+          required
+        />
+        <button type="submit" className="nut-chinh" disabled={dangGui}>
+          Đăng nhập <BieuTuongMuiTen />
+        </button>
+      </form>
+    </KhungXacThuc>
   );
 }
 ```
@@ -722,14 +1203,14 @@ export function TrangDangNhap() {
 - [ ] **Bước 4: Chạy lại test, xác nhận pass**
 
 Run: `npm run test --prefix frontend`
-Expected: 2/2 pass (file này) — tổng cộng 13/13 pass toàn dự án.
+Expected: 2/2 pass (file này) — tổng cộng 15/15 pass toàn dự án.
 
 - [ ] **Bước 5: Commit**
 
 ```bash
 git add -A
 git commit -m "$(cat <<'EOF'
-Thêm trang đăng nhập (TrangDangNhap)
+Thêm trang đăng nhập (TrangDangNhap) theo giao diện HaloChat
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 EOF
@@ -738,17 +1219,17 @@ EOF
 
 ---
 
-## Task 6: Route bảo vệ + Trang danh sách người dùng
+## Task 7: Route bảo vệ + Trang danh sách người dùng
 
 **Files:**
 - Create: `frontend/src/ThanhPhan/TuyenDuongRieng.tsx`
 - Create: `frontend/src/ThanhPhan/TuyenDuongRieng.test.tsx`
-- Create: `frontend/src/Trang/TrangDanhSachNguoiDung.tsx`
+- Create: `frontend/src/Trang/TrangDanhSachNguoiDung.tsx` + `TrangDanhSachNguoiDung.css`
 - Create: `frontend/src/Trang/TrangDanhSachNguoiDung.test.tsx`
 
 **Interfaces:**
 - Consumes: `useXacThuc` (Task 3), `LayDanhSachNguoiDung` + `NguoiDungTomTat` (Task 2).
-- Produces: component `TuyenDuongRieng({ children })` (điều hướng về `/dang-nhap` nếu chưa đăng nhập); component `TrangDanhSachNguoiDung`. Task 7 gắn route `/nguoi-dung` vào `<TuyenDuongRieng><TrangDanhSachNguoiDung /></TuyenDuongRieng>`.
+- Produces: component `TuyenDuongRieng({ children })` (điều hướng về `/dang-nhap` nếu chưa đăng nhập); component `TrangDanhSachNguoiDung`. Task 8 gắn route `/nguoi-dung` vào `<TuyenDuongRieng><TrangDanhSachNguoiDung /></TuyenDuongRieng>`.
 
 - [ ] **Bước 1: Viết test trước cho `TuyenDuongRieng` — tạo `frontend/src/ThanhPhan/TuyenDuongRieng.test.tsx`**
 
@@ -871,13 +1352,103 @@ describe('TrangDanhSachNguoiDung', () => {
 Run: `npm run test --prefix frontend -- TrangDanhSachNguoiDung`
 Expected: lỗi vì `./TrangDanhSachNguoiDung` chưa tồn tại.
 
-- [ ] **Bước 7: Tạo `frontend/src/Trang/TrangDanhSachNguoiDung.tsx`**
+- [ ] **Bước 7: Tạo `frontend/src/Trang/TrangDanhSachNguoiDung.css`**
+
+```css
+.trang-danh-sach {
+  min-height: 100vh;
+  padding: 32px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.trang-danh-sach__the {
+  width: 100%;
+  max-width: 480px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-the);
+  box-shadow: var(--bong-the);
+  padding: 32px;
+}
+
+.trang-danh-sach__dau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.trang-danh-sach__dau h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.trang-danh-sach__nut-dang-xuat {
+  border: 1px solid var(--mau-vien);
+  background: #fff;
+  color: var(--mau-chu-dam);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.trang-danh-sach__danh-sach {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trang-danh-sach__muc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mau-vien);
+}
+
+.trang-danh-sach__muc:last-child {
+  border-bottom: none;
+}
+
+.trang-danh-sach__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.trang-danh-sach__thong-tin {
+  display: flex;
+  flex-direction: column;
+}
+
+.trang-danh-sach__ten {
+  font-weight: 600;
+}
+
+.trang-danh-sach__email {
+  color: var(--mau-chu-phu);
+  font-size: 13px;
+}
+```
+
+- [ ] **Bước 8: Tạo `frontend/src/Trang/TrangDanhSachNguoiDung.tsx`**
 
 ```tsx
 import { useEffect, useState } from 'react';
 import { LayDanhSachNguoiDung } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import type { NguoiDungTomTat } from '../KieuDuLieu';
+import './TrangDanhSachNguoiDung.css';
 
 export function TrangDanhSachNguoiDung() {
   const { token, dangXuat } = useXacThuc();
@@ -894,29 +1465,44 @@ export function TrangDanhSachNguoiDung() {
   }, [token]);
 
   return (
-    <div>
-      <h1>Danh sách người dùng</h1>
-      <button onClick={dangXuat}>Đăng xuất</button>
-      {dangTai && <p>Đang tải...</p>}
-      {loi && <p role="alert">{loi}</p>}
-      <ul>
-        {danhSach.map((nd) => (
-          <li key={nd.id}>
-            {nd.tenTaiKhoan} ({nd.email})
-          </li>
-        ))}
-      </ul>
+    <div className="trang-danh-sach">
+      <div className="trang-danh-sach__the">
+        <div className="trang-danh-sach__dau">
+          <h1>Danh sách người dùng</h1>
+          <button className="trang-danh-sach__nut-dang-xuat" onClick={dangXuat}>
+            Đăng xuất
+          </button>
+        </div>
+        {dangTai && <p>Đang tải...</p>}
+        {loi && (
+          <p className="thong-bao-loi" role="alert">
+            {loi}
+          </p>
+        )}
+        <ul className="trang-danh-sach__danh-sach">
+          {danhSach.map((nd) => (
+            <li key={nd.id} className="trang-danh-sach__muc">
+              <span className="trang-danh-sach__avatar">{nd.tenTaiKhoan.charAt(0).toUpperCase()}</span>
+              <span className="trang-danh-sach__thong-tin">
+                <span className="trang-danh-sach__ten">
+                  {nd.tenTaiKhoan} ({nd.email})
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
 ```
 
-- [ ] **Bước 8: Chạy lại toàn bộ test, xác nhận pass**
+- [ ] **Bước 9: Chạy lại toàn bộ test, xác nhận pass**
 
 Run: `npm run test --prefix frontend`
-Expected: tất cả pass — tổng cộng 17/17 toàn dự án.
+Expected: tất cả pass — tổng cộng 19/19 toàn dự án.
 
-- [ ] **Bước 9: Commit**
+- [ ] **Bước 10: Commit**
 
 ```bash
 git add -A
@@ -930,7 +1516,7 @@ EOF
 
 ---
 
-## Task 7: Gắn router (App.tsx) + kiểm tra đầu-cuối với backend thật
+## Task 8: Gắn router (App.tsx) + kiểm tra đầu-cuối với backend thật
 
 **Files:**
 - Modify: `frontend/src/App.tsx` (viết lại toàn bộ)
@@ -938,7 +1524,7 @@ EOF
 - Create: `README.md` (gốc repo — hướng dẫn chạy backend + frontend cùng lúc)
 
 **Interfaces:**
-- Consumes: `NhaCungCapXacThuc` (Task 3), `TuyenDuongRieng` (Task 6), `TrangDangKy` (Task 4), `TrangDangNhap` (Task 5), `TrangDanhSachNguoiDung` (Task 6).
+- Consumes: `NhaCungCapXacThuc` (Task 3), `TuyenDuongRieng` (Task 7), `TrangDangKy` (Task 5), `TrangDangNhap` (Task 6), `TrangDanhSachNguoiDung` (Task 7).
 - Produces: ứng dụng hoàn chỉnh chạy được tại `http://localhost:5173`, điều hướng `/dang-ky`, `/dang-nhap`, `/nguoi-dung` (bảo vệ), mọi route khác chuyển về `/dang-nhap`.
 
 - [ ] **Bước 1: Viết lại toàn bộ `frontend/src/App.tsx`**
@@ -982,7 +1568,7 @@ export default App;
 rm -f frontend/src/App.css
 ```
 
-(Nếu `frontend/src/main.tsx` hoặc file nào khác còn `import './App.css'`, xóa dòng import đó — chỉ `App.tsx` mới có khả năng import file này theo template mặc định của Vite, và `App.tsx` vừa được viết lại ở Bước 1 nên không còn import nó nữa.)
+(Nếu `frontend/src/main.tsx` hoặc file nào khác còn `import './App.css'`, xóa dòng import đó — chỉ `App.tsx` mới có khả năng import file này theo template mặc định của Vite, và `App.tsx` vừa được viết lại ở Bước 1 nên không còn import nó nữa. `frontend/src/main.tsx` mặc định import `./index.css` — giữ nguyên dòng đó vì `index.css` đã được viết lại có nội dung thật ở Task 4.)
 
 - [ ] **Bước 3: Build và chạy toàn bộ test**
 
@@ -990,7 +1576,7 @@ Run: `npm run build --prefix frontend`
 Expected: biên dịch thành công, không lỗi TypeScript.
 
 Run: `npm run test --prefix frontend`
-Expected: tất cả 17 test vẫn pass.
+Expected: tất cả 19 test vẫn pass.
 
 - [ ] **Bước 4: Kiểm tra đầu-cuối với backend thật**
 
@@ -1000,7 +1586,7 @@ Chạy backend (dùng đúng profile `http` để tránh việc `UseHttpsRedirec
 ASPNETCORE_ENVIRONMENT=Development dotnet run --project backend/HaloChat.Api --launch-profile http
 ```
 
-Xác nhận CORS cho phép origin của Vite dev server (`http://localhost:5173`) — đây là cách xác minh CORS không cần trình duyệt thật:
+Xác nhận CORS cho phép origin của Vite dev server (`http://localhost:5173`):
 
 ```bash
 curl -i -H "Origin: http://localhost:5173" http://localhost:5231/api/kiem-tra-suc-khoe
@@ -1014,17 +1600,11 @@ Chạy frontend (terminal khác, backend vẫn đang chạy):
 npm run dev --prefix frontend -- --port 5173
 ```
 
-Xác nhận frontend build ra HTML hợp lệ:
+**Nếu môi trường có công cụ trình duyệt thật (vd. Playwright MCP)**: dùng nó để mở `http://localhost:5173`, xác nhận logo + tên "HaloChat" + tab Đăng nhập/Đăng ký hiển thị đúng theo thiết kế; thao tác thật: đăng ký 1 tài khoản mới → điều hướng sang trang đăng nhập → đăng nhập → thấy trang danh sách người dùng → bấm biểu tượng ẩn/hiện mật khẩu trên trang đăng nhập để xác nhận hoạt động → đăng xuất → xác nhận quay lại trang đăng nhập. Chụp ảnh màn hình trang đăng nhập để xác nhận trực quan khớp thiết kế.
 
-```bash
-curl http://localhost:5173
-```
-
-Expected: HTML chứa `<div id="root">` và thẻ `<script type="module" src="/src/main.tsx">` (hoặc tương đương do Vite sinh ra).
+**Nếu không có công cụ trình duyệt**: xác nhận bằng `curl http://localhost:5173` → HTML chứa `<div id="root">` và `<title>HaloChat</title>`; 19 test Vitest (đã bao phủ toàn bộ logic tương tác qua React Testing Library) cộng với bước kiểm tra CORS ở trên là đủ bằng chứng — không cần cố tìm cách khác để "thấy" giao diện.
 
 Dừng cả 2 tiến trình sau khi xác nhận xong.
-
-**Lưu ý cho người thực thi task này:** nếu môi trường có công cụ trình duyệt thật (vd. Playwright), nên tận dụng để thao tác thật trên giao diện (đăng ký → đăng nhập → xem danh sách → đăng xuất) thay vì chỉ dừng ở `curl`. Nếu không có, các bước `curl` ở trên cộng với 17 test Vitest (đã bao phủ toàn bộ logic tương tác qua React Testing Library) là đủ bằng chứng cho task này — không cần cố tìm cách khác để "thấy" giao diện.
 
 - [ ] **Bước 5: Tạo `README.md` ở gốc repo**
 
@@ -1060,11 +1640,17 @@ Frontend chạy tại `http://localhost:5173`, gọi thẳng vào backend ở `h
 
 Chạy test: `npm run test --prefix frontend`
 
+## Thương hiệu
+
+Tên sản phẩm: **HaloChat**. Logo tại `assets/halochat-logo.png`. Màu chủ đạo xanh dương gradient
+(`#2F7BF6` → `#1A56C4`), font "Be Vietnam Pro".
+
 ## Trạng thái các giai đoạn
 
 - GĐ3 (Backend nền tảng — đăng ký/đăng nhập/JWT/danh sách người dùng): hoàn thành.
-- GĐ4 (Frontend nền tảng — trang đăng ký/đăng nhập/danh sách người dùng): hoàn thành.
-- GĐ5 (Chat realtime + gửi ảnh/file), GĐ6 (Bảo mật AES/RSA — nhóm tự viết), GĐ7 (Quên mật khẩu): chưa bắt đầu.
+- GĐ4 (Frontend nền tảng — trang đăng ký/đăng nhập/danh sách người dùng, giao diện HaloChat): hoàn thành.
+- GĐ5 (Chat realtime + gửi ảnh/file + kết bạn + nhóm chat — phạm vi đã mở rộng, xem spec), GĐ6
+  (Bảo mật AES/RSA — nhóm tự viết), GĐ7 (Quên mật khẩu): chưa bắt đầu.
 ```
 
 - [ ] **Bước 6: Commit**
