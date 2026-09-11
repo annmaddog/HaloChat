@@ -25,14 +25,17 @@ export function NhaCungCapChat({ children }: { children: ReactNode }) {
       return;
     }
 
+    let daHuy = false;
     const ketNoiMoi = TaoKetNoiChat(token);
-    ketNoiMoi.onreconnected(() => setDangKetNoi(true));
-    ketNoiMoi.onreconnecting(() => setDangKetNoi(false));
-    ketNoiMoi.onclose(() => setDangKetNoi(false));
+    ketNoiMoi.onreconnected(() => { if (!daHuy) setDangKetNoi(true); });
+    ketNoiMoi.onreconnecting(() => { if (!daHuy) setDangKetNoi(false); });
+    ketNoiMoi.onclose(() => { if (!daHuy) setDangKetNoi(false); });
 
     ketNoiMoi
       .start()
-      .then(() => setDangKetNoi(true))
+      .then(() => {
+        if (!daHuy) setDangKetNoi(true);
+      })
       .catch((loi) => {
         // Không throw ra ngoài: mất kết nối realtime không được phép làm sập
         // trang — người dùng vẫn dùng được REST (lịch sử, gửi ảnh/file).
@@ -42,6 +45,7 @@ export function NhaCungCapChat({ children }: { children: ReactNode }) {
     setKetNoi(ketNoiMoi);
 
     return () => {
+      daHuy = true;
       setDangKetNoi(false);
       void ketNoiMoi.stop();
     };

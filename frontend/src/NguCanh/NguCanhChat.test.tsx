@@ -67,4 +67,38 @@ describe('NhaCungCapChat', () => {
     expect(ketNoiGiaLap.start).not.toHaveBeenCalled();
     expect(screen.getByText('chua-ket-noi')).toBeInTheDocument();
   });
+
+  it('unmount trước khi start() resolve không set dangKetNoi=true cho kết nối đã bị hủy', async () => {
+    let phanGiaiStart: (() => void) | undefined;
+    ketNoiGiaLap.start.mockImplementation(
+      () => new Promise<void>((giaiQuyet) => { phanGiaiStart = giaiQuyet; }),
+    );
+
+    localStorage.setItem('haloChatToken', 'token-gia-lap');
+
+    const canhBao = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { unmount } = render(
+      <NhaCungCapXacThuc>
+        <NhaCungCapChat>
+          <TrangThuNghiem />
+        </NhaCungCapChat>
+      </NhaCungCapXacThuc>,
+    );
+
+    await waitFor(() => expect(ketNoiGiaLap.start).toHaveBeenCalledTimes(1));
+
+    unmount();
+
+    // start() chỉ resolve SAU khi component đã unmount — mô phỏng đúng race
+    // condition: promise cũ vẫn "sống" và có thể cố gắng setState.
+    phanGiaiStart?.();
+    await new Promise((r) => setTimeout(r, 0));
+
+    // Không có warning "Can't perform a React state update on an unmounted
+    // component" (hoặc bất kỳ lỗi console nào khác) bị ném ra.
+    expect(canhBao).not.toHaveBeenCalled();
+
+    canhBao.mockRestore();
+  });
 });
