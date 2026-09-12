@@ -1,10 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TrangChat } from './TrangChat';
 import { NhaCungCapXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { NhaCungCapChat } from '../NguCanh/NguCanhChat';
 import * as DichVuApi from '../DichVuApi';
+import type { NguoiDungTomTat } from '../KieuDuLieu';
 
 const ketNoiGiaLap = {
   start: vi.fn().mockResolvedValue(undefined),
@@ -29,13 +31,15 @@ vi.mock('@microsoft/signalr', () => ({
   LogLevel: { Warning: 2 },
 }));
 
-function renderTrangChat() {
+function renderTrangChat(trangThaiDieuHuong?: { moNguoiDung: NguoiDungTomTat }) {
   return render(
-    <NhaCungCapXacThuc>
-      <NhaCungCapChat>
-        <TrangChat />
-      </NhaCungCapChat>
-    </NhaCungCapXacThuc>,
+    <MemoryRouter initialEntries={[{ pathname: '/nguoi-dung', state: trangThaiDieuHuong }]}>
+      <NhaCungCapXacThuc>
+        <NhaCungCapChat>
+          <TrangChat />
+        </NhaCungCapChat>
+      </NhaCungCapXacThuc>
+    </MemoryRouter>,
   );
 }
 
@@ -56,17 +60,21 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
   };
 }
 
+function taoHoiThoaiGiaLap(nguoiDung: NguoiDungTomTat) {
+  return { nguoiDung, tinNhanCuoi: 'Chào bạn', thoiGianTinNhanCuoi: new Date().toISOString(), soTinChuaDoc: 0 };
+}
+
 describe('TrangChat', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
     localStorage.setItem('haloChatToken', 'token-gia-lap');
-    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([
-      { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' },
+    vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
+      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }),
     ]);
   });
 
-  it('hiển thị danh sách người dùng sau khi tải', async () => {
+  it('hiển thị danh sách hội thoại sau khi tải', async () => {
     renderTrangChat();
 
     expect(await screen.findByText('TranBinh')).toBeInTheDocument();
@@ -182,5 +190,29 @@ describe('TrangChat', () => {
 
     expect(taiLenSpy).not.toHaveBeenCalled();
     expect(await screen.findByText(/vượt quá giới hạn/)).toBeInTheDocument();
+  });
+
+  it('mở hội thoại mới từ điều hướng (chưa có trong danh sách hội thoại) tự động được chọn', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+
+    renderTrangChat({ moNguoiDung: { id: '9', tenTaiKhoan: 'NguoiMoi', email: 'moi@gmail.com' } });
+
+    expect(await screen.findByText('NguoiMoi')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Nhập tin nhắn...')).toBeInTheDocument();
+  });
+
+  it('Hub từ chối gửi tin (chưa là bạn bè) hiển thị đúng thông báo lỗi', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    ketNoiGiaLap.invoke.mockRejectedValue(new Error('Người này chỉ nhận tin nhắn từ bạn bè.'));
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await waitFor(() => expect(ketNoiGiaLap.start).toHaveBeenCalled());
+
+    await userEvent.type(screen.getByPlaceholderText('Nhập tin nhắn...'), 'Xin chào');
+    await userEvent.click(screen.getByRole('button', { name: 'Gửi' }));
+
+    expect(await screen.findByText('Người này chỉ nhận tin nhắn từ bạn bè.')).toBeInTheDocument();
   });
 });

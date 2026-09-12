@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, DIA_CHI_GOC } from '../DichVuApi';
+import { useLocation } from 'react-router-dom';
+import { LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, DIA_CHI_GOC } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { BieuTuongGhim } from '../ThanhPhan/BieuTuong';
-import type { NguoiDungTomTat, TinNhan } from '../KieuDuLieu';
+import type { NguoiDungTomTat, TinNhan, HoiThoaiTomTat } from '../KieuDuLieu';
 import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -21,9 +22,11 @@ function idNguoiKia(tinNhan: TinNhan, idHienTai: string): string {
 export function TrangChat() {
   const { token, nguoiDungHienTai, dangXuat } = useXacThuc();
   const { ketNoi, dangKetNoi } = useChat();
+  const location = useLocation();
+  const moNguoiDungTuDieuHuong = (location.state as { moNguoiDung?: NguoiDungTomTat } | null)?.moNguoiDung ?? null;
 
-  const [danhSachNguoiDung, setDanhSachNguoiDung] = useState<NguoiDungTomTat[]>([]);
-  const [nguoiDangChon, setNguoiDangChon] = useState<NguoiDungTomTat | null>(null);
+  const [danhSachHoiThoai, setDanhSachHoiThoai] = useState<HoiThoaiTomTat[]>([]);
+  const [nguoiDangChon, setNguoiDangChon] = useState<NguoiDungTomTat | null>(moNguoiDungTuDieuHuong);
   const [tinNhanTheoNguoiDung, setTinNhanTheoNguoiDung] = useState<Record<string, TinNhan[]>>({});
   const [dangTaiDanhSach, setDangTaiDanhSach] = useState(true);
   const [dangTaiLichSu, setDangTaiLichSu] = useState(false);
@@ -38,8 +41,8 @@ export function TrangChat() {
 
   useEffect(() => {
     if (!token) return;
-    LayDanhSachNguoiDung(token)
-      .then(setDanhSachNguoiDung)
+    LayDanhSachHoiThoai(token)
+      .then(setDanhSachHoiThoai)
       .catch((loiBat) => {
         if (loiBat instanceof LoiGoiApi && loiBat.trangThai === 401) {
           dangXuat();
@@ -50,6 +53,11 @@ export function TrangChat() {
       .finally(() => setDangTaiDanhSach(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  const danhSachHienThi = useMemo<NguoiDungTomTat[]>(
+    () => danhSachHoiThoai.map((h) => h.nguoiDung),
+    [danhSachHoiThoai],
+  );
 
   useEffect(() => {
     if (!token || !nguoiDangChon) return;
@@ -122,8 +130,8 @@ export function TrangChat() {
         ...truoc,
         [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
       }));
-    } catch {
-      setLoi('Gửi tin nhắn thất bại. Vui lòng thử lại.');
+    } catch (loiBat) {
+      setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi tin nhắn thất bại. Vui lòng thử lại.');
     }
   }
 
@@ -155,7 +163,7 @@ export function TrangChat() {
         [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
       }));
     } catch (loiBat) {
-      setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
+      setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
     } finally {
       setDangTaiTep(false);
       if (inputTepRef.current) inputTepRef.current.value = '';
@@ -193,7 +201,7 @@ export function TrangChat() {
         </div>
         {dangTaiDanhSach && <p>Đang tải...</p>}
         <ul className="trang-chat__danh-sach">
-          {danhSachNguoiDung.map((nd) => (
+          {danhSachHienThi.map((nd) => (
             <li key={nd.id}>
               <button
                 className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
