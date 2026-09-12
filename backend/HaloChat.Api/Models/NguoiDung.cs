@@ -21,4 +21,6 @@ public class NguoiDung
     public string KhoaBiMat { get; set; } = string.Empty;
 
     public DateTime NgayTao { get; set; } = DateTime.UtcNow;
+
+    public bool ChoPhepTinNhanTuNguoiLa { get; set; } = false;
 }

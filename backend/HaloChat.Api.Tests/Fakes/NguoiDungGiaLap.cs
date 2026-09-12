@@ -26,4 +26,14 @@ public class NguoiDungGiaLap : INguoiDungRepository
 
     public Task<NguoiDung?> TimTheoIdAsync(string id) =>
         Task.FromResult(DanhSach.FirstOrDefault(nd => nd.Id == id));
+
+    public Task CapNhatChoPhepTinNhanTuNguoiLaAsync(string id, bool choPhep)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.ChoPhepTinNhanTuNguoiLa = choPhep;
+        }
+        return Task.CompletedTask;
+    }
 }

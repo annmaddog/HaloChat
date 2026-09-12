@@ -74,4 +74,15 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email))
             .ToList();
     }
+
+    public Task CapNhatCaiDatAsync(string idHienTai, bool choPhepTinNhanTuNguoiLa) =>
+        _kho.CapNhatChoPhepTinNhanTuNguoiLaAsync(idHienTai, choPhepTinNhanTuNguoiLa);
+
+    public async Task<HoSoCaNhanDto?> LayThongTinCaNhanAsync(string id)
+    {
+        var nguoiDung = await _kho.TimTheoIdAsync(id);
+        return nguoiDung is null
+            ? null
+            : new HoSoCaNhanDto(nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email, nguoiDung.ChoPhepTinNhanTuNguoiLa);
+    }
 }

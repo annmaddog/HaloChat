@@ -135,4 +135,38 @@ public class DichVuNguoiDungTests
         var duyNhat = Assert.Single(danhSach);
         Assert.Equal("TranBinh", duyNhat.TenTaiKhoan);
     }
+
+    [Fact]
+    public async Task CapNhatCaiDatAsync_CapNhatDungTruong()
+    {
+        var (dichVu, kho) = TaoDichVu();
+        kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA" });
+
+        await dichVu.CapNhatCaiDatAsync("1", true);
+
+        Assert.True(kho.DanhSach.Single().ChoPhepTinNhanTuNguoiLa);
+    }
+
+    [Fact]
+    public async Task LayThongTinCaNhanAsync_TraVeDungThongTin()
+    {
+        var (dichVu, kho) = TaoDichVu();
+        kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA", Email = "a@gmail.com", ChoPhepTinNhanTuNguoiLa = true });
+
+        var hoSo = await dichVu.LayThongTinCaNhanAsync("1");
+
+        Assert.NotNull(hoSo);
+        Assert.Equal("NguoiA", hoSo!.TenTaiKhoan);
+        Assert.True(hoSo.ChoPhepTinNhanTuNguoiLa);
+    }
+
+    [Fact]
+    public async Task LayThongTinCaNhanAsync_KhongTonTai_TraVeNull()
+    {
+        var (dichVu, _) = TaoDichVu();
+
+        var hoSo = await dichVu.LayThongTinCaNhanAsync("khong-ton-tai");
+
+        Assert.Null(hoSo);
+    }
 }

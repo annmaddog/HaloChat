@@ -116,4 +116,41 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
     }
+
+    [Fact]
+    public async Task CapNhatCaiDat_DaDangNhap_CapNhatThanhCong()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("caidatnguoia");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        var phanHoiDangNhap = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dang-nhap", new DangNhapRequest(yeuCauDangKy.TenTaiKhoan, "MatKhau123"));
+        var ketQuaDangNhap = await phanHoiDangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/cai-dat", new CapNhatCaiDatRequest(true));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var nguoiDung = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "caidatnguoia");
+        Assert.True(nguoiDung.ChoPhepTinNhanTuNguoiLa);
+    }
+
+    [Fact]
+    public async Task LayThongTinCaNhan_DaDangNhap_TraVeDungThongTin()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("hosonguoia");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        var phanHoiDangNhap = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dang-nhap", new DangNhapRequest(yeuCauDangKy.TenTaiKhoan, "MatKhau123"));
+        var ketQuaDangNhap = await phanHoiDangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+        var phanHoi = await _client.GetAsync("/api/nguoidung/toi");
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
+        Assert.Equal("hosonguoia", hoSo!.TenTaiKhoan);
+        Assert.False(hoSo.ChoPhepTinNhanTuNguoiLa);
+    }
 }

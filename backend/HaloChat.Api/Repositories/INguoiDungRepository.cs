@@ -9,4 +9,5 @@ public interface INguoiDungRepository
     Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap);
     Task<List<NguoiDung>> LayTatCaAsync();
     Task<NguoiDung?> TimTheoIdAsync(string id);
+    Task CapNhatChoPhepTinNhanTuNguoiLaAsync(string id, bool choPhep);
 }

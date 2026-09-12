@@ -54,4 +54,32 @@ public class NguoiDungController : ControllerBase
         var danhSach = await _dichVu.LayDanhSachNguoiDung(idHienTai);
         return Ok(danhSach);
     }
+
+    [HttpGet("toi")]
+    [Authorize]
+    public async Task<IActionResult> LayThongTinCaNhan()
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var hoSo = await _dichVu.LayThongTinCaNhanAsync(idHienTai);
+        return hoSo is null ? NotFound() : Ok(hoSo);
+    }
+
+    [HttpPut("cai-dat")]
+    [Authorize]
+    public async Task<IActionResult> CapNhatCaiDat([FromBody] CapNhatCaiDatRequest yeuCau)
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        await _dichVu.CapNhatCaiDatAsync(idHienTai, yeuCau.ChoPhepTinNhanTuNguoiLa);
+        return Ok(new { thongBao = "Đã cập nhật cài đặt." });
+    }
 }

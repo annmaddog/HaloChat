@@ -51,4 +51,11 @@ public class NguoiDungRepository : INguoiDungRepository
     {
         return await _collection.Find(nd => nd.Id == id).FirstOrDefaultAsync();
     }
+
+    public async Task CapNhatChoPhepTinNhanTuNguoiLaAsync(string id, bool choPhep)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.ChoPhepTinNhanTuNguoiLa, choPhep);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
 }
