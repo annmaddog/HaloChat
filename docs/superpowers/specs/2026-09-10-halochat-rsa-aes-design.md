@@ -311,6 +311,9 @@ Thay đổi ở `NguoiDung` và `TinNhan` xem §4 (đã cập nhật: `ChoPhepTi
   user hiện tại), `GET /api/nhom/{id}`, `POST /api/nhom/{id}/thanh-vien` (chỉ admin),
   `DELETE /api/nhom/{id}/thanh-vien/{userId}` (chỉ admin), `POST /api/nhom/{id}/roi-nhom` (tự rời
   — admin rời thì nhóm giải tán, vì không có cơ chế chuyển quyền admin ở phạm vi đồ án này).
+- **Danh sách hội thoại** (thêm ở §10.6, GĐ5b-1): `GET /api/tinnhan/hoi-thoai` — trả về danh sách
+  người/nhóm mà user hiện tại đã từng nhắn qua lại (không phải toàn bộ người dùng), kèm tin nhắn
+  cuối cùng + số tin chưa đọc, dùng làm nguồn dữ liệu cho tab "Tin nhắn".
 - **Lịch sử tin nhắn (phân trang, tải thêm khi cuộn lên):**
   `GET /api/tinnhan/nguoi-dung/{id}?truoc=&soLuong=30`,
   `GET /api/tinnhan/nhom/{id}?truoc=&soLuong=30` (`truoc` = id tin nhắn cũ nhất đã tải, để trống
@@ -324,16 +327,49 @@ Thay đổi ở `NguoiDung` và `TinNhan` xem §4 (đã cập nhật: `ChoPhepTi
 
 ### 10.5. Frontend
 
-- Layout mới `KhungChinh` (thay thế `TrangDanhSachNguoiDung` hiện tại làm trang chính sau đăng
-  nhập): sidebar trái (Tin nhắn / Bạn bè / Nhóm / Cài đặt — đúng bố cục ảnh mẫu, §3 "Mở rộng phạm
-  vi GĐ5"), khung chat giữa, panel thông tin liên hệ phải (ẩn trên mobile, có nút toggle riêng).
+- Layout mới `KhungChinh` (bọc quanh nội dung, KHÔNG thay thế `TrangChat` — xem §10.6 lý do): sidebar
+  trái (Tin nhắn / Bạn bè / Nhóm / Cài đặt — đúng bố cục ảnh mẫu, §3 "Mở rộng phạm vi GĐ5"), khung
+  chat giữa, panel thông tin liên hệ phải (ẩn trên mobile, có nút toggle riêng).
 - `DichVuSignalR.ts` bọc thư viện `@microsoft/signalr`, kết nối 1 lần ngay sau đăng nhập trong
   `NguCanhChat.tsx` (context mới, tách khỏi `NguCanhXacThuc` để không phình trách nhiệm), tự
-  reconnect khi rớt kết nối, ngắt kết nối khi đăng xuất.
+  reconnect khi rớt kết nối, ngắt kết nối khi đăng xuất. **Đã triển khai đúng như vậy ở GĐ5a** —
+  GĐ5b tái sử dụng nguyên trạng `useChat()`, không sửa `NguCanhChat.tsx`.
 - Dropdown thông báo (không phải trang riêng, theo đúng ghi chú §3 "Mở rộng phạm vi GĐ5"): gộp lời mời
   kết bạn đang chờ (`GET /api/ketban/loi-moi-den`) + hội thoại có tin nhắn `DaDoc=false`, cập nhật
   realtime qua các event Hub ở §10.3.
 - Trang Cài đặt (`/cai-dat`): toggle `ChoPhepTinNhanTuNguoiLa`.
+
+### 10.6. Điều chỉnh sau khi triển khai GĐ5a (quyết định 2026-09-12)
+
+GĐ5a đã hoàn thành và push lên `origin/main` trước khi GĐ5b được thiết kế chi tiết thêm. Đối chiếu
+lại: hầu hết thiết kế ở §10.2-10.4 (mô hình dữ liệu, Hub, API) vẫn đúng nguyên trạng và chưa đụng
+tới — GĐ5b xây thêm lên trên, không sửa lại. Riêng phần frontend (§10.5) cần điều chỉnh vì GĐ5a
+triển khai `TrangChat` như 1 trang 2 cột độc lập (danh sách toàn bộ người dùng + khung chat), **không
+phải** layout `KhungChinh` 4-tab như bản phác thảo ban đầu:
+
+- **Layout:** `KhungChinh.tsx` là component MỚI bọc quanh nội dung (sidebar rail 4 mục), không thay
+  thế `TrangChat`. Route `/nguoi-dung` (đã có, giữ nguyên path để không phải sửa `DinhTuyen.test.tsx`
+  — đúng thủ thuật đã dùng ở GĐ5a Task 9) tiếp tục là tab "Tin nhắn", render `TrangChat` bên trong
+  `KhungChinh`. Thêm 3 route anh em dùng chung layout: `/ban-be`, `/nhom`, `/cai-dat`.
+- **Danh sách "Tin nhắn" đổi nguồn dữ liệu:** một khi có chính sách bạn bè/người lạ (§10.1),
+  hiển thị toàn bộ người dùng làm mục tiêu nhắn tin (như GĐ5a đang làm qua `LayDanhSachNguoiDung`)
+  không còn hợp lý — phần lớn sẽ bị Hub từ chối. `TrangChat` đổi sang lấy dữ liệu từ endpoint mới
+  `GET /api/tinnhan/hoi-thoai` (§10.4) — chỉ liệt kê người/nhóm đã từng nhắn qua lại. Muốn nhắn cho
+  người chưa từng chat: sang tab "Bạn bè" (nhắn cho bạn) hoặc thử nhắn người lạ trực tiếp và nhận
+  lỗi rõ ràng từ Hub nếu họ chưa bật `ChoPhepTinNhanTuNguoiLa` — không lộ cài đặt riêng tư của người
+  khác ra danh sách công khai.
+- **Tab "Bạn bè":** lời mời đến/đi (`GET /api/ketban/loi-moi-den`, `/loi-moi-gui`), danh sách bạn bè
+  (`GET /api/ketban/ban-be`, mỗi mục có nút "Nhắn tin" → điều hướng sang tab Tin nhắn), gửi lời mời
+  mới bằng cách duyệt danh sách toàn bộ người dùng (tái dùng `LayDanhSachNguoiDung` sẵn có từ GĐ4).
+- **Tab "Nhóm":** danh sách nhóm đã tham gia (`GET /api/nhom`), nút "Tạo nhóm" (chọn thành viên từ
+  toàn bộ người dùng — **ruling**: không giới hạn phải là bạn bè, đơn giản hóa hợp lý cho phạm vi
+  đồ án, tài liệu gốc không yêu cầu ràng buộc này), click 1 nhóm mở chat nhóm ngay trong khu vực
+  chat — tái dùng phần render tin nhắn của `TrangChat`, mở rộng để nhận diện hội thoại qua `NhomId`
+  thay vì `NguoiNhanId`.
+- **Chia plan:** như GĐ5a, tách **GĐ5b-1 (Kết bạn: `LoiMoiKetBan`, `ChoPhepTinNhanTuNguoiLa`, layout
+  `KhungChinh`, đổi tab Tin nhắn sang danh sách hội thoại, áp policy bạn bè vào `GuiTinNhanAsync`)**
+  và **GĐ5b-2 (Nhóm chat: `Nhom`, mở rộng Hub/`TrangChat` cho `NhomId` + Thông báo realtime)** —
+  GĐ5b-2 xây trên nền GĐ5b-1, viết plan riêng khi GĐ5b-1 xong.
 
 ## 11. Quên mật khẩu (module riêng, làm sau)
 
