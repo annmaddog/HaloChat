@@ -21,6 +21,7 @@ export function TrangChat() {
   const [noiDungDangGo, setNoiDungDangGo] = useState('');
   const [loi, setLoi] = useState<string | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
+  const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
 
@@ -41,15 +42,23 @@ export function TrangChat() {
 
   useEffect(() => {
     if (!token || !nguoiDangChon) return;
-    if (tinNhanTheoNguoiDung[nguoiDangChon.id]) return;
+    if (idDaTaiLichSuRef.current.has(nguoiDangChon.id)) return;
+    idDaTaiLichSuRef.current.add(nguoiDangChon.id);
 
     setDangTaiLichSu(true);
     LayLichSuTinNhan(token, nguoiDangChon.id)
       .then((moiNhatTruoc) => {
         const thuTuThoiGian = [...moiNhatTruoc].reverse();
-        setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: thuTuThoiGian }));
+        setTinNhanTheoNguoiDung((truoc) => {
+          const gop = new Map<string, TinNhan>();
+          for (const tn of thuTuThoiGian) gop.set(tn.id, tn);
+          for (const tn of truoc[nguoiDangChon.id] ?? []) gop.set(tn.id, tn);
+          const ketQua = [...gop.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+          return { ...truoc, [nguoiDangChon.id]: ketQua };
+        });
       })
       .catch((loiBat) => {
+        idDaTaiLichSuRef.current.delete(nguoiDangChon.id);
         setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được lịch sử tin nhắn.');
       })
       .finally(() => setDangTaiLichSu(false));

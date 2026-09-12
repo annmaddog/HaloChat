@@ -111,4 +111,23 @@ describe('TrangChat', () => {
 
     expect(await screen.findByText('Tin nhắn realtime')).toBeInTheDocument();
   });
+
+  it('nhận tin nhắn realtime từ người chưa chọn không chặn tải lịch sử đầy đủ khi chọn sau đó', async () => {
+    const layLichSuSpy = vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([
+      taoTinNhanGiaLap({ id: 'm0', noiDungTinNhan: 'Tin nhắn cũ' }),
+    ]);
+
+    renderTrangChat();
+    await screen.findByText('TranBinh');
+    await waitFor(() => expect(ketNoiGiaLap.on).toHaveBeenCalledWith('NhanTinNhan', expect.any(Function)));
+
+    const handler = ketNoiGiaLap.on.mock.calls.find(([ten]: [string]) => ten === 'NhanTinNhan')![1];
+    handler(taoTinNhanGiaLap({ id: 'm1', noiDungTinNhan: 'Tin realtime đến trước' }));
+
+    await userEvent.click(screen.getByText('TranBinh'));
+
+    await waitFor(() => expect(layLichSuSpy).toHaveBeenCalled());
+    expect(await screen.findByText('Tin nhắn cũ')).toBeInTheDocument();
+    expect(screen.getByText('Tin realtime đến trước')).toBeInTheDocument();
+  });
 });
