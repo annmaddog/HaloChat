@@ -71,11 +71,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 const string TenChinhSachCors = "ChoPhepFrontend";
+// Cho phép nhiều origin cùng lúc, phân tách bằng dấu phẩy (vd domain riêng +
+// URL mặc định của GitHub Pages) — không cần biết chắc domain nào sẽ dùng
+// trước khi deploy.
+var cacNguonChoPhep = (builder.Configuration["Cors:NguonChoPhep"] ?? "http://localhost:5173")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(TenChinhSachCors, policy =>
     {
-        policy.WithOrigins(builder.Configuration["Cors:NguonChoPhep"] ?? "http://localhost:5173")
+        policy.WithOrigins(cacNguonChoPhep)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
