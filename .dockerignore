@@ -1,0 +1,9 @@
+backend/**/bin/
+backend/**/obj/
+backend/HaloChat.Api/uploads/
+frontend/
+docs/
+.git/
+.superpowers/
+.vs/
+.vscode/

@@ -3,6 +3,7 @@ using HaloChat.Api.Options;
 using HaloChat.Api.Repositories;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -122,6 +123,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Render (và các PaaS tương tự) làm HTTPS ở tầng proxy, chuyển tiếp về container
+// bằng HTTP thường kèm header X-Forwarded-*. Không đọc header này thì
+// UseHttpsRedirection() tưởng request đang là HTTP thật và redirect lặp vô hạn.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+});
 
 app.UseHttpsRedirection();
 app.UseCors(TenChinhSachCors);
