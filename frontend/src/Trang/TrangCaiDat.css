@@ -1,0 +1,33 @@
+.trang-cai-dat {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.trang-cai-dat h2 {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.trang-cai-dat__dong {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-o);
+  border: 1px solid var(--mau-vien);
+  cursor: pointer;
+}
+
+.trang-cai-dat__dong input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.trang-cai-dat__da-luu {
+  color: var(--mau-chinh-dam);
+  font-size: 13px;
+  margin-top: 8px;
+}
