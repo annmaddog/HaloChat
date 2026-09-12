@@ -1,11 +1,16 @@
 using HaloChat.Api.Dto;
 using HaloChat.Api.Models;
 using HaloChat.Api.Repositories;
+using MongoDB.Bson;
 
 namespace HaloChat.Api.Services;
 
 public class DichVuTinNhan : IDichVuTinNhan
 {
+    private static readonly System.Text.RegularExpressions.Regex MauDuongDanFileHopLe = new(
+        @"^/uploads/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.(jpg|jpeg|png|gif|webp|pdf|docx|xlsx|zip)$",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
     private readonly ITinNhanRepository _khoTinNhan;
     private readonly INguoiDungRepository _khoNguoiDung;
 
@@ -29,9 +34,22 @@ public class DichVuTinNhan : IDichVuTinNhan
             throw new TinNhanKhongHopLeException("Nội dung tin nhắn không được để trống.");
         }
 
-        if (loai != LoaiTinNhan.Text && string.IsNullOrWhiteSpace(duongDanFile))
+        if (loai != LoaiTinNhan.Text)
         {
-            throw new TinNhanKhongHopLeException("Thiếu đường dẫn file đính kèm.");
+            if (string.IsNullOrWhiteSpace(duongDanFile) || !MauDuongDanFileHopLe.IsMatch(duongDanFile))
+            {
+                throw new TinNhanKhongHopLeException("Đường dẫn file không hợp lệ.");
+            }
+
+            if (kichThuocFile is < 0)
+            {
+                throw new TinNhanKhongHopLeException("Kích thước file không hợp lệ.");
+            }
+        }
+
+        if (!ObjectId.TryParse(nguoiNhanId, out _))
+        {
+            throw new NguoiNhanKhongTonTaiException(nguoiNhanId);
         }
 
         var nguoiNhan = await _khoNguoiDung.TimTheoIdAsync(nguoiNhanId);

@@ -69,6 +69,17 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     }
 
     [Fact]
+    public async Task LayLichSu_IdKhongPhaiObjectIdHopLe_TraVe400()
+    {
+        var token = await DangKyVaDangNhapAsync("tinnhannguoie");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nguoi-dung/khong-phai-object-id");
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
     public async Task TaiLen_DinhDangKhongDuocHoTro_TraVe400()
     {
         var token = await DangKyVaDangNhapAsync("tinnhannguoic");

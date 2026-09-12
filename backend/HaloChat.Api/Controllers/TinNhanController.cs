@@ -3,6 +3,7 @@ using HaloChat.Api.Dto;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace HaloChat.Api.Controllers;
 
@@ -51,6 +52,16 @@ public class TinNhanController : ControllerBase
         if (IdHienTai is null)
         {
             return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id người dùng không hợp lệ." });
+        }
+
+        if (truoc is not null && !ObjectId.TryParse(truoc, out _))
+        {
+            return BadRequest(new { thongBao = "Tham số truoc không hợp lệ." });
         }
 
         var soLuongThucTe = Math.Clamp(soLuong, 1, 100);
