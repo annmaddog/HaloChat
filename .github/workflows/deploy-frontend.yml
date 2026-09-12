@@ -39,6 +39,14 @@ jobs:
       - name: Giu domain rieng khi deploy len Pages
         run: cp CNAME frontend/dist/CNAME
 
+      - name: Cho phep React Router xu ly route khi load thang/refresh (SPA fallback)
+        # GitHub Pages tra 404 khi truy cap thang mot route phia client (vd
+        # /dang-nhap) vi khong co file that ten do tren server. GitHub Pages
+        # tu dong phuc vu 404.html cho moi duong dan khong ton tai - copy
+        # index.html thanh 404.html de ung dung React van duoc load va tu
+        # dieu huong dung route.
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
