@@ -1,6 +1,7 @@
 using HaloChat.Api.Dto;
 using HaloChat.Api.Models;
 using HaloChat.Api.Repositories;
+using MongoDB.Bson;
 
 namespace HaloChat.Api.Services;
 
@@ -20,6 +21,11 @@ public class DichVuKetBan : IDichVuKetBan
         if (nguoiGuiId == nguoiNhanId)
         {
             throw new KhongTheTuKetBanException();
+        }
+
+        if (!ObjectId.TryParse(nguoiNhanId, out _))
+        {
+            throw new NguoiDuocMoiKhongTonTaiException(nguoiNhanId);
         }
 
         var nguoiNhan = await _khoNguoiDung.TimTheoIdAsync(nguoiNhanId);
@@ -61,6 +67,11 @@ public class DichVuKetBan : IDichVuKetBan
 
     private async Task<LoiMoiKetBan> LayLoiMoiChoDuyetCuaMinhAsync(string nguoiHienTaiId, string idLoiMoi)
     {
+        if (!ObjectId.TryParse(idLoiMoi, out _))
+        {
+            throw new LoiMoiKetBanKhongTonTaiException();
+        }
+
         var loiMoi = await _khoLoiMoi.TimTheoIdAsync(idLoiMoi);
         if (loiMoi is null)
         {

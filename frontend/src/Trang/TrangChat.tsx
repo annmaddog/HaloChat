@@ -193,12 +193,6 @@ export function TrangChat() {
   return (
     <div className="trang-chat">
       <aside className="trang-chat__sidebar">
-        <div className="trang-chat__sidebar-dau">
-          <h1>HaloChat</h1>
-          <button className="trang-chat__nut-dang-xuat" onClick={dangXuat}>
-            Đăng xuất
-          </button>
-        </div>
         {dangTaiDanhSach && <p>Đang tải...</p>}
         <ul className="trang-chat__danh-sach">
           {danhSachHienThi.map((nd) => (

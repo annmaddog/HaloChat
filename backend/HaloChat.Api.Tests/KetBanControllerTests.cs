@@ -59,6 +59,17 @@ public class KetBanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     }
 
     [Fact]
+    public async Task GuiLoiMoi_IdKhongPhaiObjectIdHopLe_TraVe404()
+    {
+        var (tokenA, _) = await DangKyVaDangNhapAsync("ketbannguoin");
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var phanHoi = await _client.PostAsync("/api/ketban/loi-moi/khong-phai-object-id", null);
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
+
+    [Fact]
     public async Task GuiLoiMoi_TuGuiChoChinhMinh_TraVe400()
     {
         var (tokenA, idA) = await DangKyVaDangNhapAsync("ketbannguoic");

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { BieuTuongTinNhan, BieuTuongBanBe, BieuTuongNhom, BieuTuongCaiDat } from './BieuTuong';
+import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import './KhungChinh.css';
 
 function lopMuc({ isActive }: { isActive: boolean }): string {
@@ -8,9 +9,11 @@ function lopMuc({ isActive }: { isActive: boolean }): string {
 }
 
 export function KhungChinh({ children }: { children: ReactNode }) {
+  const { dangXuat } = useXacThuc();
   return (
     <div className="khung-chinh">
       <nav className="khung-chinh__rail">
+        <div className="khung-chinh__logo">HaloChat</div>
         <NavLink to="/nguoi-dung" className={lopMuc}>
           <BieuTuongTinNhan />
           <span>Tin nhắn</span>
@@ -27,6 +30,9 @@ export function KhungChinh({ children }: { children: ReactNode }) {
           <BieuTuongCaiDat />
           <span>Cài đặt</span>
         </NavLink>
+        <button className="khung-chinh__dang-xuat" onClick={dangXuat}>
+          Đăng xuất
+        </button>
       </nav>
       <div className="khung-chinh__noi-dung">{children}</div>
     </div>

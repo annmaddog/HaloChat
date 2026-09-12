@@ -36,7 +36,7 @@ describe('DinhTuyen', () => {
 
   it('vào /nguoi-dung khi đã đăng nhập rồi đăng xuất sẽ quay lại trang đăng nhập', async () => {
     localStorage.setItem('haloChatToken', 'token-gia-lap');
-    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([]);
 
     renderDinhTuyen('/nguoi-dung');
 
