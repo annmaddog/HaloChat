@@ -13,11 +13,13 @@ public class DichVuTinNhan : IDichVuTinNhan
 
     private readonly ITinNhanRepository _khoTinNhan;
     private readonly INguoiDungRepository _khoNguoiDung;
+    private readonly ILoiMoiKetBanRepository _khoLoiMoiKetBan;
 
-    public DichVuTinNhan(ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung)
+    public DichVuTinNhan(ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan)
     {
         _khoTinNhan = khoTinNhan;
         _khoNguoiDung = khoNguoiDung;
+        _khoLoiMoiKetBan = khoLoiMoiKetBan;
     }
 
     public async Task<TinNhanDto> GuiTinNhanAsync(
@@ -56,6 +58,15 @@ public class DichVuTinNhan : IDichVuTinNhan
         if (nguoiNhan is null)
         {
             throw new NguoiNhanKhongTonTaiException(nguoiNhanId);
+        }
+
+        if (nguoiGuiId != nguoiNhanId)
+        {
+            var laBanBe = await _khoLoiMoiKetBan.LaBanBeAsync(nguoiGuiId, nguoiNhanId);
+            if (!laBanBe && !nguoiNhan.ChoPhepTinNhanTuNguoiLa)
+            {
+                throw new TinNhanKhongHopLeException("Người này chỉ nhận tin nhắn từ bạn bè. Hãy gửi lời mời kết bạn trước.");
+            }
         }
 
         var tinNhan = new TinNhan

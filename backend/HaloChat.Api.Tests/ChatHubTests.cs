@@ -57,6 +57,7 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
         var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubnguoia");
         var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubnguoib");
         var idNguoiB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubnguoib").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubnguoib").ChoPhepTinNhanTuNguoiLa = true;
 
         await using var ketNoiA = TaoKetNoiHub(tokenA);
         await using var ketNoiB = TaoKetNoiHub(tokenB);
