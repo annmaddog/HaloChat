@@ -97,6 +97,27 @@ describe('DichVuApi', () => {
     });
   });
 
+  it('DangKy ném LoiGoiApi với thông báo cụ thể khi backend trả lỗi validation dạng ValidationProblemDetails (400)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            title: 'One or more validation errors occurred.',
+            status: 400,
+            errors: { MatKhau: ['Mật khẩu phải có ít nhất 6 ký tự.'] },
+          }),
+          { status: 400 },
+        ),
+      ),
+    );
+
+    await expect(DangKy('ann', 'ann@gmail.com', 'abc')).rejects.toMatchObject({
+      trangThai: 400,
+      message: 'Mật khẩu phải có ít nhất 6 ký tự.',
+    });
+  });
+
   it('ném LoiGoiApi với thông báo mặc định khi phản hồi không phải JSON hợp lệ', async () => {
     vi.stubGlobal(
       'fetch',

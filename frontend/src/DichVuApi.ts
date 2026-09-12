@@ -37,12 +37,30 @@ async function goiApi<T>(duongDan: string, tuyChon?: RequestInit): Promise<T> {
   }
 
   if (!phanHoi.ok) {
-    const thongBao =
-      (duLieu as { thongBao?: string } | null)?.thongBao ?? 'Đã có lỗi xảy ra, vui lòng thử lại.';
-    throw new LoiGoiApi(phanHoi.status, thongBao);
+    throw new LoiGoiApi(phanHoi.status, TrichThongBaoLoi(duLieu));
   }
 
   return duLieu as T;
+}
+
+// ASP.NET Core tự trả lỗi 400 theo dạng ValidationProblemDetails khi dữ liệu
+// gửi lên không đạt các ràng buộc [Required]/[MinLength]/... trên DTO —
+// dạng { errors: { TenTruong: ["thông báo 1", ...] } }, khác với dạng
+// { thongBao } mà các controller trong dự án này tự trả về. Không đọc được
+// "errors" thì người dùng chỉ thấy thông báo chung chung, không biết sai ở
+// trường nào (VD: mật khẩu ngắn hơn 6 ký tự lúc đăng ký).
+function TrichThongBaoLoi(duLieu: unknown): string {
+  const object = duLieu as { thongBao?: string; errors?: Record<string, string[]> } | null;
+  if (object?.thongBao) {
+    return object.thongBao;
+  }
+  if (object?.errors) {
+    const tatCaLoi = Object.values(object.errors).flat();
+    if (tatCaLoi.length > 0) {
+      return tatCaLoi.join(' ');
+    }
+  }
+  return 'Đã có lỗi xảy ra, vui lòng thử lại.';
 }
 
 export async function DangKy(tenTaiKhoan: string, email: string, matKhau: string): Promise<KetQuaDangKy> {

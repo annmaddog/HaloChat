@@ -6,5 +6,5 @@ namespace HaloChat.Api.Dto;
 // target "property:") — ASP.NET Core validation cho record yêu cầu vậy,
 // nếu không sẽ ném InvalidOperationException lúc validate model.
 public record DangNhapRequest(
-    [Required] string TenDangNhap,
-    [Required] string MatKhau);
+    [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập.")] string TenDangNhap,
+    [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")] string MatKhau);
