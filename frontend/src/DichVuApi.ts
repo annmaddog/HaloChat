@@ -3,7 +3,9 @@ import type {
   LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan,
 } from './KieuDuLieu';
 
-export const DIA_CHI_GOC = 'http://localhost:5231';
+// Đọc từ biến môi trường lúc build (VITE_API_BASE_URL) để trỏ đúng backend
+// production khi deploy — mặc định về localhost cho môi trường phát triển.
+export const DIA_CHI_GOC = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5231';
 const DIA_CHI_GOC_API = `${DIA_CHI_GOC}/api`;
 
 export class LoiGoiApi extends Error {

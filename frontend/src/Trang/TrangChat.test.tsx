@@ -114,7 +114,7 @@ describe('TrangChat', () => {
     await userEvent.click(await screen.findByText('TranBinh'));
     await waitFor(() => expect(ketNoiGiaLap.on).toHaveBeenCalledWith('NhanTinNhan', expect.any(Function)));
 
-    const handler = ketNoiGiaLap.on.mock.calls.find(([ten]: [string]) => ten === 'NhanTinNhan')![1];
+    const handler = ketNoiGiaLap.on.mock.calls.find((cuocGoi) => cuocGoi[0] === 'NhanTinNhan')![1];
     handler(taoTinNhanGiaLap({ id: 'm3', noiDungTinNhan: 'Tin nhắn realtime' }));
 
     expect(await screen.findByText('Tin nhắn realtime')).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('TrangChat', () => {
     await screen.findByText('TranBinh');
     await waitFor(() => expect(ketNoiGiaLap.on).toHaveBeenCalledWith('NhanTinNhan', expect.any(Function)));
 
-    const handler = ketNoiGiaLap.on.mock.calls.find(([ten]: [string]) => ten === 'NhanTinNhan')![1];
+    const handler = ketNoiGiaLap.on.mock.calls.find((cuocGoi) => cuocGoi[0] === 'NhanTinNhan')![1];
     handler(taoTinNhanGiaLap({ id: 'm1', noiDungTinNhan: 'Tin realtime đến trước' }));
 
     await userEvent.click(screen.getByText('TranBinh'));
