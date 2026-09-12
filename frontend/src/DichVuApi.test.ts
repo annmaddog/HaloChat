@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi } from './DichVuApi';
+import {
+  DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi,
+  GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai,
+} from './DichVuApi';
 
 describe('DichVuApi', () => {
   beforeEach(() => {
@@ -149,5 +152,91 @@ describe('DichVuApi', () => {
       trangThai: 400,
       message: 'Định dạng file không được hỗ trợ.',
     });
+  });
+
+  it('GuiLoiMoiKetBan gửi đúng POST và trả về lời mời', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: '1',
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com' },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' },
+          trangThai: 'ChoDuyet',
+          thoiGianTao: '2026-01-01T00:00:00Z',
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await GuiLoiMoiKetBan('token-gia-lap', 'b');
+
+    expect(ketQua.trangThai).toBe('ChoDuyet');
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/ketban/loi-moi/b'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('ChapNhanLoiMoiKetBan gửi đúng POST theo id', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: '1',
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com' },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' },
+          trangThai: 'DaChapNhan',
+          thoiGianTao: '2026-01-01T00:00:00Z',
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    await ChapNhanLoiMoiKetBan('token-gia-lap', '1');
+
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/ketban/1/chap-nhan'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('LayBanBe trả về danh sách bạn bè', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' }]), { status: 200 })),
+    );
+
+    const danhSach = await LayBanBe('token-gia-lap');
+
+    expect(danhSach).toHaveLength(1);
+  });
+
+  it('LayLoiMoiDen trả về danh sách lời mời đến', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 })));
+
+    const danhSach = await LayLoiMoiDen('token-gia-lap');
+
+    expect(danhSach).toEqual([]);
+  });
+
+  it('CapNhatCaiDat gửi đúng PUT với body choPhepTinNhanTuNguoiLa', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(new Response(JSON.stringify({ thongBao: 'OK' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    await CapNhatCaiDat('token-gia-lap', true);
+
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/cai-dat'),
+      expect.objectContaining({ method: 'PUT', body: JSON.stringify({ choPhepTinNhanTuNguoiLa: true }) }),
+    );
+  });
+
+  it('LayDanhSachHoiThoai trả về danh sách hội thoại', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 })));
+
+    const danhSach = await LayDanhSachHoiThoai('token-gia-lap');
+
+    expect(danhSach).toEqual([]);
   });
 });

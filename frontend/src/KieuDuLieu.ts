@@ -34,3 +34,25 @@ export interface TepTinDaTaiLen {
   kichThuocFile: number;
   loaiFile: string;
 }
+
+export interface LoiMoiKetBan {
+  id: string;
+  nguoiGui: NguoiDungTomTat;
+  nguoiNhan: NguoiDungTomTat;
+  trangThai: 'ChoDuyet' | 'DaChapNhan' | 'DaTuChoi';
+  thoiGianTao: string;
+}
+
+export interface HoiThoaiTomTat {
+  nguoiDung: NguoiDungTomTat;
+  tinNhanCuoi: string;
+  thoiGianTinNhanCuoi: string;
+  soTinChuaDoc: number;
+}
+
+export interface HoSoCaNhan {
+  id: string;
+  tenTaiKhoan: string;
+  email: string;
+  choPhepTinNhanTuNguoiLa: boolean;
+}

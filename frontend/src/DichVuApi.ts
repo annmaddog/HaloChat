@@ -1,4 +1,7 @@
-import type { KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen } from './KieuDuLieu';
+import type {
+  KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen,
+  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan,
+} from './KieuDuLieu';
 
 export const DIA_CHI_GOC = 'http://localhost:5231';
 const DIA_CHI_GOC_API = `${DIA_CHI_GOC}/api`;
@@ -107,4 +110,63 @@ export async function TaiLenTep(token: string, tep: File): Promise<TepTinDaTaiLe
   }
 
   return ketQua as TepTinDaTaiLen;
+}
+
+export async function GuiLoiMoiKetBan(token: string, nguoiNhanId: string): Promise<LoiMoiKetBan> {
+  return goiApi<LoiMoiKetBan>(`/ketban/loi-moi/${nguoiNhanId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function ChapNhanLoiMoiKetBan(token: string, id: string): Promise<LoiMoiKetBan> {
+  return goiApi<LoiMoiKetBan>(`/ketban/${id}/chap-nhan`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function TuChoiLoiMoiKetBan(token: string, id: string): Promise<void> {
+  await goiApi(`/ketban/${id}/tu-choi`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayBanBe(token: string): Promise<NguoiDungTomTat[]> {
+  return goiApi<NguoiDungTomTat[]>('/ketban/ban-be', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayLoiMoiDen(token: string): Promise<LoiMoiKetBan[]> {
+  return goiApi<LoiMoiKetBan[]>('/ketban/loi-moi-den', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayLoiMoiGui(token: string): Promise<LoiMoiKetBan[]> {
+  return goiApi<LoiMoiKetBan[]>('/ketban/loi-moi-gui', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayThongTinCaNhan(token: string): Promise<HoSoCaNhan> {
+  return goiApi<HoSoCaNhan>('/nguoidung/toi', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function CapNhatCaiDat(token: string, choPhepTinNhanTuNguoiLa: boolean): Promise<void> {
+  await goiApi('/nguoidung/cai-dat', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ choPhepTinNhanTuNguoiLa }),
+  });
+}
+
+export async function LayDanhSachHoiThoai(token: string): Promise<HoiThoaiTomTat[]> {
+  return goiApi<HoiThoaiTomTat[]>('/tinnhan/hoi-thoai', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
