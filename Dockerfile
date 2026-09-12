@@ -16,7 +16,10 @@ RUN dotnet restore backend/HaloChat.Api/HaloChat.Api.csproj
 COPY backend/ backend/
 RUN dotnet publish backend/HaloChat.Api/HaloChat.Api.csproj -c Release -o /app/publish --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+# Dùng ảnh nền Ubuntu (noble) thay vì Debian mặc định — ảnh Debian của .NET
+# gặp lỗi bắt tay TLS ("SSL_ERROR_SSL... tlsv1 alert internal error") khi kết
+# nối MongoDB Atlas do khác biệt cấu hình OpenSSL, đã gặp thật khi deploy lên Render.
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-noble AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
