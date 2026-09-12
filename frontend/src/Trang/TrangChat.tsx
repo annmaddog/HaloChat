@@ -1,9 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LayDanhSachNguoiDung, LayLichSuTinNhan, LoiGoiApi } from '../DichVuApi';
+import { LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, DIA_CHI_GOC } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
+import { BieuTuongGhim } from '../ThanhPhan/BieuTuong';
 import type { NguoiDungTomTat, TinNhan } from '../KieuDuLieu';
 import './TrangChat.css';
+
+const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
+const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
+
+function dinhDangKichThuoc(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)}MB` : `${Math.ceil(bytes / 1024)}KB`;
+}
 
 function idNguoiKia(tinNhan: TinNhan, idHienTai: string): string {
   return tinNhan.nguoiGuiId === idHienTai ? (tinNhan.nguoiNhanId ?? '') : tinNhan.nguoiGuiId;
@@ -20,6 +29,8 @@ export function TrangChat() {
   const [dangTaiLichSu, setDangTaiLichSu] = useState(false);
   const [noiDungDangGo, setNoiDungDangGo] = useState('');
   const [loi, setLoi] = useState<string | null>(null);
+  const [dangTaiTep, setDangTaiTep] = useState(false);
+  const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
@@ -116,6 +127,41 @@ export function TrangChat() {
     }
   }
 
+  async function guiTep(tep: File) {
+    if (!ketNoi || !nguoiDangChon || !token) return;
+
+    const laAnh = tep.type.startsWith('image/');
+    const gioiHan = laAnh ? GIOI_HAN_ANH_BYTES : GIOI_HAN_FILE_BYTES;
+    if (tep.size > gioiHan) {
+      setLoi(`File vượt quá giới hạn ${gioiHan / 1024 / 1024}MB.`);
+      return;
+    }
+
+    setDangTaiTep(true);
+    try {
+      const daTaiLen = await TaiLenTep(token, tep);
+      const tinNhanDaGui = await ketNoi.invoke<TinNhan>(
+        'GuiTinNhan',
+        nguoiDangChon.id,
+        laAnh ? 'Anh' : 'File',
+        '',
+        daTaiLen.duongDanFile,
+        daTaiLen.tenFileGoc,
+        daTaiLen.kichThuocFile,
+        daTaiLen.loaiFile,
+      );
+      setTinNhanTheoNguoiDung((truoc) => ({
+        ...truoc,
+        [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
+      }));
+    } catch (loiBat) {
+      setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
+    } finally {
+      setDangTaiTep(false);
+      if (inputTepRef.current) inputTepRef.current.value = '';
+    }
+  }
+
   async function taiThemLichSuCu() {
     if (!token || !nguoiDangChon) return;
     const cuNhat = (tinNhanTheoNguoiDung[nguoiDangChon.id] ?? [])[0];
@@ -184,7 +230,24 @@ export function TrangChat() {
                   key={tn.id}
                   className={`trang-chat__bong-tin-nhan${tn.nguoiGuiId === idHienTai ? ' trang-chat__bong-tin-nhan--minh' : ''}`}
                 >
-                  {tn.noiDungTinNhan}
+                  {tn.loaiTinNhan === 'Anh' && (
+                    <img
+                      className="trang-chat__anh-tin-nhan"
+                      src={`${DIA_CHI_GOC}${tn.duongDanFile}`}
+                      alt={tn.tenFileGoc ?? 'ảnh'}
+                    />
+                  )}
+                  {tn.loaiTinNhan === 'File' && (
+                    <a
+                      className="trang-chat__file-tin-nhan"
+                      href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      📎 {tn.tenFileGoc} ({dinhDangKichThuoc(tn.kichThuocFile ?? 0)})
+                    </a>
+                  )}
+                  {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
                 </div>
               ))}
               <div ref={cuoiDanhSachRef} />
@@ -197,6 +260,25 @@ export function TrangChat() {
                 void guiTinNhanVanBan();
               }}
             >
+              <button
+                type="button"
+                className="trang-chat__nut-ghim"
+                onClick={() => inputTepRef.current?.click()}
+                disabled={!dangKetNoi || dangTaiTep}
+                aria-label="Đính kèm file"
+              >
+                <BieuTuongGhim />
+              </button>
+              <input
+                ref={inputTepRef}
+                type="file"
+                className="trang-chat__input-tep"
+                accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.docx,.xlsx,.zip"
+                onChange={(su) => {
+                  const tep = su.target.files?.[0];
+                  if (tep) void guiTep(tep);
+                }}
+              />
               <input
                 type="text"
                 value={noiDungDangGo}
@@ -208,6 +290,7 @@ export function TrangChat() {
                 Gửi
               </button>
             </form>
+            {dangTaiTep && <p className="trang-chat__dang-tai-tep">Đang tải file lên...</p>}
           </>
         )}
       </main>

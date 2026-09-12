@@ -184,3 +184,39 @@
     max-height: 40vh;
   }
 }
+
+.trang-chat__input-tep {
+  display: none;
+}
+
+.trang-chat__nut-ghim {
+  border: 1px solid var(--mau-vien);
+  background: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--mau-chu-dam);
+  flex-shrink: 0;
+}
+
+.trang-chat__anh-tin-nhan {
+  max-width: 220px;
+  border-radius: 12px;
+  display: block;
+}
+
+.trang-chat__file-tin-nhan {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.trang-chat__dang-tai-tep {
+  margin: 0;
+  padding: 0 24px 12px;
+  font-size: 12px;
+  color: var(--mau-chu-phu);
+}

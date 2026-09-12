@@ -130,4 +130,57 @@ describe('TrangChat', () => {
     expect(await screen.findByText('Tin nhắn cũ')).toBeInTheDocument();
     expect(screen.getByText('Tin realtime đến trước')).toBeInTheDocument();
   });
+
+  it('chọn file ảnh gọi TaiLenTep rồi GuiTinNhan với loại Anh', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'TaiLenTep').mockResolvedValue({
+      duongDanFile: '/uploads/abc.png',
+      tenFileGoc: 'anh.png',
+      kichThuocFile: 1024,
+      loaiFile: 'image/png',
+    });
+    ketNoiGiaLap.invoke.mockResolvedValue(
+      taoTinNhanGiaLap({
+        id: 'm4',
+        nguoiGuiId: '1',
+        nguoiNhanId: '2',
+        loaiTinNhan: 'Anh',
+        noiDungTinNhan: '',
+        duongDanFile: '/uploads/abc.png',
+        tenFileGoc: 'anh.png',
+        kichThuocFile: 1024,
+        loaiFile: 'image/png',
+      }),
+    );
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await waitFor(() => expect(ketNoiGiaLap.start).toHaveBeenCalled());
+
+    const tep = new File(['noi-dung-gia-lap'], 'anh.png', { type: 'image/png' });
+    const inputTep = document.querySelector('.trang-chat__input-tep') as HTMLInputElement;
+    await userEvent.upload(inputTep, tep);
+
+    await waitFor(() =>
+      expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith(
+        'GuiTinNhan', '2', 'Anh', '', '/uploads/abc.png', 'anh.png', 1024, 'image/png',
+      ),
+    );
+    expect(await screen.findByRole('img')).toHaveAttribute('src', expect.stringContaining('/uploads/abc.png'));
+  });
+
+  it('file ảnh vượt quá 5MB bị chặn ở client, không gọi TaiLenTep', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    const taiLenSpy = vi.spyOn(DichVuApi, 'TaiLenTep');
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+
+    const tepQuaKho = new File([new Uint8Array(6 * 1024 * 1024)], 'to.png', { type: 'image/png' });
+    const inputTep = document.querySelector('.trang-chat__input-tep') as HTMLInputElement;
+    await userEvent.upload(inputTep, tepQuaKho);
+
+    expect(taiLenSpy).not.toHaveBeenCalled();
+    expect(await screen.findByText(/vượt quá giới hạn/)).toBeInTheDocument();
+  });
 });
