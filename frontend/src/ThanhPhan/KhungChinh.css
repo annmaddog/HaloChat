@@ -1,0 +1,61 @@
+.khung-chinh {
+  display: flex;
+  height: 100vh;
+}
+
+.khung-chinh__rail {
+  width: 76px;
+  flex-shrink: 0;
+  background: var(--mau-nen-the);
+  border-right: 1px solid var(--mau-vien);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 0;
+}
+
+.khung-chinh__muc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: var(--ban-kinh-o);
+  color: var(--mau-chu-phu);
+  text-decoration: none;
+  font-size: 11px;
+  width: 60px;
+  cursor: pointer;
+}
+
+.khung-chinh__muc:hover,
+.khung-chinh__muc--dang-chon {
+  background: var(--mau-nen-tren);
+  color: var(--mau-chinh-dam);
+}
+
+.khung-chinh__muc--sap-ra-mat {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.khung-chinh__noi-dung {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .khung-chinh {
+    flex-direction: column-reverse;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .khung-chinh__rail {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 8px 0;
+  }
+}
