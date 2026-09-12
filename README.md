@@ -36,5 +36,16 @@ Tên sản phẩm: **HaloChat**. Logo tại `assets/halochat-logo.png`. Màu ch�
 
 - GĐ3 (Backend nền tảng — đăng ký/đăng nhập/JWT/danh sách người dùng): hoàn thành.
 - GĐ4 (Frontend nền tảng — trang đăng ký/đăng nhập/danh sách người dùng, giao diện HaloChat): hoàn thành.
-- GĐ5 (Chat realtime + gửi ảnh/file + kết bạn + nhóm chat — phạm vi đã mở rộng, xem spec), GĐ6
-  (Bảo mật AES/RSA — nhóm tự viết), GĐ7 (Quên mật khẩu): chưa bắt đầu.
+- GĐ5a (Chat realtime lõi — SignalR ChatHub, nhắn tin 1-1, gửi ảnh/file, lịch sử phân trang):
+  hoàn thành. Nhắn tin hiện mở tự do giữa mọi người dùng đã đăng nhập (chưa có kết bạn — xem spec §10.1).
+- GĐ5b (Kết bạn + nhóm chat + thông báo realtime), GĐ6 (Bảo mật AES/RSA — nhóm tự viết), GĐ7
+  (Quên mật khẩu): chưa bắt đầu.
+
+### Xác minh GĐ5a thủ công
+
+1. Chạy backend + frontend (xem hướng dẫn phía trên).
+2. Mở 2 trình duyệt (hoặc 1 cửa sổ ẩn danh + 1 bình thường), đăng ký 2 tài khoản khác nhau, đăng nhập cả hai.
+3. Ở tài khoản A, chọn tài khoản B trong danh sách, gửi 1 tin nhắn văn bản — xác nhận B nhận được ngay (không cần F5).
+4. Gửi 1 ảnh (< 5MB) và 1 file `.pdf`/`.docx` (< 20MB) — xác nhận hiển thị ảnh/link file ở cả 2 phía.
+5. Mở MongoDB Atlas, kiểm tra collection `TinNhan` có đủ các bản ghi vừa gửi (kể cả `DuongDanFile`/`TenFileGoc` cho ảnh/file).
+6. Thử gửi file `.exe` — xác nhận bị từ chối với thông báo lỗi.

@@ -1,12 +1,15 @@
 import { BrowserRouter } from 'react-router-dom';
 import { NhaCungCapXacThuc } from './NguCanh/NguCanhXacThuc';
+import { NhaCungCapChat } from './NguCanh/NguCanhChat';
 import { DinhTuyen } from './DinhTuyen';
 
 function App() {
   return (
     <BrowserRouter>
       <NhaCungCapXacThuc>
-        <DinhTuyen />
+        <NhaCungCapChat>
+          <DinhTuyen />
+        </NhaCungCapChat>
       </NhaCungCapXacThuc>
     </BrowserRouter>
   );

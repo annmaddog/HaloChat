@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { TuyenDuongRieng } from './ThanhPhan/TuyenDuongRieng';
 import { TrangDangKy } from './Trang/TrangDangKy';
 import { TrangDangNhap } from './Trang/TrangDangNhap';
-import { TrangDanhSachNguoiDung } from './Trang/TrangDanhSachNguoiDung';
+import { TrangChat } from './Trang/TrangChat';
 
 export function DinhTuyen() {
   return (
@@ -13,7 +13,7 @@ export function DinhTuyen() {
         path="/nguoi-dung"
         element={
           <TuyenDuongRieng>
-            <TrangDanhSachNguoiDung />
+            <TrangChat />
           </TuyenDuongRieng>
         }
       />
