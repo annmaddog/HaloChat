@@ -44,4 +44,15 @@ public class TinNhanRepository : ITinNhanRepository
 
         await _collection.UpdateManyAsync(boLoc, capNhat);
     }
+
+    public async Task<List<TinNhan>> LayTatCaLienQuanAsync(string nguoiDungId)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, null),
+            Builders<TinNhan>.Filter.Or(
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiDungId),
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiDungId)));
+
+        return await _collection.Find(boLoc).SortByDescending(t => t.Id).ToListAsync();
+    }
 }

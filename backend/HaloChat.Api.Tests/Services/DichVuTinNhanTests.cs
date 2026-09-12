@@ -177,4 +177,31 @@ public class DichVuTinNhanTests
 
         Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
     }
+
+    [Fact]
+    public async Task LayDanhSachHoiThoaiAsync_TraVeTinNhanCuoiVaSoChuaDoc()
+    {
+        var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Tin đầu", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Tin cuối", null, null, null, null);
+
+        var hoiThoai = await dichVu.LayDanhSachHoiThoaiAsync(IdNguoiGui);
+
+        var duyNhat = Assert.Single(hoiThoai);
+        Assert.Equal(IdNguoiNhan, duyNhat.NguoiDung.Id);
+        Assert.Equal("Tin cuối", duyNhat.TinNhanCuoi);
+        Assert.Equal(2, duyNhat.SoTinChuaDoc);
+    }
+
+    [Fact]
+    public async Task LayDanhSachHoiThoaiAsync_KhongCoTinNhan_TraVeDanhSachRong()
+    {
+        var (dichVu, _, _, _) = TaoDichVu();
+
+        var hoiThoai = await dichVu.LayDanhSachHoiThoaiAsync(IdNguoiGui);
+
+        Assert.Empty(hoiThoai);
+    }
 }

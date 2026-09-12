@@ -94,6 +94,43 @@ public class DichVuTinNhan : IDichVuTinNhan
     public Task DanhDauDaDocAsync(string nguoiHienTaiId, string nguoiGuiId) =>
         _khoTinNhan.DanhDauDaDocAsync(nguoiGuiId, nguoiHienTaiId);
 
+    public async Task<List<HoiThoaiTomTatDto>> LayDanhSachHoiThoaiAsync(string nguoiDungId)
+    {
+        var tatCaTinNhan = await _khoTinNhan.LayTatCaLienQuanAsync(nguoiDungId);
+        var tatCaNguoiDung = await _khoNguoiDung.LayTatCaAsync();
+        var mapNguoiDung = tatCaNguoiDung.ToDictionary(nd => nd.Id);
+
+        var ketQua = new List<HoiThoaiTomTatDto>();
+        var daXuLy = new HashSet<string>();
+
+        foreach (var tn in tatCaTinNhan)
+        {
+            var idKia = tn.NguoiGuiId == nguoiDungId ? tn.NguoiNhanId : tn.NguoiGuiId;
+            if (idKia is null || !daXuLy.Add(idKia))
+            {
+                continue;
+            }
+
+            if (!mapNguoiDung.TryGetValue(idKia, out var nguoiKia))
+            {
+                continue;
+            }
+
+            var soChuaDoc = tatCaTinNhan.Count(t => t.NguoiGuiId == idKia && t.NguoiNhanId == nguoiDungId && !t.DaDoc);
+            var xemTruoc = tn.LoaiTinNhan == LoaiTinNhan.Text
+                ? tn.NoiDungTinNhan
+                : tn.LoaiTinNhan == LoaiTinNhan.Anh ? "[Ảnh]" : "[File]";
+
+            ketQua.Add(new HoiThoaiTomTatDto(
+                new NguoiDungTomTatDto(nguoiKia.Id, nguoiKia.TenTaiKhoan, nguoiKia.Email),
+                xemTruoc,
+                tn.ThoiGianTao,
+                soChuaDoc));
+        }
+
+        return ketQua;
+    }
+
     private static TinNhanDto AnhXaDto(TinNhan t) => new(
         t.Id, t.NguoiGuiId, t.NguoiNhanId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
         t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.ThoiGianTao);

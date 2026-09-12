@@ -116,4 +116,23 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
             "uploads", Path.GetFileName(ketQua.DuongDanFile));
         if (File.Exists(duongDanThat)) File.Delete(duongDanThat);
     }
+
+    [Fact]
+    public async Task LayDanhSachHoiThoai_DaDangNhap_TraVeDanhSach()
+    {
+        var tokenA = await DangKyVaDangNhapAsync("hoithoainguoia");
+        var idA = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hoithoainguoia").Id;
+        await DangKyVaDangNhapAsync("hoithoainguoib");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hoithoainguoib").Id;
+
+        _factory.KhoTinNhanGiaLap.DanhSach.Add(new TinNhan { NguoiGuiId = idB, NguoiNhanId = idA, NoiDungTinNhan = "Chào" });
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var phanHoi = await _client.GetAsync("/api/tinnhan/hoi-thoai");
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var danhSach = await phanHoi.Content.ReadFromJsonAsync<List<HoiThoaiTomTatDto>>();
+        Assert.Single(danhSach!);
+        Assert.Equal(idB, danhSach![0].NguoiDung.Id);
+    }
 }

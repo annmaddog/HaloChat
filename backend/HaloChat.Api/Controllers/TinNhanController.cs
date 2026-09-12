@@ -109,4 +109,15 @@ public class TinNhanController : ControllerBase
 
         return Ok(new TepTinDaTaiLenDto($"/uploads/{tenFileLuu}", tep.FileName, tep.Length, (laAnh ? mimeAnh : mimeFile)!));
     }
+
+    [HttpGet("hoi-thoai")]
+    public async Task<IActionResult> LayDanhSachHoiThoai()
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(await _dichVuTinNhan.LayDanhSachHoiThoaiAsync(IdHienTai));
+    }
 }

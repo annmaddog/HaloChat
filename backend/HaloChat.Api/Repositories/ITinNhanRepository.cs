@@ -14,4 +14,7 @@ public interface ITinNhanRepository
 
     /// <summary>Đánh dấu đã đọc mọi tin nhắn nguoiGuiId đã gửi cho nguoiNhanId.</summary>
     Task DanhDauDaDocAsync(string nguoiGuiId, string nguoiNhanId);
+
+    /// <summary>Toàn bộ tin nhắn 1-1 (NhomId null) mà nguoiDungId là người gửi hoặc người nhận, mới nhất trước.</summary>
+    Task<List<TinNhan>> LayTatCaLienQuanAsync(string nguoiDungId);
 }

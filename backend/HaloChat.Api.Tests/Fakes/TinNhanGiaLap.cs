@@ -33,4 +33,13 @@ public class TinNhanGiaLap : ITinNhanRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task<List<TinNhan>> LayTatCaLienQuanAsync(string nguoiDungId)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId is null && (t.NguoiGuiId == nguoiDungId || t.NguoiNhanId == nguoiDungId))
+            .OrderByDescending(t => t.Id)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
 }
