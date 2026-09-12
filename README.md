@@ -36,10 +36,12 @@ Tên sản phẩm: **HaloChat**. Logo tại `assets/halochat-logo.png`. Màu ch�
 
 - GĐ3 (Backend nền tảng — đăng ký/đăng nhập/JWT/danh sách người dùng): hoàn thành.
 - GĐ4 (Frontend nền tảng — trang đăng ký/đăng nhập/danh sách người dùng, giao diện HaloChat): hoàn thành.
-- GĐ5a (Chat realtime lõi — SignalR ChatHub, nhắn tin 1-1, gửi ảnh/file, lịch sử phân trang):
-  hoàn thành. Nhắn tin hiện mở tự do giữa mọi người dùng đã đăng nhập (chưa có kết bạn — xem spec §10.1).
-- GĐ5b (Kết bạn + nhóm chat + thông báo realtime), GĐ6 (Bảo mật AES/RSA — nhóm tự viết), GĐ7
-  (Quên mật khẩu): chưa bắt đầu.
+- GĐ5a (Chat realtime lõi — SignalR ChatHub, nhắn tin 1-1, gửi ảnh/file, lịch sử phân trang): hoàn thành.
+- GĐ5b-1 (Kết bạn — gửi/chấp nhận/từ chối lời mời, danh sách bạn bè, cài đặt cho phép người lạ,
+  layout KhungChinh, tab Bạn bè/Cài đặt, tab Tin nhắn đổi sang danh sách hội thoại): hoàn thành.
+  Từ nay nhắn tin 1-1 yêu cầu đã là bạn bè hoặc người nhận bật "cho phép người lạ nhắn tin" (Cài đặt).
+- GĐ5b-2 (Nhóm chat + thông báo realtime), GĐ6 (Bảo mật AES/RSA — nhóm tự viết), GĐ7 (Quên mật khẩu):
+  chưa bắt đầu.
 
 ### Xác minh GĐ5a thủ công
 
@@ -49,3 +51,20 @@ Tên sản phẩm: **HaloChat**. Logo tại `assets/halochat-logo.png`. Màu ch�
 4. Gửi 1 ảnh (< 5MB) và 1 file `.pdf`/`.docx` (< 20MB) — xác nhận hiển thị ảnh/link file ở cả 2 phía.
 5. Mở MongoDB Atlas, kiểm tra collection `TinNhan` có đủ các bản ghi vừa gửi (kể cả `DuongDanFile`/`TenFileGoc` cho ảnh/file).
 6. Thử gửi file `.exe` — xác nhận bị từ chối với thông báo lỗi.
+
+### Xác minh GĐ5b-1 thủ công
+
+1. Chạy backend + frontend (xem hướng dẫn phía trên).
+2. Đăng ký 2 tài khoản A, B, đăng nhập cả hai.
+3. Ở A, sang tab "Bạn bè", gửi lời mời kết bạn cho B.
+4. Ở B, sang tab "Bạn bè", thấy lời mời từ A trong mục "Lời mời kết bạn", bấm "Chấp nhận".
+5. Ở A, thử nhắn tin cho B qua tab "Bạn bè" (nút "Nhắn tin") — phải gửi được vì đã là bạn bè.
+6. Đăng ký tài khoản C (chưa kết bạn với A). Ở A vào tab "Bạn bè", tìm C, bấm "Kết bạn" gửi lời mời
+   nhưng ĐỪNG chấp nhận. Thử mở MongoDB kiểm tra collection `LoiMoiKetBan` có bản ghi đúng.
+7. Ở tab Cài đặt của C, bật "Cho phép người lạ nhắn tin". Quay lại A, mở hội thoại với C (qua nút
+   Nhắn tin ở mục "Tìm người để kết bạn" — cần thêm thủ công nếu chưa có UI, hoặc dùng Swagger gọi
+   trực tiếp `POST /api/ketban/loi-moi/{id}` rồi thử gửi tin) — xác nhận gửi được dù chưa là bạn bè.
+8. Tắt cài đặt đó ở C, thử A nhắn tin cho C lần nữa (khi chưa là bạn bè) — xác nhận bị từ chối với
+   thông báo rõ ràng.
+9. Kiểm tra tab "Tin nhắn" của A chỉ hiển thị người đã từng nhắn qua lại (không phải toàn bộ danh
+   sách người dùng).
