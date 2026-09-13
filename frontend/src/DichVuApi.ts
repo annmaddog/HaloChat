@@ -1,6 +1,6 @@
 import type {
   KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen,
-  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom,
+  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom, KetQuaThongBao,
 } from './KieuDuLieu';
 
 // Đọc từ biến môi trường lúc build (VITE_API_BASE_URL) để trỏ đúng backend
@@ -257,5 +257,21 @@ export async function LayLichSuNhom(
   if (truoc) thamSo.set('truoc', truoc);
   return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}?${thamSo.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function GuiYeuCauQuenMatKhau(email: string): Promise<KetQuaThongBao> {
+  return goiApi<KetQuaThongBao>('/nguoidung/quen-mat-khau', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function DatLaiMatKhau(email: string, maOtp: string, matKhauMoi: string): Promise<KetQuaThongBao> {
+  return goiApi<KetQuaThongBao>('/nguoidung/dat-lai-mat-khau', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, maOtp, matKhauMoi }),
   });
 }

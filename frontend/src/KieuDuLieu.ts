@@ -74,3 +74,7 @@ export interface KetQuaRoiNhom {
   daGiaiTan: boolean;
   thanhVienConLai: string[];
 }
+
+export interface KetQuaThongBao {
+  thongBao: string;
+}

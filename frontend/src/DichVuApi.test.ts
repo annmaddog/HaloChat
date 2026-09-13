@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi,
   GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai, TaoNhom,
+  GuiYeuCauQuenMatKhau, DatLaiMatKhau,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -286,5 +287,32 @@ describe('DichVuApi', () => {
         body: JSON.stringify({ tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, thanhVienIds: ['b'] }),
       }),
     );
+  });
+
+  it('GuiYeuCauQuenMatKhau gửi đúng POST với body email', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ thongBao: 'Nếu email tồn tại trong hệ thống, mã OTP đã được gửi.' }), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await GuiYeuCauQuenMatKhau('a@gmail.com');
+
+    expect(ketQua.thongBao).toBe('Nếu email tồn tại trong hệ thống, mã OTP đã được gửi.');
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/quen-mat-khau'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ email: 'a@gmail.com' }) }),
+    );
+  });
+
+  it('DatLaiMatKhau gửi đúng POST và ném LoiGoiApi khi OTP sai (400)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ thongBao: 'Mã OTP không đúng.' }), { status: 400 })),
+    );
+
+    await expect(DatLaiMatKhau('a@gmail.com', '000000', 'MatKhauMoi123')).rejects.toMatchObject({
+      trangThai: 400,
+      message: 'Mã OTP không đúng.',
+    });
   });
 });
