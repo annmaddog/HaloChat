@@ -1,0 +1,107 @@
+using HaloChat.Api.Dto;
+using HaloChat.Api.Models;
+using HaloChat.Api.Repositories;
+using MongoDB.Bson;
+
+namespace HaloChat.Api.Services;
+
+public class DichVuNhom : IDichVuNhom
+{
+    private readonly INhomRepository _khoNhom;
+    private readonly INguoiDungRepository _khoNguoiDung;
+
+    public DichVuNhom(INhomRepository khoNhom, INguoiDungRepository khoNguoiDung)
+    {
+        _khoNhom = khoNhom;
+        _khoNguoiDung = khoNguoiDung;
+    }
+
+    public async Task<NhomDto> TaoNhomAsync(
+        string nguoiTaoId, string tenNhom, string? moTa, string? duongDanAnhDaiDien, List<string> thanhVienIds)
+    {
+        var idThanhVien = new HashSet<string>(thanhVienIds) { nguoiTaoId };
+        foreach (var id in idThanhVien)
+        {
+            if (!ObjectId.TryParse(id, out _) || await _khoNguoiDung.TimTheoIdAsync(id) is null)
+            {
+                throw new ThanhVienKhongTonTaiException(id);
+            }
+        }
+
+        var nhom = new Nhom
+        {
+            TenNhom = tenNhom,
+            MoTa = moTa,
+            DuongDanAnhDaiDien = duongDanAnhDaiDien,
+            NguoiTaoId = nguoiTaoId,
+            ThanhVienIds = idThanhVien.ToList(),
+        };
+        await _khoNhom.ThemMoiAsync(nhom);
+
+        return await AnhXaDtoAsync(nhom);
+    }
+
+    public async Task<List<NhomDto>> LayDanhSachAsync(string nguoiDungId)
+    {
+        var danhSach = await _khoNhom.LayTheoThanhVienAsync(nguoiDungId);
+        var ketQua = new List<NhomDto>();
+        foreach (var nhom in danhSach)
+        {
+            ketQua.Add(await AnhXaDtoAsync(nhom));
+        }
+        return ketQua;
+    }
+
+    public async Task<NhomDto> LayChiTietAsync(string nguoiDungId, string nhomId)
+    {
+        var nhom = await LayNhomKiemTraThanhVienAsync(nguoiDungId, nhomId);
+        return await AnhXaDtoAsync(nhom);
+    }
+
+    public async Task<NhomDto> CapNhatAsync(
+        string nguoiDungId, string nhomId, string tenNhom, string? moTa, string? duongDanAnhDaiDien)
+    {
+        var nhom = await LayNhomKiemTraQuanTriAsync(nguoiDungId, nhomId);
+        await _khoNhom.CapNhatThongTinAsync(nhomId, tenNhom, moTa, duongDanAnhDaiDien);
+        nhom.TenNhom = tenNhom;
+        nhom.MoTa = moTa;
+        nhom.DuongDanAnhDaiDien = duongDanAnhDaiDien;
+        return await AnhXaDtoAsync(nhom);
+    }
+
+    /// <summary>Lấy nhóm theo id, ném lỗi nếu không tồn tại hoặc người gọi không phải thành viên.</summary>
+    private async Task<Nhom> LayNhomKiemTraThanhVienAsync(string nguoiDungId, string nhomId)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(nguoiDungId))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+        return nhom;
+    }
+
+    /// <summary>Lấy nhóm theo id, ném lỗi nếu không tồn tại hoặc người gọi không phải NguoiTaoId (admin).</summary>
+    private async Task<Nhom> LayNhomKiemTraQuanTriAsync(string nguoiDungId, string nhomId)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (nhom.NguoiTaoId != nguoiDungId)
+        {
+            throw new KhongCoQuyenQuanTriNhomException();
+        }
+        return nhom;
+    }
+
+    private async Task<NhomDto> AnhXaDtoAsync(Nhom nhom)
+    {
+        var thanhVien = new List<NguoiDungTomTatDto>();
+        foreach (var id in nhom.ThanhVienIds)
+        {
+            var nd = await _khoNguoiDung.TimTheoIdAsync(id);
+            if (nd is not null)
+            {
+                thanhVien.Add(new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email));
+            }
+        }
+        return new NhomDto(nhom.Id, nhom.TenNhom, nhom.MoTa, nhom.DuongDanAnhDaiDien, nhom.NguoiTaoId, thanhVien, nhom.ThoiGianTao);
+    }
+}
