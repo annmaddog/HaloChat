@@ -10,21 +10,22 @@ namespace HaloChat.Api.Tests.Services;
 
 public class DichVuNguoiDungTests
 {
-    private static (DichVuNguoiDung DichVu, NguoiDungGiaLap Kho) TaoDichVu()
+    private static (DichVuNguoiDung DichVu, NguoiDungGiaLap Kho, DichVuEmailGiaLap Email) TaoDichVu()
     {
         var kho = new NguoiDungGiaLap();
+        var email = new DichVuEmailGiaLap();
         var dichVuJwt = new DichVuJwt(Microsoft.Extensions.Options.Options.Create(new TuyChonJwt
         {
             ChuoiBiMat = "khoa-bi-mat-du-dai-danh-cho-kiem-thu-toi-thieu-32-ky-tu",
         }));
-        var dichVu = new DichVuNguoiDung(kho, new DichVuMatKhau(), dichVuJwt);
-        return (dichVu, kho);
+        var dichVu = new DichVuNguoiDung(kho, new DichVuMatKhau(), dichVuJwt, email);
+        return (dichVu, kho, email);
     }
 
     [Fact]
     public async Task DangKyTaiKhoan_TenTaiKhoanDaTonTai_TraVeThatBai()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "NguyenAn", Email = "khac@gmail.com" });
 
         var ketQua = await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
@@ -35,7 +36,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangKyTaiKhoan_EmailDaTonTai_TraVeThatBai()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "Khac", Email = "nguyenan@gmail.com" });
 
         var ketQua = await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
@@ -46,7 +47,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangKyTaiKhoan_TenTaiKhoanTrungEmailNguoiKhac_TraVeThatBai()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "TranBinh", Email = "trung@gmail.com" });
 
         // Đăng ký với TenTaiKhoan trùng Email của người đã tồn tại (va chạm chéo trường).
@@ -58,7 +59,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangKyTaiKhoan_EmailTrungTenTaiKhoanNguoiKhac_TraVeThatBai()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { TenTaiKhoan = "TranBinh", Email = "khac@gmail.com" });
 
         // Đăng ký với Email trùng TenTaiKhoan của người đã tồn tại (va chạm chéo trường).
@@ -70,7 +71,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangKyTaiKhoan_HopLe_LuuMatKhauDaBamKhongLuuBanRo()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
 
         var ketQua = await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
 
@@ -84,7 +85,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangNhap_SaiMatKhau_TraVeNull()
     {
-        var (dichVu, _) = TaoDichVu();
+        var (dichVu, _, _) = TaoDichVu();
         await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
 
         var token = await dichVu.DangNhap("NguyenAn", "SaiMatKhau");
@@ -95,7 +96,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangNhap_TaiKhoanKhongTonTai_TraVeNull()
     {
-        var (dichVu, _) = TaoDichVu();
+        var (dichVu, _, _) = TaoDichVu();
 
         var token = await dichVu.DangNhap("KhongTonTai", "MatKhau123");
 
@@ -105,7 +106,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangNhap_DungMatKhauBangTenTaiKhoan_TraVeToken()
     {
-        var (dichVu, _) = TaoDichVu();
+        var (dichVu, _, _) = TaoDichVu();
         await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
 
         var token = await dichVu.DangNhap("NguyenAn", "MatKhau123");
@@ -116,7 +117,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task DangNhap_DungMatKhauBangEmail_TraVeToken()
     {
-        var (dichVu, _) = TaoDichVu();
+        var (dichVu, _, _) = TaoDichVu();
         await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
 
         var token = await dichVu.DangNhap("nguyenan@gmail.com", "MatKhau123");
@@ -127,7 +128,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task LayDanhSachNguoiDung_KhongBaoGomChinhMinh()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguyenAn", Email = "a@gmail.com" });
         kho.DanhSach.Add(new NguoiDung { Id = "2", TenTaiKhoan = "TranBinh", Email = "b@gmail.com" });
 
@@ -140,7 +141,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task CapNhatCaiDatAsync_CapNhatDungTruong()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA" });
 
         await dichVu.CapNhatCaiDatAsync("1", true, false);
@@ -152,7 +153,7 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task LayThongTinCaNhanAsync_TraVeDungThongTin()
     {
-        var (dichVu, kho) = TaoDichVu();
+        var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA", Email = "a@gmail.com", ChoPhepTinNhanTuNguoiLa = true });
 
         var hoSo = await dichVu.LayThongTinCaNhanAsync("1");
@@ -165,10 +166,122 @@ public class DichVuNguoiDungTests
     [Fact]
     public async Task LayThongTinCaNhanAsync_KhongTonTai_TraVeNull()
     {
-        var (dichVu, _) = TaoDichVu();
+        var (dichVu, _, _) = TaoDichVu();
 
         var hoSo = await dichVu.LayThongTinCaNhanAsync("khong-ton-tai");
 
         Assert.Null(hoSo);
+    }
+
+    [Fact]
+    public async Task YeuCauOtp_EmailTonTai_GuiEmailVaLuuOtp()
+    {
+        var (dichVu, kho, email) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "otpuser1", Email = "otpuser1@gmail.com", Salt = "salt" };
+        kho.DanhSach.Add(nguoiDung);
+
+        await dichVu.YeuCauOtpDatLaiMatKhauAsync("otpuser1@gmail.com");
+
+        Assert.NotNull(nguoiDung.MaOtpBam);
+        Assert.NotNull(nguoiDung.MaOtpHetHan);
+        Assert.Single(email.DaGui);
+        Assert.Equal("otpuser1@gmail.com", email.DaGui[0].DiaChiNhan);
+        Assert.Matches(@"^\d{6}$", email.DaGui[0].MaOtp);
+    }
+
+    [Fact]
+    public async Task YeuCauOtp_EmailKhongTonTai_KhongGuiEmailKhongNemLoi()
+    {
+        var (dichVu, _, email) = TaoDichVu();
+
+        await dichVu.YeuCauOtpDatLaiMatKhauAsync("khong-ton-tai@gmail.com");
+
+        Assert.Empty(email.DaGui);
+    }
+
+    [Fact]
+    public async Task YeuCauOtp_ConTrongCooldown_KhongGuiLaiEmail()
+    {
+        var (dichVu, kho, email) = TaoDichVu();
+        var nguoiDung = new NguoiDung
+        {
+            TenTaiKhoan = "otpuser2", Email = "otpuser2@gmail.com", Salt = "salt",
+            MaOtpGuiLucNao = DateTime.UtcNow,
+        };
+        kho.DanhSach.Add(nguoiDung);
+
+        await dichVu.YeuCauOtpDatLaiMatKhauAsync("otpuser2@gmail.com");
+
+        Assert.Empty(email.DaGui);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_OtpDungConHieuLuc_DoiMatKhauThanhCong()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "otpuser3", Email = "otpuser3@gmail.com", Salt = "salt" };
+        kho.DanhSach.Add(nguoiDung);
+        var matKhau = new DichVuMatKhau();
+        nguoiDung.MaOtpBam = matKhau.BamMatKhau("123456", nguoiDung.Salt);
+        nguoiDung.MaOtpHetHan = DateTime.UtcNow.AddMinutes(5);
+
+        var ketQua = await dichVu.DatLaiMatKhauAsync("otpuser3@gmail.com", "123456", "MatKhauMoi123");
+
+        Assert.True(ketQua.ThanhCong);
+        Assert.True(matKhau.KiemTraMatKhau("MatKhauMoi123", nguoiDung.Salt, nguoiDung.MatKhauBam));
+        Assert.Null(nguoiDung.MaOtpBam);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_OtpSai_TangSoLanThuSaiVaTraVeThatBai()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "otpuser4", Email = "otpuser4@gmail.com", Salt = "salt" };
+        kho.DanhSach.Add(nguoiDung);
+        var matKhau = new DichVuMatKhau();
+        nguoiDung.MaOtpBam = matKhau.BamMatKhau("123456", nguoiDung.Salt);
+        nguoiDung.MaOtpHetHan = DateTime.UtcNow.AddMinutes(5);
+
+        var ketQua = await dichVu.DatLaiMatKhauAsync("otpuser4@gmail.com", "000000", "MatKhauMoi123");
+
+        Assert.False(ketQua.ThanhCong);
+        Assert.Equal("Mã OTP không đúng.", ketQua.ThongBao);
+        Assert.Equal(1, nguoiDung.SoLanThuSai);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_OtpDaHetHan_TraVeThatBaiKhongTangSoLanThuSai()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "otpuser5", Email = "otpuser5@gmail.com", Salt = "salt" };
+        kho.DanhSach.Add(nguoiDung);
+        var matKhau = new DichVuMatKhau();
+        nguoiDung.MaOtpBam = matKhau.BamMatKhau("123456", nguoiDung.Salt);
+        nguoiDung.MaOtpHetHan = DateTime.UtcNow.AddMinutes(-1); // đã hết hạn 1 phút trước
+
+        var ketQua = await dichVu.DatLaiMatKhauAsync("otpuser5@gmail.com", "123456", "MatKhauMoi123");
+
+        Assert.False(ketQua.ThanhCong);
+        Assert.Equal("Mã OTP đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại mã mới.", ketQua.ThongBao);
+        Assert.Equal(0, nguoiDung.SoLanThuSai);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_QuaSoLanSaiToiDa_TuChoiDuKhiOtpDung()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung
+        {
+            TenTaiKhoan = "otpuser6", Email = "otpuser6@gmail.com", Salt = "salt", SoLanThuSai = 5,
+        };
+        kho.DanhSach.Add(nguoiDung);
+        var matKhau = new DichVuMatKhau();
+        nguoiDung.MaOtpBam = matKhau.BamMatKhau("123456", nguoiDung.Salt);
+        nguoiDung.MaOtpHetHan = DateTime.UtcNow.AddMinutes(5);
+
+        var ketQua = await dichVu.DatLaiMatKhauAsync("otpuser6@gmail.com", "123456", "MatKhauMoi123");
+
+        Assert.False(ketQua.ThanhCong);
+        Assert.Equal("Mã OTP đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại mã mới.", ketQua.ThongBao);
     }
 }

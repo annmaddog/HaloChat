@@ -9,4 +9,6 @@ public interface IDichVuNguoiDung
     Task<List<NguoiDungTomTatDto>> LayDanhSachNguoiDung(string idHienTai);
     Task CapNhatCaiDatAsync(string idHienTai, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong);
     Task<HoSoCaNhanDto?> LayThongTinCaNhanAsync(string id);
+    Task YeuCauOtpDatLaiMatKhauAsync(string email);
+    Task<KetQuaDatLaiMatKhauDto> DatLaiMatKhauAsync(string email, string maOtp, string matKhauMoi);
 }

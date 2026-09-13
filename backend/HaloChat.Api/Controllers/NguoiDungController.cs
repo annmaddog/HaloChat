@@ -105,4 +105,23 @@ public class NguoiDungController : ControllerBase
 
         return Ok(ketQua);
     }
+
+    [HttpPost("quen-mat-khau")]
+    public async Task<IActionResult> QuenMatKhau([FromBody] QuenMatKhauRequest yeuCau)
+    {
+        await _dichVu.YeuCauOtpDatLaiMatKhauAsync(yeuCau.Email);
+        return Ok(new { thongBao = "Nếu email tồn tại trong hệ thống, mã OTP đã được gửi." });
+    }
+
+    [HttpPost("dat-lai-mat-khau")]
+    public async Task<IActionResult> DatLaiMatKhau([FromBody] DatLaiMatKhauRequest yeuCau)
+    {
+        var ketQua = await _dichVu.DatLaiMatKhauAsync(yeuCau.Email, yeuCau.MaOtp, yeuCau.MatKhauMoi);
+        if (!ketQua.ThanhCong)
+        {
+            return BadRequest(new { thongBao = ketQua.ThongBao });
+        }
+
+        return Ok(new { thongBao = ketQua.ThongBao });
+    }
 }

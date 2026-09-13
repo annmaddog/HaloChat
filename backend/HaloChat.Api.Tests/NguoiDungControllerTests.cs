@@ -20,6 +20,7 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     {
         _factory = factory;
         _factory.KhoGiaLap.DanhSach.Clear();
+        _factory.KhoEmailGiaLap.DaGui.Clear();
         _client = factory.CreateClient();
     }
 
@@ -170,5 +171,58 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
         Assert.True(hoSo!.HienThiTrangThaiHoatDong);
+    }
+
+    [Fact]
+    public async Task QuenMatKhau_EmailTonTai_TraVe200VaGuiEmail()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("quenmk1");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+
+        var phanHoi = await _client.PostAsJsonAsync("/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest(yeuCauDangKy.Email));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        Assert.Single(_factory.KhoEmailGiaLap.DaGui);
+    }
+
+    [Fact]
+    public async Task QuenMatKhau_EmailKhongTonTai_VanTraVe200KhongGuiEmail()
+    {
+        var phanHoi = await _client.PostAsJsonAsync("/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest("khong-ton-tai-thu@gmail.com"));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        Assert.Empty(_factory.KhoEmailGiaLap.DaGui);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_OtpDung_DangNhapDuocVoiMatKhauMoi()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("quenmk2");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        await _client.PostAsJsonAsync("/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest(yeuCauDangKy.Email));
+        var maOtp = _factory.KhoEmailGiaLap.DaGui.Single().MaOtp;
+
+        var phanHoiDatLai = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dat-lai-mat-khau",
+            new DatLaiMatKhauRequest(yeuCauDangKy.Email, maOtp, "MatKhauMoi123"));
+        Assert.Equal(HttpStatusCode.OK, phanHoiDatLai.StatusCode);
+
+        var phanHoiDangNhap = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dang-nhap", new DangNhapRequest(yeuCauDangKy.TenTaiKhoan, "MatKhauMoi123"));
+        Assert.Equal(HttpStatusCode.OK, phanHoiDangNhap.StatusCode);
+    }
+
+    [Fact]
+    public async Task DatLaiMatKhau_OtpSai_TraVe400()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("quenmk3");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        await _client.PostAsJsonAsync("/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest(yeuCauDangKy.Email));
+
+        var phanHoi = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dat-lai-mat-khau",
+            new DatLaiMatKhauRequest(yeuCauDangKy.Email, "000000", "MatKhauMoi123"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
     }
 }
