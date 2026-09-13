@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { BieuTuongTinNhan, BieuTuongBanBe, BieuTuongNhom, BieuTuongCaiDat } from './BieuTuong';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
+import { ThongBao } from './ThongBao';
 import './KhungChinh.css';
 
 function lopMuc({ isActive }: { isActive: boolean }): string {
@@ -30,6 +31,7 @@ export function KhungChinh({ children }: { children: ReactNode }) {
           <BieuTuongCaiDat />
           <span>Cài đặt</span>
         </NavLink>
+        <ThongBao />
         <button className="khung-chinh__dang-xuat" onClick={dangXuat}>
           Đăng xuất
         </button>
