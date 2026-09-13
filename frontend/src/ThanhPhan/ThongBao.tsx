@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LayLoiMoiDen, LayDanhSachHoiThoai } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
@@ -16,18 +16,17 @@ export function ThongBao() {
   const [hoiThoaiChuaDoc, setHoiThoaiChuaDoc] = useState<HoiThoaiTomTat[]>([]);
   const [hienDropdown, setHienDropdown] = useState(false);
 
-  function taiLai() {
+  const taiLai = useCallback(() => {
     if (!token) return;
     LayLoiMoiDen(token).then(setLoiMoiDen).catch(() => {});
     LayDanhSachHoiThoai(token)
       .then((ds) => setHoiThoaiChuaDoc(ds.filter((h) => h.soTinChuaDoc > 0)))
       .catch(() => {});
-  }
+  }, [token]);
 
   useEffect(() => {
     taiLai();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [taiLai]);
 
   useEffect(() => {
     if (!ketNoi) return;
@@ -39,8 +38,7 @@ export function ThongBao() {
       ketNoi.off('LoiMoiKetBanDuocChapNhan', taiLai);
       ketNoi.off('NhanTinNhan', taiLai);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ketNoi]);
+  }, [ketNoi, taiLai]);
 
   const tongSo = loiMoiDen.length + hoiThoaiChuaDoc.length;
 
