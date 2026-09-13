@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   LayDanhSachNhom, TaoNhom, LayLichSuNhom, ThemThanhVien, XoaThanhVien, RoiNhom,
-  LayDanhSachNguoiDung, LoiGoiApi,
+  LayDanhSachNguoiDung, LoiGoiApi, TaiLenTep,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
@@ -112,8 +112,7 @@ export function TrangNhom() {
   function guiTep(tep: File) {
     if (!ketNoi || !nhomDangChon || !token) return;
     setDangTaiTep(true);
-    import('../DichVuApi')
-      .then(({ TaiLenTep }) => TaiLenTep(token, tep))
+    TaiLenTep(token, tep)
       .then((daTaiLen) =>
         ketNoi.invoke<TinNhanHienThi>(
           'GuiTinNhan', null, nhomDangChon.id, tep.type.startsWith('image/') ? 'Anh' : 'File', '',
