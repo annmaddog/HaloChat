@@ -104,4 +104,52 @@ public class DichVuNhom : IDichVuNhom
         }
         return new NhomDto(nhom.Id, nhom.TenNhom, nhom.MoTa, nhom.DuongDanAnhDaiDien, nhom.NguoiTaoId, thanhVien, nhom.ThoiGianTao);
     }
+
+    public async Task<NhomDto> ThemThanhVienAsync(string nguoiGoiId, string nhomId, string thanhVienMoiId)
+    {
+        var nhom = await LayNhomKiemTraQuanTriAsync(nguoiGoiId, nhomId);
+
+        if (!ObjectId.TryParse(thanhVienMoiId, out _) || await _khoNguoiDung.TimTheoIdAsync(thanhVienMoiId) is null)
+        {
+            throw new ThanhVienKhongTonTaiException(thanhVienMoiId);
+        }
+
+        if (!nhom.ThanhVienIds.Contains(thanhVienMoiId))
+        {
+            await _khoNhom.ThemThanhVienAsync(nhomId, thanhVienMoiId);
+            nhom.ThanhVienIds.Add(thanhVienMoiId);
+        }
+
+        return await AnhXaDtoAsync(nhom);
+    }
+
+    public async Task<NhomDto> XoaThanhVienAsync(string nguoiGoiId, string nhomId, string thanhVienId)
+    {
+        var nhom = await LayNhomKiemTraQuanTriAsync(nguoiGoiId, nhomId);
+
+        if (thanhVienId == nhom.NguoiTaoId)
+        {
+            throw new KhongTheXoaNguoiTaoException();
+        }
+
+        await _khoNhom.XoaThanhVienAsync(nhomId, thanhVienId);
+        nhom.ThanhVienIds.Remove(thanhVienId);
+
+        return await AnhXaDtoAsync(nhom);
+    }
+
+    public async Task<KetQuaRoiNhomDto> RoiNhomAsync(string nguoiGoiId, string nhomId)
+    {
+        var nhom = await LayNhomKiemTraThanhVienAsync(nguoiGoiId, nhomId);
+
+        if (nguoiGoiId == nhom.NguoiTaoId)
+        {
+            var thanhVienConLai = nhom.ThanhVienIds.Where(id => id != nguoiGoiId).ToList();
+            await _khoNhom.XoaNhomAsync(nhomId);
+            return new KetQuaRoiNhomDto(true, thanhVienConLai);
+        }
+
+        await _khoNhom.XoaThanhVienAsync(nhomId, nguoiGoiId);
+        return new KetQuaRoiNhomDto(false, new List<string>());
+    }
 }

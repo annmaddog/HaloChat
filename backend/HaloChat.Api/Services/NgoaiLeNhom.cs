@@ -31,3 +31,11 @@ public class ThanhVienKhongTonTaiException : Exception
     {
     }
 }
+
+/// <summary>Ném ra khi cố xóa người tạo (admin) khỏi nhóm bằng thao tác xóa thành viên thường (phải dùng rời nhóm).</summary>
+public class KhongTheXoaNguoiTaoException : Exception
+{
+    public KhongTheXoaNguoiTaoException() : base("Không thể xóa người tạo nhóm — người tạo phải tự rời nhóm.")
+    {
+    }
+}

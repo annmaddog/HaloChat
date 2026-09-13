@@ -105,4 +105,79 @@ public class NhomControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Single(danhSach!);
     }
+
+    [Fact]
+    public async Task ThemThanhVien_LaAdmin_ThanhCong()
+    {
+        var (tokenAdmin, _) = await TaoTaiKhoanVaDangNhapAsync("nhomthem1");
+        var (_, idMoi) = await TaoTaiKhoanVaDangNhapAsync("nhomthem2");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAdmin);
+        var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm thêm", null, null, new List<string>())))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        var phanHoi = await _client.PostAsJsonAsync($"/api/nhom/{nhom!.Id}/thanh-vien", new ThemThanhVienRequest(idMoi));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var nhomSau = await phanHoi.Content.ReadFromJsonAsync<NhomDto>();
+        Assert.Contains(nhomSau!.ThanhVien, tv => tv.Id == idMoi);
+    }
+
+    [Fact]
+    public async Task ThemThanhVien_KhongPhaiAdmin_TraVe403()
+    {
+        var (tokenAdmin, _) = await TaoTaiKhoanVaDangNhapAsync("nhomthem3");
+        var (tokenKhac, idKhac) = await TaoTaiKhoanVaDangNhapAsync("nhomthem4");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAdmin);
+        var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm X2", null, null, new List<string>())))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenKhac);
+        var phanHoi = await _client.PostAsJsonAsync($"/api/nhom/{nhom!.Id}/thanh-vien", new ThemThanhVienRequest(idKhac));
+
+        Assert.Equal(HttpStatusCode.Forbidden, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task XoaThanhVien_XoaNguoiTao_TraVe400()
+    {
+        var (tokenAdmin, idAdmin) = await TaoTaiKhoanVaDangNhapAsync("nhomxoa1");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAdmin);
+        var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm xóa", null, null, new List<string>())))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        var phanHoi = await _client.DeleteAsync($"/api/nhom/{nhom!.Id}/thanh-vien/{idAdmin}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task RoiNhom_ThanhVienThuong_KhongGiaiTanNhom()
+    {
+        var (tokenAdmin, _) = await TaoTaiKhoanVaDangNhapAsync("nhomroi1");
+        var (tokenTv, idTv) = await TaoTaiKhoanVaDangNhapAsync("nhomroi2");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAdmin);
+        var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm rời", null, null, new List<string> { idTv })))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenTv);
+        var phanHoi = await _client.PostAsync($"/api/nhom/{nhom!.Id}/roi-nhom", null);
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var nhomConLai = _factory.KhoNhomGiaLap.DanhSach.Single(n => n.Id == nhom.Id);
+        Assert.DoesNotContain(idTv, nhomConLai.ThanhVienIds);
+    }
+
+    [Fact]
+    public async Task RoiNhom_LaNguoiTao_GiaiTanNhom()
+    {
+        var (tokenAdmin, _) = await TaoTaiKhoanVaDangNhapAsync("nhomroi3");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAdmin);
+        var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm giải tán", null, null, new List<string>())))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        var phanHoi = await _client.PostAsync($"/api/nhom/{nhom!.Id}/roi-nhom", null);
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        Assert.DoesNotContain(_factory.KhoNhomGiaLap.DanhSach, n => n.Id == nhom.Id);
+    }
 }

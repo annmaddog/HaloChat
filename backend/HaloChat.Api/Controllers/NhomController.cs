@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using HaloChat.Api.Dto;
+using HaloChat.Api.Hubs;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HaloChat.Api.Controllers;
 
@@ -12,10 +14,14 @@ namespace HaloChat.Api.Controllers;
 public class NhomController : ControllerBase
 {
     private readonly IDichVuNhom _dichVu;
+    private readonly IHubContext<ChatHub> _hub;
+    private readonly IQuanLyKetNoiChat _quanLyKetNoi;
 
-    public NhomController(IDichVuNhom dichVu)
+    public NhomController(IDichVuNhom dichVu, IHubContext<ChatHub> hub, IQuanLyKetNoiChat quanLyKetNoi)
     {
         _dichVu = dichVu;
+        _hub = hub;
+        _quanLyKetNoi = quanLyKetNoi;
     }
 
     private string? IdHienTai => User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
@@ -89,6 +95,106 @@ public class NhomController : ControllerBase
             return NotFound(new { thongBao = loi.Message });
         }
         catch (KhongCoQuyenQuanTriNhomException loi)
+        {
+            return StatusCode(403, new { thongBao = loi.Message });
+        }
+    }
+
+    [HttpPost("{id}/thanh-vien")]
+    public async Task<IActionResult> ThemThanhVien(string id, [FromBody] ThemThanhVienRequest yeuCau)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var nhom = await _dichVu.ThemThanhVienAsync(IdHienTai, id, yeuCau.ThanhVienId);
+
+            foreach (var connId in _quanLyKetNoi.LayConnectionIds(yeuCau.ThanhVienId))
+            {
+                await _hub.Groups.AddToGroupAsync(connId, "nhom-" + id);
+            }
+            await _hub.Clients.User(yeuCau.ThanhVienId).SendAsync("DuocThemVaoNhom", nhom);
+
+            return Ok(nhom);
+        }
+        catch (NhomKhongTonTaiException loi)
+        {
+            return NotFound(new { thongBao = loi.Message });
+        }
+        catch (KhongCoQuyenQuanTriNhomException loi)
+        {
+            return StatusCode(403, new { thongBao = loi.Message });
+        }
+        catch (ThanhVienKhongTonTaiException loi)
+        {
+            return BadRequest(new { thongBao = loi.Message });
+        }
+    }
+
+    [HttpDelete("{id}/thanh-vien/{userId}")]
+    public async Task<IActionResult> XoaThanhVien(string id, string userId)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var nhom = await _dichVu.XoaThanhVienAsync(IdHienTai, id, userId);
+
+            foreach (var connId in _quanLyKetNoi.LayConnectionIds(userId))
+            {
+                await _hub.Groups.RemoveFromGroupAsync(connId, "nhom-" + id);
+            }
+            await _hub.Clients.User(userId).SendAsync("BiXoaKhoiNhom", id);
+
+            return Ok(nhom);
+        }
+        catch (NhomKhongTonTaiException loi)
+        {
+            return NotFound(new { thongBao = loi.Message });
+        }
+        catch (KhongCoQuyenQuanTriNhomException loi)
+        {
+            return StatusCode(403, new { thongBao = loi.Message });
+        }
+        catch (KhongTheXoaNguoiTaoException loi)
+        {
+            return BadRequest(new { thongBao = loi.Message });
+        }
+    }
+
+    [HttpPost("{id}/roi-nhom")]
+    public async Task<IActionResult> RoiNhom(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var ketQua = await _dichVu.RoiNhomAsync(IdHienTai, id);
+
+            if (ketQua.DaGiaiTan)
+            {
+                foreach (var thanhVienId in ketQua.ThanhVienConLai)
+                {
+                    await _hub.Clients.User(thanhVienId).SendAsync("NhomDaGiaiTan", id);
+                }
+            }
+
+            return Ok(new { thongBao = ketQua.DaGiaiTan ? "Nhóm đã được giải tán." : "Đã rời nhóm." });
+        }
+        catch (NhomKhongTonTaiException loi)
+        {
+            return NotFound(new { thongBao = loi.Message });
+        }
+        catch (KhongPhaiThanhVienNhomException loi)
         {
             return StatusCode(403, new { thongBao = loi.Message });
         }
