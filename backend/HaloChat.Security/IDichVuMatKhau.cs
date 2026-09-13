@@ -1,4 +1,4 @@
-namespace HaloChat.Api.Services;
+namespace HaloChat.Security;
 
 public interface IDichVuMatKhau
 {

@@ -437,11 +437,11 @@ dùng nguyên endpoint đó, không viết endpoint upload riêng cho ảnh nhó
 - `TinNhanController` thêm `GET /api/tinnhan/nhom/{id}?truoc=&soLuong=30`, cùng khuôn mẫu endpoint
   1-1 đã có.
 
-**Đẩy sự kiện lời mời kết bạn qua Hub (nợ kỹ thuật từ GĐ5b-1):** `KetBanController` hiện xử lý
-gửi/chấp nhận/từ chối lời mời nhưng chưa đẩy `NhanLoiMoiKetBan`/`LoiMoiKetBanDuocChapNhan` qua
-`IHubContext<ChatHub>` như thiết kế gốc §10.3 mô tả — chỉ trả về qua REST response. GĐ5b-2 bổ sung:
-tiêm `IHubContext<ChatHub>` vào `KetBanController`, gọi `Clients.User(nguoiNhanId).SendAsync(...)`
-tại đúng 2 điểm đó.
+**Đẩy sự kiện lời mời kết bạn qua Hub:** đã làm đúng ở GĐ5b-1 — `KetBanController` đã tiêm
+`IHubContext<ChatHub>` và gọi `Clients.User(...).SendAsync("NhanLoiMoiKetBan", ...)`/
+`SendAsync("LoiMoiKetBanDuocChapNhan", ...)` tại 2 điểm gửi lời mời/chấp nhận. **Sửa lại so với bản
+nháp trước của mục này:** không có việc gì cần làm thêm ở đây, chỉ nêu lại để dropdown thông báo
+(bên dưới) biết chắc 2 sự kiện này đã tồn tại và lắng nghe đúng tên.
 
 **Frontend — component chat dùng chung `KhungTinNhan.tsx`:**
 - Rút phần hiển thị danh sách tin nhắn (bong bóng text/ảnh/file), form gửi, nút "tải thêm", nút

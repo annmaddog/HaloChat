@@ -1,7 +1,7 @@
-using HaloChat.Api.Services;
+using HaloChat.Security;
 using Xunit;
 
-namespace HaloChat.Api.Tests.Services;
+namespace HaloChat.Security.Tests;
 
 public class DichVuMatKhauTests
 {

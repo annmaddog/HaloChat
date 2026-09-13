@@ -2519,16 +2519,13 @@ git commit -m "Frontend: mo rong KieuDuLieu/DichVuApi cho nhom, presence, DaNhan
 - [ ] **Step 1: Tạo `KhungTinNhan.tsx`**
 
 ```tsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type FormEvent, type ChangeEvent } from 'react';
 import { BieuTuongGhim } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
 
 export type TinNhanHienThi = TinNhan & { dangGui?: boolean };
-
-const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
-const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
 
 function dinhDangKichThuoc(bytes: number): string {
   const mb = bytes / (1024 * 1024);
@@ -2570,7 +2567,7 @@ export function KhungTinNhan({
     cuoiDanhSachRef.current?.scrollIntoView?.({ block: 'end' });
   }, [danhSachTinNhan]);
 
-  function xuLySubmit(su: React.FormEvent) {
+  function xuLySubmit(su: FormEvent) {
     su.preventDefault();
     const gtHienTai = noiDungRef.current?.value.trim();
     if (!gtHienTai) return;
@@ -2578,15 +2575,13 @@ export function KhungTinNhan({
     if (noiDungRef.current) noiDungRef.current.value = '';
   }
 
-  function xuLyChonTep(su: React.ChangeEvent<HTMLInputElement>) {
+  // Không kiểm tra kích thước file ở đây — component cha (TrangChat/TrangNhom)
+  // đã kiểm tra giới hạn kích thước và tự set "loi" khi vượt quá, giữ đúng 1
+  // nguồn sự thật cho thông báo lỗi hiển thị. Component này chỉ chuyển tiếp
+  // file đã chọn.
+  function xuLyChonTep(su: ChangeEvent<HTMLInputElement>) {
     const tep = su.target.files?.[0];
     if (!tep) return;
-    const laAnh = tep.type.startsWith('image/');
-    const gioiHan = laAnh ? GIOI_HAN_ANH_BYTES : GIOI_HAN_FILE_BYTES;
-    if (tep.size > gioiHan) {
-      onGuiTep(tep); // để component cha tự set thông báo lỗi vượt giới hạn (giữ 1 nguồn sự thật cho "loi")
-      return;
-    }
     onGuiTep(tep);
   }
 

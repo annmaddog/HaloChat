@@ -1,6 +1,7 @@
 using HaloChat.Api.Dto;
 using HaloChat.Api.Models;
 using HaloChat.Api.Repositories;
+using HaloChat.Security;
 
 namespace HaloChat.Api.Services;
 

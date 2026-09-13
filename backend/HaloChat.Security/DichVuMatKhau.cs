@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace HaloChat.Api.Services;
+namespace HaloChat.Security;
 
 public class DichVuMatKhau : IDichVuMatKhau
 {

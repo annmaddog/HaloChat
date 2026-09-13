@@ -2,6 +2,7 @@ using HaloChat.Api.Models;
 using HaloChat.Api.Options;
 using HaloChat.Api.Services;
 using HaloChat.Api.Tests.Fakes;
+using HaloChat.Security;
 using Microsoft.Extensions.Options;
 using Xunit;
 

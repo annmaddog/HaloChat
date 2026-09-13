@@ -1,5 +1,6 @@
 using System.Text;
 using HaloChat.Api.Options;
+using HaloChat.Security;
 using HaloChat.Api.Repositories;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
