@@ -37,6 +37,9 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IQuanLyKetNoiChat, QuanLyKetNoiChat>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, HaloChat.Api.Services.NguoiDungIdProvider>();
 
+builder.Services.Configure<TuyChonSmtpEmail>(builder.Configuration.GetSection(TuyChonSmtpEmail.TenMuc));
+builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
+
 builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));
 var tuyChonJwt = builder.Configuration.GetSection(TuyChonJwt.TenMuc).Get<TuyChonJwt>()
     ?? throw new InvalidOperationException("Thiếu cấu hình Jwt trong appsettings/user-secrets.");
