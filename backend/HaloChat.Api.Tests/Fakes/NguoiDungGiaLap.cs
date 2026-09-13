@@ -18,7 +18,9 @@ public class NguoiDungGiaLap : INguoiDungRepository
 
     public Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap)
     {
-        var ketQua = DanhSach.FirstOrDefault(nd => nd.TenTaiKhoan == tenDangNhap || nd.Email == tenDangNhap);
+        var ketQua = DanhSach.FirstOrDefault(nd =>
+            string.Equals(nd.TenTaiKhoan, tenDangNhap, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(nd.Email, tenDangNhap, StringComparison.OrdinalIgnoreCase));
         return Task.FromResult(ketQua);
     }
 
@@ -47,6 +49,16 @@ public class NguoiDungGiaLap : INguoiDungRepository
             nguoiDung.MaOtpHetHan = hetHan;
             nguoiDung.MaOtpGuiLucNao = guiLucNao;
             nguoiDung.SoLanThuSai = 0;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task XoaThoiGianGuiOtpAsync(string id)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.MaOtpGuiLucNao = null;
         }
         return Task.CompletedTask;
     }

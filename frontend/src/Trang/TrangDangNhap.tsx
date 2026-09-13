@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { KhungXacThuc } from '../ThanhPhan/KhungXacThuc';
 import { TruongNhap } from '../ThanhPhan/TruongNhap';
@@ -12,6 +12,7 @@ export function TrangDangNhap() {
   const [dangGui, setDangGui] = useState(false);
   const { dangNhap } = useXacThuc();
   const dieuHuong = useNavigate();
+  const trangThaiDieuHuong = useLocation().state as { thongBaoDatLaiMatKhau?: string } | null;
 
   async function xuLySubmit(suKien: FormEvent) {
     suKien.preventDefault();
@@ -30,6 +31,9 @@ export function TrangDangNhap() {
   return (
     <KhungXacThuc>
       <form onSubmit={xuLySubmit}>
+        {trangThaiDieuHuong?.thongBaoDatLaiMatKhau && (
+          <p className="thong-bao-thanh-cong">{trangThaiDieuHuong.thongBaoDatLaiMatKhau}</p>
+        )}
         {loi && (
           <p className="thong-bao-loi" role="alert">
             {loi}

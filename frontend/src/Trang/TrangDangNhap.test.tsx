@@ -6,9 +6,9 @@ import { TrangDangNhap } from './TrangDangNhap';
 import { NhaCungCapXacThuc } from '../NguCanh/NguCanhXacThuc';
 import * as DichVuApi from '../DichVuApi';
 
-function renderVoiRouter() {
+function renderVoiRouter(initialEntries: Array<string | { pathname: string; state?: unknown }> = ['/dang-nhap']) {
   return render(
-    <MemoryRouter initialEntries={['/dang-nhap']}>
+    <MemoryRouter initialEntries={initialEntries}>
       <NhaCungCapXacThuc>
         <Routes>
           <Route path="/dang-nhap" element={<TrangDangNhap />} />
@@ -46,5 +46,13 @@ describe('TrangDangNhap', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Sai tên đăng nhập hoặc mật khẩu.');
+  });
+
+  it('hiển thị thông báo đặt lại mật khẩu thành công khi được điều hướng từ trang quên mật khẩu', () => {
+    renderVoiRouter([
+      { pathname: '/dang-nhap', state: { thongBaoDatLaiMatKhau: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập.' } },
+    ]);
+
+    expect(screen.getByText('Đặt lại mật khẩu thành công. Vui lòng đăng nhập.')).toBeInTheDocument();
   });
 });

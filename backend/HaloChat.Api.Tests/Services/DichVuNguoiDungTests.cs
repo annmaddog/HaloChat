@@ -18,7 +18,9 @@ public class DichVuNguoiDungTests
         {
             ChuoiBiMat = "khoa-bi-mat-du-dai-danh-cho-kiem-thu-toi-thieu-32-ky-tu",
         }));
-        var dichVu = new DichVuNguoiDung(kho, new DichVuMatKhau(), dichVuJwt, email);
+        var dichVu = new DichVuNguoiDung(
+            kho, new DichVuMatKhau(), dichVuJwt, email,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<DichVuNguoiDung>.Instance);
         return (dichVu, kho, email);
     }
 
@@ -213,6 +215,20 @@ public class DichVuNguoiDungTests
         await dichVu.YeuCauOtpDatLaiMatKhauAsync("otpuser2@gmail.com");
 
         Assert.Empty(email.DaGui);
+    }
+
+    [Fact]
+    public async Task YeuCauOtp_EmailNemLoi_KhongNemLoiVaXoaThoiGianGuiOtp()
+    {
+        var (dichVu, kho, email) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "otpuser7", Email = "otpuser7@gmail.com", Salt = "salt" };
+        kho.DanhSach.Add(nguoiDung);
+        email.NemLoiLanKeTiep = true;
+
+        var ngoaiLe = await Record.ExceptionAsync(() => dichVu.YeuCauOtpDatLaiMatKhauAsync("otpuser7@gmail.com"));
+
+        Assert.Null(ngoaiLe);
+        Assert.Null(nguoiDung.MaOtpGuiLucNao);
     }
 
     [Fact]

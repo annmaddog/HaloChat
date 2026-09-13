@@ -195,6 +195,32 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     }
 
     [Fact]
+    public async Task QuenMatKhau_DichVuEmailNemLoi_VanTraVe200()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("quenmklo1");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        _factory.KhoEmailGiaLap.NemLoiLanKeTiep = true;
+
+        var phanHoi = await _client.PostAsJsonAsync("/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest(yeuCauDangKy.Email));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task QuenMatKhau_EmailKhacHoaThuong_VanGuiEmail()
+    {
+        await _client.PostAsJsonAsync(
+            "/api/nguoidung/dang-ky",
+            new DangKyTaiKhoanRequest("casetest", "CaseTest@Gmail.com", "MatKhau123"));
+
+        var phanHoi = await _client.PostAsJsonAsync(
+            "/api/nguoidung/quen-mat-khau", new QuenMatKhauRequest("casetest@gmail.com"));
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        Assert.NotEmpty(_factory.KhoEmailGiaLap.DaGui);
+    }
+
+    [Fact]
     public async Task DatLaiMatKhau_OtpDung_DangNhapDuocVoiMatKhauMoi()
     {
         var yeuCauDangKy = TaoYeuCauDangKyHopLe("quenmk2");

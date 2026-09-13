@@ -2,6 +2,7 @@ using HaloChat.Api.Dto;
 using HaloChat.Api.Models;
 using HaloChat.Api.Repositories;
 using HaloChat.Security;
+using Microsoft.Extensions.Logging;
 
 namespace HaloChat.Api.Services;
 
@@ -11,14 +12,21 @@ public class DichVuNguoiDung : IDichVuNguoiDung
     private readonly IDichVuMatKhau _dichVuMatKhau;
     private readonly IDichVuJwt _dichVuJwt;
     private readonly IDichVuEmail _dichVuEmail;
+    private readonly ILogger<DichVuNguoiDung> _nhatKy;
+
+    private const int HetHanOtpPhut = 10;
+    private const int CooldownOtpGiay = 60;
+    private const int SoLanSaiToiDa = 5;
 
     public DichVuNguoiDung(
-        INguoiDungRepository kho, IDichVuMatKhau dichVuMatKhau, IDichVuJwt dichVuJwt, IDichVuEmail dichVuEmail)
+        INguoiDungRepository kho, IDichVuMatKhau dichVuMatKhau, IDichVuJwt dichVuJwt, IDichVuEmail dichVuEmail,
+        ILogger<DichVuNguoiDung> nhatKy)
     {
         _kho = kho;
         _dichVuMatKhau = dichVuMatKhau;
         _dichVuJwt = dichVuJwt;
         _dichVuEmail = dichVuEmail;
+        _nhatKy = nhatKy;
     }
 
     public async Task<KetQuaDangKyDto> DangKyTaiKhoan(string tenTaiKhoan, string email, string matKhau)
@@ -92,10 +100,6 @@ public class DichVuNguoiDung : IDichVuNguoiDung
                 nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong);
     }
 
-    private const int HetHanOtpPhut = 10;
-    private const int CooldownOtpGiay = 60;
-    private const int SoLanSaiToiDa = 5;
-
     public async Task YeuCauOtpDatLaiMatKhauAsync(string email)
     {
         var nguoiDung = await _kho.TimTheoTenTaiKhoanHoacEmailAsync(email);
@@ -116,7 +120,16 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         var guiLucNao = DateTime.UtcNow;
 
         await _kho.LuuOtpAsync(nguoiDung.Id, maOtpBam, hetHan, guiLucNao);
-        await _dichVuEmail.GuiEmailOtpAsync(nguoiDung.Email, maOtp);
+
+        try
+        {
+            await _dichVuEmail.GuiEmailOtpAsync(nguoiDung.Email, maOtp);
+        }
+        catch (Exception loi)
+        {
+            _nhatKy.LogError(loi, "Không gửi được email OTP cho nguoi dung {Id}.", nguoiDung.Id);
+            await _kho.XoaThoiGianGuiOtpAsync(nguoiDung.Id);
+        }
     }
 
     public async Task<KetQuaDatLaiMatKhauDto> DatLaiMatKhauAsync(string email, string maOtp, string matKhauMoi)
@@ -135,8 +148,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             return new KetQuaDatLaiMatKhauDto(false, ThongBaoOtpHetHan);
         }
 
-        var maOtpBamNhapVao = _dichVuMatKhau.BamMatKhau(maOtp, nguoiDung.Salt);
-        if (maOtpBamNhapVao != nguoiDung.MaOtpBam)
+        if (!_dichVuMatKhau.KiemTraMatKhau(maOtp, nguoiDung.Salt, nguoiDung.MaOtpBam))
         {
             await _kho.TangSoLanThuSaiOtpAsync(nguoiDung.Id);
             return new KetQuaDatLaiMatKhauDto(false, ThongBaoOtpKhongDung);

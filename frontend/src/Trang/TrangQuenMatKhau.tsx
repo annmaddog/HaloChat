@@ -81,6 +81,9 @@ export function TrangQuenMatKhau() {
               onChange={(e) => setMaOtp(e.target.value)}
               placeholder="Nhập mã 6 số..."
               required
+              inputMode="numeric"
+              maxLength={6}
+              autoComplete="one-time-code"
             />
             <TruongNhap
               nhan="Mật khẩu mới"

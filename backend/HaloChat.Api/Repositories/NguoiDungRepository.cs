@@ -39,7 +39,12 @@ public class NguoiDungRepository : INguoiDungRepository
             Builders<NguoiDung>.Filter.Eq(nd => nd.TenTaiKhoan, tenDangNhap),
             Builders<NguoiDung>.Filter.Eq(nd => nd.Email, tenDangNhap));
 
-        return await _collection.Find(boLoc).FirstOrDefaultAsync();
+        var tuyChon = new FindOptions<NguoiDung>
+        {
+            Collation = new Collation("en", strength: CollationStrength.Secondary),
+        };
+        using var cursor = await _collection.FindAsync(boLoc, tuyChon);
+        return await cursor.FirstOrDefaultAsync();
     }
 
     public async Task<List<NguoiDung>> LayTatCaAsync()
@@ -69,6 +74,13 @@ public class NguoiDungRepository : INguoiDungRepository
             .Set(nd => nd.MaOtpHetHan, hetHan)
             .Set(nd => nd.MaOtpGuiLucNao, guiLucNao)
             .Set(nd => nd.SoLanThuSai, 0);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task XoaThoiGianGuiOtpAsync(string id)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.MaOtpGuiLucNao, (DateTime?)null);
         await _collection.UpdateOneAsync(boLoc, capNhat);
     }
 
