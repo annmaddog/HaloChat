@@ -70,10 +70,12 @@ describe('TrangChat', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
-    localStorage.setItem('haloChatToken', 'token-gia-lap');
+    const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
+    localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
       taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }),
     ]);
+    vi.spyOn(DichVuApi, 'LayTrangThaiHoatDong').mockResolvedValue({});
   });
 
   it('hiển thị danh sách hội thoại sau khi tải', async () => {
@@ -91,11 +93,10 @@ describe('TrangChat', () => {
     expect(await screen.findByText('Chào bạn')).toBeInTheDocument();
   });
 
-  it('gửi tin nhắn văn bản gọi ketNoi.invoke và hiển thị tin nhắn vừa gửi', async () => {
+  it('gửi tin nhắn văn bản hiện ngay "Đang gửi" rồi cập nhật khi Hub xác nhận', async () => {
     vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
-    ketNoiGiaLap.invoke.mockResolvedValue(
-      taoTinNhanGiaLap({ id: 'm2', nguoiGuiId: '1', nguoiNhanId: '2', noiDungTinNhan: 'Xin chào' }),
-    );
+    let phanGiai: (tn: unknown) => void = () => {};
+    ketNoiGiaLap.invoke.mockReturnValue(new Promise((resolve) => { phanGiai = resolve; }));
 
     renderTrangChat();
     await userEvent.click(await screen.findByText('TranBinh'));
@@ -104,10 +105,12 @@ describe('TrangChat', () => {
     await userEvent.type(screen.getByPlaceholderText('Nhập tin nhắn...'), 'Xin chào');
     await userEvent.click(screen.getByRole('button', { name: 'Gửi' }));
 
-    await waitFor(() =>
-      expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('GuiTinNhan', '2', 'Text', 'Xin chào', null, null, null, null),
-    );
-    expect(await screen.findByText('Xin chào')).toBeInTheDocument();
+    expect(await screen.findByText('Đang gửi')).toBeInTheDocument();
+
+    phanGiai(taoTinNhanGiaLap({ id: 'm2', nguoiGuiId: '1', nguoiNhanId: '2', noiDungTinNhan: 'Xin chào', daNhan: true }));
+
+    await waitFor(() => expect(screen.getByText('Đã nhận')).toBeInTheDocument());
+    expect(screen.getByText('Xin chào')).toBeInTheDocument();
   });
 
   it('nhận tin nhắn realtime qua sự kiện NhanTinNhan hiển thị ngay trong khung đang mở', async () => {
@@ -168,12 +171,12 @@ describe('TrangChat', () => {
     await waitFor(() => expect(ketNoiGiaLap.start).toHaveBeenCalled());
 
     const tep = new File(['noi-dung-gia-lap'], 'anh.png', { type: 'image/png' });
-    const inputTep = document.querySelector('.trang-chat__input-tep') as HTMLInputElement;
+    const inputTep = document.querySelector('.khung-tin-nhan__input-tep') as HTMLInputElement;
     await userEvent.upload(inputTep, tep);
 
     await waitFor(() =>
       expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith(
-        'GuiTinNhan', '2', 'Anh', '', '/uploads/abc.png', 'anh.png', 1024, 'image/png',
+        'GuiTinNhan', '2', null, 'Anh', '', '/uploads/abc.png', 'anh.png', 1024, 'image/png',
       ),
     );
     expect(await screen.findByRole('img')).toHaveAttribute('src', expect.stringContaining('/uploads/abc.png'));
@@ -187,7 +190,7 @@ describe('TrangChat', () => {
     await userEvent.click(await screen.findByText('TranBinh'));
 
     const tepQuaKho = new File([new Uint8Array(6 * 1024 * 1024)], 'to.png', { type: 'image/png' });
-    const inputTep = document.querySelector('.trang-chat__input-tep') as HTMLInputElement;
+    const inputTep = document.querySelector('.khung-tin-nhan__input-tep') as HTMLInputElement;
     await userEvent.upload(inputTep, tepQuaKho);
 
     expect(taiLenSpy).not.toHaveBeenCalled();

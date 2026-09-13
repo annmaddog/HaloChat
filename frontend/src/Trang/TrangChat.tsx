@@ -1,21 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, DIA_CHI_GOC } from '../DichVuApi';
+import { LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
-import { BieuTuongGhim } from '../ThanhPhan/BieuTuong';
-import type { NguoiDungTomTat, TinNhan, HoiThoaiTomTat } from '../KieuDuLieu';
+import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
+import type { NguoiDungTomTat, HoiThoaiTomTat } from '../KieuDuLieu';
 import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
 const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
 
-function dinhDangKichThuoc(bytes: number): string {
-  const mb = bytes / (1024 * 1024);
-  return mb >= 1 ? `${mb.toFixed(1)}MB` : `${Math.ceil(bytes / 1024)}KB`;
-}
-
-function idNguoiKia(tinNhan: TinNhan, idHienTai: string): string {
+function idNguoiKia(tinNhan: TinNhanHienThi, idHienTai: string): string {
   return tinNhan.nguoiGuiId === idHienTai ? (tinNhan.nguoiNhanId ?? '') : tinNhan.nguoiGuiId;
 }
 
@@ -27,14 +22,12 @@ export function TrangChat() {
 
   const [danhSachHoiThoai, setDanhSachHoiThoai] = useState<HoiThoaiTomTat[]>([]);
   const [nguoiDangChon, setNguoiDangChon] = useState<NguoiDungTomTat | null>(moNguoiDungTuDieuHuong);
-  const [tinNhanTheoNguoiDung, setTinNhanTheoNguoiDung] = useState<Record<string, TinNhan[]>>({});
+  const [tinNhanTheoNguoiDung, setTinNhanTheoNguoiDung] = useState<Record<string, TinNhanHienThi[]>>({});
+  const [trangThaiOnline, setTrangThaiOnline] = useState<Record<string, boolean>>({});
   const [dangTaiDanhSach, setDangTaiDanhSach] = useState(true);
   const [dangTaiLichSu, setDangTaiLichSu] = useState(false);
-  const [noiDungDangGo, setNoiDungDangGo] = useState('');
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTaiTep, setDangTaiTep] = useState(false);
-  const inputTepRef = useRef<HTMLInputElement | null>(null);
-  const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -42,7 +35,11 @@ export function TrangChat() {
   useEffect(() => {
     if (!token) return;
     LayDanhSachHoiThoai(token)
-      .then(setDanhSachHoiThoai)
+      .then((ds) => {
+        setDanhSachHoiThoai(ds);
+        return LayTrangThaiHoatDong(token, ds.map((h) => h.nguoiDung.id));
+      })
+      .then((tt) => setTrangThaiOnline(tt))
       .catch((loiBat) => {
         if (loiBat instanceof LoiGoiApi && loiBat.trangThai === 401) {
           dangXuat();
@@ -69,7 +66,7 @@ export function TrangChat() {
       .then((moiNhatTruoc) => {
         const thuTuThoiGian = [...moiNhatTruoc].reverse();
         setTinNhanTheoNguoiDung((truoc) => {
-          const gop = new Map<string, TinNhan>();
+          const gop = new Map<string, TinNhanHienThi>();
           for (const tn of thuTuThoiGian) gop.set(tn.id, tn);
           for (const tn of truoc[nguoiDangChon.id] ?? []) gop.set(tn.id, tn);
           const ketQua = [...gop.values()].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -87,55 +84,61 @@ export function TrangChat() {
   useEffect(() => {
     if (!ketNoi) return;
 
-    function xuLyTinNhanMoi(tinNhan: TinNhan) {
+    function xuLyTinNhanMoi(tinNhan: TinNhanHienThi) {
+      if (tinNhan.nhomId) return; // tin nhắn nhóm không thuộc trang này (Task 10 xử lý riêng)
       const idKia = idNguoiKia(tinNhan, idHienTai);
       setTinNhanTheoNguoiDung((truoc) => ({
         ...truoc,
-        [idKia]: [...(truoc[idKia] ?? []), tinNhan],
+        [idKia]: [...(truoc[idKia] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
       }));
     }
 
+    function xuLyTrangThaiThayDoi(userId: string, online: boolean) {
+      setTrangThaiOnline((truoc) => ({ ...truoc, [userId]: online }));
+    }
+
     ketNoi.on('NhanTinNhan', xuLyTinNhanMoi);
+    ketNoi.on('TrangThaiHoatDongThayDoi', xuLyTrangThaiThayDoi);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
+      ketNoi.off('TrangThaiHoatDongThayDoi', xuLyTrangThaiThayDoi);
     };
   }, [ketNoi, idHienTai]);
-
-  useEffect(() => {
-    cuoiDanhSachRef.current?.scrollIntoView?.({ block: 'end' });
-  }, [nguoiDangChon, tinNhanTheoNguoiDung]);
 
   const tinNhanDangHien = useMemo(
     () => (nguoiDangChon ? (tinNhanTheoNguoiDung[nguoiDangChon.id] ?? []) : []),
     [nguoiDangChon, tinNhanTheoNguoiDung],
   );
 
-  async function guiTinNhanVanBan() {
-    if (!ketNoi || !nguoiDangChon || !noiDungDangGo.trim()) return;
+  function guiTinNhanVanBan(noiDungGui: string) {
+    if (!ketNoi || !nguoiDangChon) return;
+    const idTam = `tam-${Date.now()}`;
+    const tinNhanTam: TinNhanHienThi = {
+      id: idTam, nguoiGuiId: idHienTai, nguoiNhanId: nguoiDangChon.id, nhomId: null,
+      loaiTinNhan: 'Text', noiDungTinNhan: noiDungGui, duongDanFile: null, tenFileGoc: null,
+      kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
+      thoiGianTao: new Date().toISOString(), dangGui: true,
+    };
+    setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanTam] }));
 
-    const noiDungGui = noiDungDangGo.trim();
-    setNoiDungDangGo('');
-    try {
-      const tinNhanDaGui = await ketNoi.invoke<TinNhan>(
-        'GuiTinNhan',
-        nguoiDangChon.id,
-        'Text',
-        noiDungGui,
-        null,
-        null,
-        null,
-        null,
-      );
-      setTinNhanTheoNguoiDung((truoc) => ({
-        ...truoc,
-        [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
-      }));
-    } catch (loiBat) {
-      setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi tin nhắn thất bại. Vui lòng thử lại.');
-    }
+    ketNoi
+      .invoke<TinNhanHienThi>('GuiTinNhan', nguoiDangChon.id, null, 'Text', noiDungGui, null, null, null, null)
+      .then((tinNhanDaGui) => {
+        setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).map((tn) => (tn.id === idTam ? tinNhanDaGui : tn)),
+        }));
+      })
+      .catch((loiBat) => {
+        setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== idTam),
+        }));
+        setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi tin nhắn thất bại. Vui lòng thử lại.');
+      });
   }
 
-  async function guiTep(tep: File) {
+  function guiTep(tep: File) {
     if (!ketNoi || !nguoiDangChon || !token) return;
 
     const laAnh = tep.type.startsWith('image/');
@@ -146,48 +149,41 @@ export function TrangChat() {
     }
 
     setDangTaiTep(true);
-    try {
-      const daTaiLen = await TaiLenTep(token, tep);
-      const tinNhanDaGui = await ketNoi.invoke<TinNhan>(
-        'GuiTinNhan',
-        nguoiDangChon.id,
-        laAnh ? 'Anh' : 'File',
-        '',
-        daTaiLen.duongDanFile,
-        daTaiLen.tenFileGoc,
-        daTaiLen.kichThuocFile,
-        daTaiLen.loaiFile,
-      );
-      setTinNhanTheoNguoiDung((truoc) => ({
-        ...truoc,
-        [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
-      }));
-    } catch (loiBat) {
-      setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
-    } finally {
-      setDangTaiTep(false);
-      if (inputTepRef.current) inputTepRef.current.value = '';
-    }
+    TaiLenTep(token, tep)
+      .then((daTaiLen) =>
+        ketNoi.invoke<TinNhanHienThi>(
+          'GuiTinNhan', nguoiDangChon.id, null, laAnh ? 'Anh' : 'File', '',
+          daTaiLen.duongDanFile, daTaiLen.tenFileGoc, daTaiLen.kichThuocFile, daTaiLen.loaiFile,
+        ),
+      )
+      .then((tinNhanDaGui) => {
+        setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanDaGui],
+        }));
+      })
+      .catch((loiBat) => {
+        setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
+      })
+      .finally(() => setDangTaiTep(false));
   }
 
-  async function taiThemLichSuCu() {
+  function taiThemLichSuCu() {
     if (!token || !nguoiDangChon) return;
     const cuNhat = (tinNhanTheoNguoiDung[nguoiDangChon.id] ?? [])[0];
     if (!cuNhat) return;
 
     setDangTaiLichSu(true);
-    try {
-      const cuHon = await LayLichSuTinNhan(token, nguoiDangChon.id, cuNhat.id);
-      const thuTuThoiGian = [...cuHon].reverse();
-      setTinNhanTheoNguoiDung((truoc) => ({
-        ...truoc,
-        [nguoiDangChon.id]: [...thuTuThoiGian, ...(truoc[nguoiDangChon.id] ?? [])],
-      }));
-    } catch {
-      setLoi('Không tải được tin nhắn cũ hơn.');
-    } finally {
-      setDangTaiLichSu(false);
-    }
+    LayLichSuTinNhan(token, nguoiDangChon.id, cuNhat.id)
+      .then((cuHon) => {
+        const thuTuThoiGian = [...cuHon].reverse();
+        setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: [...thuTuThoiGian, ...(truoc[nguoiDangChon.id] ?? [])],
+        }));
+      })
+      .catch(() => setLoi('Không tải được tin nhắn cũ hơn.'))
+      .finally(() => setDangTaiLichSu(false));
   }
 
   return (
@@ -203,99 +199,36 @@ export function TrangChat() {
               >
                 <span className="trang-chat__avatar">{nd.tenTaiKhoan.charAt(0).toUpperCase()}</span>
                 <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>
+                {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
               </button>
             </li>
           ))}
         </ul>
       </aside>
 
-      <main className="trang-chat__khung-chinh">
-        {loi && (
-          <p className="thong-bao-loi" role="alert">
-            {loi}
-          </p>
-        )}
-        {!nguoiDangChon && <p className="trang-chat__trong">Chọn một người để bắt đầu trò chuyện.</p>}
-        {nguoiDangChon && (
-          <>
-            <header className="trang-chat__tieu-de">
-              <span>{nguoiDangChon.tenTaiKhoan}</span>
-              {!dangKetNoi && <span className="trang-chat__mat-ket-noi">Mất kết nối realtime...</span>}
-            </header>
-
-            <div className="trang-chat__danh-sach-tin-nhan">
-              <button className="trang-chat__nut-tai-them" onClick={taiThemLichSuCu} disabled={dangTaiLichSu}>
-                {dangTaiLichSu ? 'Đang tải...' : 'Tải tin nhắn cũ hơn'}
-              </button>
-              {tinNhanDangHien.map((tn) => (
-                <div
-                  key={tn.id}
-                  className={`trang-chat__bong-tin-nhan${tn.nguoiGuiId === idHienTai ? ' trang-chat__bong-tin-nhan--minh' : ''}`}
-                >
-                  {tn.loaiTinNhan === 'Anh' && (
-                    <img
-                      className="trang-chat__anh-tin-nhan"
-                      src={`${DIA_CHI_GOC}${tn.duongDanFile}`}
-                      alt={tn.tenFileGoc ?? 'ảnh'}
-                    />
-                  )}
-                  {tn.loaiTinNhan === 'File' && (
-                    <a
-                      className="trang-chat__file-tin-nhan"
-                      href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      📎 {tn.tenFileGoc} ({dinhDangKichThuoc(tn.kichThuocFile ?? 0)})
-                    </a>
-                  )}
-                  {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
-                </div>
-              ))}
-              <div ref={cuoiDanhSachRef} />
-            </div>
-
-            <form
-              className="trang-chat__form-gui"
-              onSubmit={(su) => {
-                su.preventDefault();
-                void guiTinNhanVanBan();
-              }}
-            >
-              <button
-                type="button"
-                className="trang-chat__nut-ghim"
-                onClick={() => inputTepRef.current?.click()}
-                disabled={!dangKetNoi || dangTaiTep}
-                aria-label="Đính kèm file"
-              >
-                <BieuTuongGhim />
-              </button>
-              <input
-                ref={inputTepRef}
-                type="file"
-                className="trang-chat__input-tep"
-                accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.docx,.xlsx,.zip"
-                onChange={(su) => {
-                  const tep = su.target.files?.[0];
-                  if (tep) void guiTep(tep);
-                }}
-              />
-              <input
-                type="text"
-                value={noiDungDangGo}
-                onChange={(su) => setNoiDungDangGo(su.target.value)}
-                placeholder="Nhập tin nhắn..."
-                disabled={!dangKetNoi}
-              />
-              <button type="submit" disabled={!dangKetNoi || !noiDungDangGo.trim()}>
-                Gửi
-              </button>
-            </form>
-            {dangTaiTep && <p className="trang-chat__dang-tai-tep">Đang tải file lên...</p>}
-          </>
-        )}
-      </main>
+      {!nguoiDangChon && (
+        <div className="trang-chat__trong-rong">
+          <p className="trang-chat__trong-tieu-de">Chào mừng đến HaloChat</p>
+          <p className="trang-chat__trong">Chọn một cuộc trò chuyện để bắt đầu nhắn tin an toàn.</p>
+        </div>
+      )}
+      {nguoiDangChon && (
+        <KhungTinNhan
+          loaiHoiThoai="nguoiDung"
+          tenHienThi={nguoiDangChon.tenTaiKhoan}
+          phuDe={trangThaiOnline[nguoiDangChon.id] ? 'Đang hoạt động' : undefined}
+          danhSachTinNhan={tinNhanDangHien}
+          idHienTai={idHienTai}
+          dangKetNoi={dangKetNoi}
+          dangTaiLichSu={dangTaiLichSu}
+          coTheTaiThem
+          onTaiThemLichSuCu={taiThemLichSuCu}
+          onGuiVanBan={guiTinNhanVanBan}
+          onGuiTep={guiTep}
+          dangTaiTep={dangTaiTep}
+          loi={loi}
+        />
+      )}
     </div>
   );
 }
