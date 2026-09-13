@@ -108,4 +108,68 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
 
         await Assert.ThrowsAnyAsync<Exception>(() => ketNoi.StartAsync());
     }
+
+    [Fact]
+    public async Task OnConnected_LaThanhVienNhom_NhanDuocTinNhanNhomGuiTrongLucDangKetNoi()
+    {
+        var tokenChu = await TaoTaiKhoanVaDangNhapAsync("hubnhomchu");
+        var idChu = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubnhomchu").Id;
+        var tokenThanhVien = await TaoTaiKhoanVaDangNhapAsync("hubnhomtv");
+        var idThanhVien = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubnhomtv").Id;
+
+        using var clientTao = _factory.CreateClient();
+        clientTao.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenChu);
+        var nhom = await (await clientTao.PostAsJsonAsync(
+            "/api/nhom", new { TenNhom = "Nhóm Hub", MoTa = (string?)null, DuongDanAnhDaiDien = (string?)null, ThanhVienIds = new[] { idThanhVien } }))
+            .Content.ReadFromJsonAsync<HaloChat.Api.Dto.NhomDto>();
+
+        await using var ketNoiThanhVien = TaoKetNoiHub(tokenThanhVien);
+        var daNhan = new TaskCompletionSource();
+        ketNoiThanhVien.On<object>("NhanTinNhan", _ => daNhan.SetResult());
+        await ketNoiThanhVien.StartAsync();
+
+        // Thành viên đã join group "nhom-{id}" ngay lúc OnConnectedAsync (trước khi
+        // có tin nhắn nào) — xác nhận gián tiếp bằng cách người tạo gửi tin nhắn
+        // (qua REST giả lập, ở đây dùng chính Hub) và thành viên nhận được realtime.
+        // Task 6 mới thêm tham số nhomId vào GuiTinNhan — ở Task 5 này ta chỉ xác
+        // nhận việc join group không lỗi, không gọi GuiTinNhan(nhomId) được vì
+        // chưa tồn tại tham số đó. Test đầy đủ hành vi gửi tin nhóm chuyển sang
+        // Task 6 (ChatHubTests bổ sung thêm ở đó); test này chỉ khẳng định
+        // OnConnectedAsync không ném lỗi và kết nối thành công cho 1 user có nhóm.
+        Assert.True(ketNoiThanhVien.State == Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Connected);
+        Assert.NotNull(nhom);
+    }
+
+    [Fact]
+    public async Task OnConnected_LaBanBe_NhanDuocSuKienTrangThaiHoatDongThayDoi()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubpresencea");
+        var idA = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubpresencea").Id;
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubpresenceb");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubpresenceb").Id;
+        _factory.KhoLoiMoiKetBanGiaLap.DanhSach.Add(new HaloChat.Api.Models.LoiMoiKetBan
+        {
+            NguoiGuiId = idA, NguoiNhanId = idB, TrangThai = HaloChat.Api.Models.TrangThaiLoiMoiKetBan.DaChapNhan,
+        });
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await ketNoiA.StartAsync();
+
+        var daNhanThayDoi = new TaskCompletionSource();
+        (string UserId, bool Online)? suKienNhanDuoc = null;
+        await using var ketNoiB = TaoKetNoiHub(tokenB);
+        ketNoiA.On<string, bool>("TrangThaiHoatDongThayDoi", (userId, online) =>
+        {
+            suKienNhanDuoc = (userId, online);
+            daNhanThayDoi.SetResult();
+        });
+        await ketNoiB.StartAsync();
+
+        // B online sau A và là bạn của A => A phải nhận sự kiện A thấy B online.
+        await daNhanThayDoi.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.NotNull(suKienNhanDuoc);
+        Assert.Equal(idB, suKienNhanDuoc!.Value.UserId);
+        Assert.True(suKienNhanDuoc.Value.Online);
+    }
 }

@@ -34,6 +34,7 @@ builder.Services.AddScoped<IDichVuNhom, DichVuNhom>();
 builder.Services.AddScoped<IDichVuKetBan, DichVuKetBan>();
 builder.Services.AddScoped<IDichVuTinNhan, DichVuTinNhan>();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<IQuanLyKetNoiChat, QuanLyKetNoiChat>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, HaloChat.Api.Services.NguoiDungIdProvider>();
 
 builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));

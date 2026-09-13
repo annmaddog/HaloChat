@@ -11,11 +11,15 @@ namespace HaloChat.Api.Controllers;
 public class NguoiDungController : ControllerBase
 {
     private readonly IDichVuNguoiDung _dichVu;
+    private readonly IQuanLyKetNoiChat _quanLyKetNoi;
 
-    public NguoiDungController(IDichVuNguoiDung dichVu)
+    public NguoiDungController(IDichVuNguoiDung dichVu, IQuanLyKetNoiChat quanLyKetNoi)
     {
         _dichVu = dichVu;
+        _quanLyKetNoi = quanLyKetNoi;
     }
+
+    private string? IdHienTai => User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
     [HttpPost("dang-ky")]
     public async Task<IActionResult> DangKy([FromBody] DangKyTaiKhoanRequest yeuCau)
@@ -81,5 +85,24 @@ public class NguoiDungController : ControllerBase
 
         await _dichVu.CapNhatCaiDatAsync(idHienTai, yeuCau.ChoPhepTinNhanTuNguoiLa, yeuCau.HienThiTrangThaiHoatDong);
         return Ok(new { thongBao = "Đã cập nhật cài đặt." });
+    }
+
+    [HttpGet("trang-thai")]
+    [Authorize]
+    public async Task<IActionResult> LayTrangThaiHoatDong([FromQuery] string ids)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var ketQua = new Dictionary<string, bool>();
+        foreach (var id in ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var hoSo = await _dichVu.LayThongTinCaNhanAsync(id);
+            ketQua[id] = hoSo is not null && hoSo.HienThiTrangThaiHoatDong && _quanLyKetNoi.DangOnline(id);
+        }
+
+        return Ok(ketQua);
     }
 }
