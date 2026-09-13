@@ -76,14 +76,16 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             .ToList();
     }
 
-    public Task CapNhatCaiDatAsync(string idHienTai, bool choPhepTinNhanTuNguoiLa) =>
-        _kho.CapNhatChoPhepTinNhanTuNguoiLaAsync(idHienTai, choPhepTinNhanTuNguoiLa);
+    public Task CapNhatCaiDatAsync(string idHienTai, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong) =>
+        _kho.CapNhatCaiDatAsync(idHienTai, choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong);
 
     public async Task<HoSoCaNhanDto?> LayThongTinCaNhanAsync(string id)
     {
         var nguoiDung = await _kho.TimTheoIdAsync(id);
         return nguoiDung is null
             ? null
-            : new HoSoCaNhanDto(nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email, nguoiDung.ChoPhepTinNhanTuNguoiLa);
+            : new HoSoCaNhanDto(
+                nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email,
+                nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong);
     }
 }

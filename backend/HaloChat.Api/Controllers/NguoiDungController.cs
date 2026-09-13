@@ -79,7 +79,7 @@ public class NguoiDungController : ControllerBase
             return Unauthorized();
         }
 
-        await _dichVu.CapNhatCaiDatAsync(idHienTai, yeuCau.ChoPhepTinNhanTuNguoiLa);
+        await _dichVu.CapNhatCaiDatAsync(idHienTai, yeuCau.ChoPhepTinNhanTuNguoiLa, yeuCau.HienThiTrangThaiHoatDong);
         return Ok(new { thongBao = "Đã cập nhật cài đặt." });
     }
 }

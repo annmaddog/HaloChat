@@ -23,4 +23,9 @@ public class NguoiDung
     public DateTime NgayTao { get; set; } = DateTime.UtcNow;
 
     public bool ChoPhepTinNhanTuNguoiLa { get; set; } = false;
+
+    // [GĐ5b-2] Khi false, server không đẩy sự kiện TrangThaiHoatDongThayDoi
+    // cho user này tới bạn bè — vẫn cho phép ẩn trạng thái online/offline
+    // theo ý muốn, đúng toggle "Hiển thị trạng thái hoạt động" ở Cài đặt.
+    public bool HienThiTrangThaiHoatDong { get; set; } = true;
 }

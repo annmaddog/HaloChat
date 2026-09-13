@@ -1,3 +1,3 @@
 namespace HaloChat.Api.Dto;
 
-public record CapNhatCaiDatRequest(bool ChoPhepTinNhanTuNguoiLa);
+public record CapNhatCaiDatRequest(bool ChoPhepTinNhanTuNguoiLa, bool HienThiTrangThaiHoatDong);

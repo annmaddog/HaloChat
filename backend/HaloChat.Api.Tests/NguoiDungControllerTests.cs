@@ -128,11 +128,12 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
-        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/cai-dat", new CapNhatCaiDatRequest(true));
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/cai-dat", new CapNhatCaiDatRequest(true, false));
 
         Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
         var nguoiDung = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "caidatnguoia");
         Assert.True(nguoiDung.ChoPhepTinNhanTuNguoiLa);
+        Assert.False(nguoiDung.HienThiTrangThaiHoatDong);
     }
 
     [Fact]
@@ -152,5 +153,22 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
         var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
         Assert.Equal("hosonguoia", hoSo!.TenTaiKhoan);
         Assert.False(hoSo.ChoPhepTinNhanTuNguoiLa);
+    }
+
+    [Fact]
+    public async Task LayThongTinCaNhan_MoiDangKy_HienThiTrangThaiHoatDongMacDinhTrue()
+    {
+        var yeuCauDangKy = TaoYeuCauDangKyHopLe("hosonguoib");
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", yeuCauDangKy);
+        var phanHoiDangNhap = await _client.PostAsJsonAsync(
+            "/api/nguoidung/dang-nhap", new DangNhapRequest(yeuCauDangKy.TenTaiKhoan, "MatKhau123"));
+        var ketQuaDangNhap = await phanHoiDangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+        var phanHoi = await _client.GetAsync("/api/nguoidung/toi");
+
+        var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
+        Assert.True(hoSo!.HienThiTrangThaiHoatDong);
     }
 }
