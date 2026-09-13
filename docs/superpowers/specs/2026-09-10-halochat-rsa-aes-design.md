@@ -565,11 +565,60 @@ không cần đổi `.csproj` vì `HaloChat.Api.Tests` đã tham chiếu `HaloCh
   `TrangChat` và `TrangNhom` khi `nguoiDangChon`/nhóm đang chọn là `null`, thay cho dòng chữ đơn giản
   hiện tại ("Chọn một người để bắt đầu trò chuyện.").
 
-## 11. Quên mật khẩu (module riêng, làm sau)
+## 11. Quên mật khẩu
 
 Email → Server tạo OTP → gửi OTP qua Email → xác thực OTP → nhập mật khẩu mới → SHA-256 + Salt →
-cập nhật `NguoiDung`. Không gửi mật khẩu cũ qua email. Thực hiện sau khi chat chính (GĐ3-6) hoàn
-thành, theo đúng thứ tự trong tài liệu.
+cập nhật `NguoiDung`. Không gửi mật khẩu cũ qua email.
+
+### 11.1. Thiết kế chi tiết (quyết định 2026-09-13, brainstorm thứ tư)
+
+Thực hiện sau khi chat chính + nhóm chat (GĐ3-5b) đã hoàn thành và deploy, theo đúng thứ tự trong
+tài liệu — mã hóa thật (GĐ6) vẫn để nhóm tự làm sau, không liên quan tới module này.
+
+**Lưu OTP trên `NguoiDung`** (không tạo collection riêng — mỗi người chỉ cần 1 OTP hiệu lực tại 1
+thời điểm, giống tinh thần đơn giản hóa của `ChoPhepTinNhanTuNguoiLa`): thêm 4 field mới —
+`MaOtpBam: string?` (băm SHA-256+Salt của mã OTP 6 số, dùng lại `IDichVuMatKhau.BamMatKhau` sẵn có,
+KHÔNG lưu OTP dạng plaintext), `MaOtpHetHan: DateTime?` (hết hạn sau 10 phút kể từ lúc gửi),
+`SoLanThuSai: int` (mặc định 0, tối đa 5 lần sai thì OTP đó vô hiệu — phải bấm gửi lại),
+`MaOtpGuiLucNao: DateTime?` (chống spam: từ chối gửi lại nếu cách lần gửi trước dưới 60 giây).
+
+**Dịch vụ gửi email** — `IDichVuEmail`/`DichVuEmail` mới trong `backend/HaloChat.Api/Services/`
+(KHÔNG đặt trong `HaloChat.Security` — project đó dành riêng cho mã hóa/băm theo §3, gửi email
+không thuộc phạm trù đó). Dùng thư viện **MailKit** (`MailKit.Net.Smtp.SmtpClient` +
+`MimeKit.MimeMessage`) kết nối Gmail SMTP (`smtp.gmail.com:587`, STARTTLS) bằng tài khoản Gmail +
+App Password của người dùng dự án. Cấu hình đọc từ mục `SmtpEmail` trong `appsettings`/user-secrets
+(local)/biến môi trường Render (production) — đúng pattern `MongoDb__.../Jwt__...` đã có:
+`SmtpEmail:MayChu`, `SmtpEmail:Cong`, `SmtpEmail:TenDangNhap`, `SmtpEmail:MatKhauUngDung` (App
+Password, KHÔNG BAO GIỜ commit giá trị thật), `SmtpEmail:NguoiGuiHienThi`. Method duy nhất:
+`Task GuiEmailOtpAsync(string diaChiNhan, string maOtp)` — subject "Mã OTP đặt lại mật khẩu
+HaloChat", nội dung nêu rõ mã, thời hạn 10 phút, cảnh báo không chia sẻ mã cho ai.
+
+**API REST** (`NguoiDungController`, không yêu cầu `[Authorize]` — đây chính là luồng dành cho
+người CHƯA đăng nhập được vì quên mật khẩu):
+- `POST /api/nguoidung/quen-mat-khau` — body `{ Email }`. Luôn trả `200 { thongBao: "Nếu email tồn
+  tại trong hệ thống, mã OTP đã được gửi." }` bất kể email có tồn tại hay không, và bất kể có bị
+  chặn bởi cooldown 60 giây hay không (tránh lộ thông tin email nào đã đăng ký, hoặc email nào vừa
+  yêu cầu OTP). Nếu email tồn tại VÀ không bị cooldown: sinh mã OTP 6 chữ số ngẫu nhiên
+  (`RandomNumberGenerator`, không dùng `Random` thường), băm và lưu cùng thời điểm hết hạn/gửi vào
+  `NguoiDung`, reset `SoLanThuSai = 0`, gọi `IDichVuEmail.GuiEmailOtpAsync`.
+- `POST /api/nguoidung/dat-lai-mat-khau` — body `{ Email, MaOtp, MatKhauMoi }`. Validate theo thứ
+  tự: email tồn tại → có `MaOtpBam` (đã yêu cầu OTP) → `MaOtpHetHan` chưa qua → `SoLanThuSai < 5` →
+  băm `MaOtp` nhập vào so khớp `MaOtpBam`. Sai ở bước băm: tăng `SoLanThuSai`, trả `400 { thongBao:
+  "Mã OTP không đúng." }` (không tiết lộ còn bao nhiêu lần thử, tránh dò brute-force có định
+  hướng). Đúng: băm `MatKhauMoi` bằng `IDichVuMatKhau` sẵn có, cập nhật `MatKhauBam`/`Salt`, xóa
+  sạch cả 4 field OTP (không cho dùng lại), trả `200 { thongBao: "Đặt lại mật khẩu thành công." }`.
+  `MatKhauMoi` áp cùng ràng buộc `[MinLength(6)]` như lúc đăng ký.
+
+**Frontend** — trang mới `TrangQuenMatKhau.tsx`, route `/quen-mat-khau` (route công khai, KHÔNG bọc
+`TuyenDuongRieng`/`KhungChinh`, cùng khuôn `/dang-nhap`/`/dang-ky`). Luồng 2 bước trên cùng 1 trang
+(không điều hướng qua lại): bước 1 nhập email + nút "Gửi mã OTP"; sau khi gọi API thành công, hiện
+thêm ô nhập mã OTP + mật khẩu mới + nút "Đặt lại mật khẩu" (không ẩn ô email, cho phép sửa lại nếu
+gõ nhầm rồi gửi lại). Đặt lại thành công → điều hướng sang `/dang-nhap` kèm thông báo. Thêm link
+"Quên mật khẩu?" vào `TrangDangNhap.tsx`, dẫn tới `/quen-mat-khau`.
+
+**Không thuộc phạm vi module này:** nút "Đổi mật khẩu" hiện có trong trang Cài đặt (khi đã đăng
+nhập, cần mật khẩu cũ, không qua email) — giữ nguyên `disabled`/"Sắp ra mắt" như đã làm ở GĐ5b-2,
+đây là luồng khác mà tài liệu gốc không yêu cầu.
 
 ## 12. Kiểm thử
 
