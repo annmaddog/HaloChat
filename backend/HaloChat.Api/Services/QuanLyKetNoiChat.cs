@@ -38,9 +38,19 @@ public class QuanLyKetNoiChat : IQuanLyKetNoiChat
         }
     }
 
-    public bool DangOnline(string userId) =>
-        _ketNoiTheoUser.TryGetValue(userId, out var tapHop) && tapHop.Count > 0;
+    public bool DangOnline(string userId)
+    {
+        lock (_khoa)
+        {
+            return _ketNoiTheoUser.TryGetValue(userId, out var tapHop) && tapHop.Count > 0;
+        }
+    }
 
-    public IReadOnlyCollection<string> LayConnectionIds(string userId) =>
-        _ketNoiTheoUser.TryGetValue(userId, out var tapHop) ? tapHop.ToList() : Array.Empty<string>();
+    public IReadOnlyCollection<string> LayConnectionIds(string userId)
+    {
+        lock (_khoa)
+        {
+            return _ketNoiTheoUser.TryGetValue(userId, out var tapHop) ? tapHop.ToList() : Array.Empty<string>();
+        }
+    }
 }
