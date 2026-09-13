@@ -25,6 +25,14 @@
   cursor: pointer;
 }
 
+.trang-nhom__tim-kiem {
+  padding: 8px 12px;
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  font-family: inherit;
+  font-size: 13px;
+}
+
 .trang-nhom__danh-sach {
   list-style: none;
   margin: 0;
@@ -206,5 +214,24 @@
     width: 100%;
     border-left: none;
     border-top: 1px solid var(--mau-vien);
+  }
+
+  .trang-nhom__sidebar,
+  .trang-nhom__trong-rong {
+    display: none;
+  }
+
+  .trang-nhom:not(.trang-nhom--da-chon) .trang-nhom__sidebar {
+    display: flex;
+    width: 100%;
+  }
+
+  .trang-nhom:not(.trang-nhom--da-chon) .trang-nhom__trong-rong {
+    display: flex;
+    width: 100%;
+  }
+
+  .trang-nhom__khung-phai {
+    width: 100%;
   }
 }

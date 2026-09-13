@@ -24,6 +24,7 @@ export function TrangBanBe() {
   const [tatCaNguoiDung, setTatCaNguoiDung] = useState<NguoiDungTomTat[]>([]);
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTai, setDangTai] = useState(true);
+  const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
 
   async function taiLaiTatCa(tokenHienTai: string) {
     const [dsBanBe, dsLoiMoiDen, dsLoiMoiGui, dsTatCa] = await Promise.all([
@@ -84,6 +85,13 @@ export function TrangBanBe() {
 
   return (
     <div className="trang-ban-be">
+      <input
+        type="text"
+        className="trang-ban-be__tim-kiem"
+        placeholder="Tìm bạn bè..."
+        value={tuKhoaTimKiem}
+        onChange={(su) => setTuKhoaTimKiem(su.target.value)}
+      />
       {loi && (
         <p className="thong-bao-loi" role="alert">
           {loi}
@@ -127,6 +135,7 @@ export function TrangBanBe() {
         <ul className="trang-ban-be__danh-sach">
           {tatCaNguoiDung
             .filter((nd) => !idDaLaBanBeHoacDangCho.has(nd.id))
+            .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
             .map((nd) => (
               <li key={nd.id} className="trang-ban-be__muc">
                 <span>{nd.tenTaiKhoan}</span>

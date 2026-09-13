@@ -32,11 +32,12 @@ interface PropsKhungTinNhan {
   onGuiTep: (tep: File) => void;
   dangTaiTep: boolean;
   loi: string | null;
+  onQuayLai?: () => void;
 }
 
 export function KhungTinNhan({
   loaiHoiThoai, tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
-  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi,
+  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +73,11 @@ export function KhungTinNhan({
         </p>
       )}
       <header className="khung-tin-nhan__tieu-de">
+        {onQuayLai && (
+          <button className="khung-tin-nhan__nut-quay-lai" onClick={onQuayLai} aria-label="Quay lại danh sách">
+            ←
+          </button>
+        )}
         <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
         <div className="khung-tin-nhan__ten-cum">
           <span className="khung-tin-nhan__ten">{tenHienThi}</span>

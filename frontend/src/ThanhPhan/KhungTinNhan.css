@@ -152,6 +152,22 @@
   text-decoration: underline;
 }
 
+.khung-tin-nhan__nut-quay-lai {
+  display: none;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--mau-chu-dam);
+  padding: 4px 8px 4px 0;
+}
+
+@media (max-width: 640px) {
+  .khung-tin-nhan__nut-quay-lai {
+    display: block;
+  }
+}
+
 .khung-tin-nhan__dang-tai-tep,
 .khung-tin-nhan__ma-hoa {
   margin: 0;

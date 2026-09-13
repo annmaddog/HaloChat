@@ -28,6 +28,7 @@ export function TrangChat() {
   const [dangTaiLichSu, setDangTaiLichSu] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTaiTep, setDangTaiTep] = useState(false);
+  const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -187,22 +188,31 @@ export function TrangChat() {
   }
 
   return (
-    <div className="trang-chat">
+    <div className={`trang-chat${nguoiDangChon ? ' trang-chat--da-chon' : ''}`}>
       <aside className="trang-chat__sidebar">
+        <input
+          type="text"
+          className="trang-chat__tim-kiem"
+          placeholder="Tìm cuộc trò chuyện..."
+          value={tuKhoaTimKiem}
+          onChange={(su) => setTuKhoaTimKiem(su.target.value)}
+        />
         {dangTaiDanhSach && <p>Đang tải...</p>}
         <ul className="trang-chat__danh-sach">
-          {danhSachHienThi.map((nd) => (
-            <li key={nd.id}>
-              <button
-                className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
-                onClick={() => setNguoiDangChon(nd)}
-              >
-                <span className="trang-chat__avatar">{nd.tenTaiKhoan.charAt(0).toUpperCase()}</span>
-                <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>
-                {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
-              </button>
-            </li>
-          ))}
+          {danhSachHienThi
+            .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
+            .map((nd) => (
+              <li key={nd.id}>
+                <button
+                  className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
+                  onClick={() => setNguoiDangChon(nd)}
+                >
+                  <span className="trang-chat__avatar">{nd.tenTaiKhoan.charAt(0).toUpperCase()}</span>
+                  <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>
+                  {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
+                </button>
+              </li>
+            ))}
         </ul>
       </aside>
 
@@ -227,6 +237,7 @@ export function TrangChat() {
           onGuiTep={guiTep}
           dangTaiTep={dangTaiTep}
           loi={loi}
+          onQuayLai={() => setNguoiDangChon(null)}
         />
       )}
     </div>

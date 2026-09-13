@@ -26,6 +26,7 @@ export function TrangNhom() {
   const [tatCaNguoiDung, setTatCaNguoiDung] = useState<NguoiDungTomTat[]>([]);
   const [thanhVienDuocChon, setThanhVienDuocChon] = useState<Set<string>>(new Set());
   const [daTaiLichSuIds] = useState<Set<string>>(() => new Set());
+  const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
 
@@ -167,14 +168,23 @@ export function TrangNhom() {
   const laAdmin = nhomDangChon?.nguoiTaoId === idHienTai;
 
   return (
-    <div className="trang-nhom">
+    <div className={`trang-nhom${nhomDangChon ? ' trang-nhom--da-chon' : ''}`}>
       <aside className="trang-nhom__sidebar">
         <button className="trang-nhom__nut-tao" onClick={() => setHienFormTao(true)}>
           + Tạo nhóm
         </button>
+        <input
+          type="text"
+          className="trang-nhom__tim-kiem"
+          placeholder="Tìm nhóm..."
+          value={tuKhoaTimKiem}
+          onChange={(su) => setTuKhoaTimKiem(su.target.value)}
+        />
         {dangTaiDanhSach && <p>Đang tải...</p>}
         <ul className="trang-nhom__danh-sach">
-          {danhSachNhom.map((n) => (
+          {danhSachNhom
+            .filter((n) => n.tenNhom.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
+            .map((n) => (
             <li key={n.id}>
               <button
                 className={`trang-nhom__muc${nhomDangChonId === n.id ? ' trang-nhom__muc--dang-chon' : ''}`}
@@ -213,6 +223,7 @@ export function TrangNhom() {
             onGuiTep={guiTep}
             dangTaiTep={dangTaiTep}
             loi={loi}
+            onQuayLai={() => setNhomDangChonId(null)}
           />
           <aside className="trang-nhom__thong-tin">
             <h3>Thành viên</h3>
