@@ -28,4 +28,16 @@ public class NguoiDung
     // cho user này tới bạn bè — vẫn cho phép ẩn trạng thái online/offline
     // theo ý muốn, đúng toggle "Hiển thị trạng thái hoạt động" ở Cài đặt.
     public bool HienThiTrangThaiHoatDong { get; set; } = true;
+
+    // [Quên mật khẩu] Mã OTP băm bằng Salt sẵn có của chính user (không cần
+    // field salt riêng) — xem IDichVuMatKhau.BamMatKhau. Null khi chưa từng
+    // yêu cầu OTP hoặc đã đặt lại mật khẩu thành công.
+    public string? MaOtpBam { get; set; }
+    public DateTime? MaOtpHetHan { get; set; }
+    public int SoLanThuSai { get; set; } = 0;
+
+    // Thời điểm gửi OTP gần nhất — dùng để chặn spam gửi lại liên tục
+    // (cooldown 60 giây), tách biệt với MaOtpHetHan (thời điểm OTP đó
+    // hết hạn sử dụng, 10 phút sau khi gửi).
+    public DateTime? MaOtpGuiLucNao { get; set; }
 }

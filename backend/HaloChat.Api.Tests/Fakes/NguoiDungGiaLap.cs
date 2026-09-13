@@ -37,4 +37,42 @@ public class NguoiDungGiaLap : INguoiDungRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task LuuOtpAsync(string id, string maOtpBam, DateTime hetHan, DateTime guiLucNao)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.MaOtpBam = maOtpBam;
+            nguoiDung.MaOtpHetHan = hetHan;
+            nguoiDung.MaOtpGuiLucNao = guiLucNao;
+            nguoiDung.SoLanThuSai = 0;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task TangSoLanThuSaiOtpAsync(string id)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.SoLanThuSai++;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task DatLaiMatKhauAsync(string id, string matKhauBamMoi, string saltMoi)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.MatKhauBam = matKhauBamMoi;
+            nguoiDung.Salt = saltMoi;
+            nguoiDung.MaOtpBam = null;
+            nguoiDung.MaOtpHetHan = null;
+            nguoiDung.MaOtpGuiLucNao = null;
+            nguoiDung.SoLanThuSai = 0;
+        }
+        return Task.CompletedTask;
+    }
 }

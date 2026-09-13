@@ -60,4 +60,35 @@ public class NguoiDungRepository : INguoiDungRepository
             .Set(nd => nd.HienThiTrangThaiHoatDong, hienThiTrangThaiHoatDong);
         await _collection.UpdateOneAsync(boLoc, capNhat);
     }
+
+    public async Task LuuOtpAsync(string id, string maOtpBam, DateTime hetHan, DateTime guiLucNao)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update
+            .Set(nd => nd.MaOtpBam, maOtpBam)
+            .Set(nd => nd.MaOtpHetHan, hetHan)
+            .Set(nd => nd.MaOtpGuiLucNao, guiLucNao)
+            .Set(nd => nd.SoLanThuSai, 0);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task TangSoLanThuSaiOtpAsync(string id)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update.Inc(nd => nd.SoLanThuSai, 1);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task DatLaiMatKhauAsync(string id, string matKhauBamMoi, string saltMoi)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update
+            .Set(nd => nd.MatKhauBam, matKhauBamMoi)
+            .Set(nd => nd.Salt, saltMoi)
+            .Set(nd => nd.MaOtpBam, null)
+            .Set(nd => nd.MaOtpHetHan, null)
+            .Set(nd => nd.MaOtpGuiLucNao, null)
+            .Set(nd => nd.SoLanThuSai, 0);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
 }
