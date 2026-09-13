@@ -23,4 +23,7 @@ public interface ITinNhanRepository
 
     /// <summary>Đánh dấu đã đọc mọi tin nhắn của 1 nhóm (đơn giản hóa: không phân biệt theo từng thành viên).</summary>
     Task DanhDauDaDocNhomAsync(string nhomId);
+
+    /// <summary>Xóa toàn bộ tin nhắn của 1 nhóm (dùng khi giải tán nhóm).</summary>
+    Task XoaTheoNhomAsync(string nhomId);
 }

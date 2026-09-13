@@ -37,6 +37,20 @@ public class NhomController : ControllerBase
         try
         {
             var nhom = await _dichVu.TaoNhomAsync(IdHienTai, yeuCau.TenNhom, yeuCau.MoTa, yeuCau.DuongDanAnhDaiDien, yeuCau.ThanhVienIds);
+
+            foreach (var thanhVien in nhom.ThanhVien)
+            {
+                foreach (var connId in _quanLyKetNoi.LayConnectionIds(thanhVien.Id))
+                {
+                    await _hub.Groups.AddToGroupAsync(connId, "nhom-" + nhom.Id);
+                }
+
+                if (thanhVien.Id != IdHienTai)
+                {
+                    await _hub.Clients.User(thanhVien.Id).SendAsync("DuocThemVaoNhom", nhom);
+                }
+            }
+
             return Ok(nhom);
         }
         catch (ThanhVienKhongTonTaiException loi)
@@ -117,6 +131,7 @@ public class NhomController : ControllerBase
                 await _hub.Groups.AddToGroupAsync(connId, "nhom-" + id);
             }
             await _hub.Clients.User(yeuCau.ThanhVienId).SendAsync("DuocThemVaoNhom", nhom);
+            await _hub.Clients.Group("nhom-" + id).SendAsync("NhomDaCapNhat", nhom);
 
             return Ok(nhom);
         }
@@ -151,6 +166,7 @@ public class NhomController : ControllerBase
                 await _hub.Groups.RemoveFromGroupAsync(connId, "nhom-" + id);
             }
             await _hub.Clients.User(userId).SendAsync("BiXoaKhoiNhom", id);
+            await _hub.Clients.Group("nhom-" + id).SendAsync("NhomDaCapNhat", nhom);
 
             return Ok(nhom);
         }

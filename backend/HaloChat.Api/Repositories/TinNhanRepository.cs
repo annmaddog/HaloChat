@@ -77,4 +77,9 @@ public class TinNhanRepository : ITinNhanRepository
         var capNhat = Builders<TinNhan>.Update.Set(t => t.DaDoc, true);
         await _collection.UpdateManyAsync(boLoc, capNhat);
     }
+
+    public async Task XoaTheoNhomAsync(string nhomId)
+    {
+        await _collection.DeleteManyAsync(t => t.NhomId == nhomId);
+    }
 }

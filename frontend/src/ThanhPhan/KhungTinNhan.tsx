@@ -140,6 +140,7 @@ export function KhungTinNhan({
         </button>
       </form>
       {dangTaiTep && <p className="khung-tin-nhan__dang-tai-tep">Đang tải file lên...</p>}
+      {/* Chỉ là dòng chữ trình bày theo mockup — mã hóa thật thuộc GĐ6, KHÔNG được gọi ở đây. */}
       <p className="khung-tin-nhan__ma-hoa">🔒 Được mã hóa bằng AES-256-GCM</p>
     </main>
   );

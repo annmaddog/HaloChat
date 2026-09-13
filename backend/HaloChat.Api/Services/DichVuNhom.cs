@@ -9,11 +9,13 @@ public class DichVuNhom : IDichVuNhom
 {
     private readonly INhomRepository _khoNhom;
     private readonly INguoiDungRepository _khoNguoiDung;
+    private readonly ITinNhanRepository _khoTinNhan;
 
-    public DichVuNhom(INhomRepository khoNhom, INguoiDungRepository khoNguoiDung)
+    public DichVuNhom(INhomRepository khoNhom, INguoiDungRepository khoNguoiDung, ITinNhanRepository khoTinNhan)
     {
         _khoNhom = khoNhom;
         _khoNguoiDung = khoNguoiDung;
+        _khoTinNhan = khoTinNhan;
     }
 
     public async Task<NhomDto> TaoNhomAsync(
@@ -145,6 +147,7 @@ public class DichVuNhom : IDichVuNhom
         if (nguoiGoiId == nhom.NguoiTaoId)
         {
             var thanhVienConLai = nhom.ThanhVienIds.Where(id => id != nguoiGoiId).ToList();
+            await _khoTinNhan.XoaTheoNhomAsync(nhomId);
             await _khoNhom.XoaNhomAsync(nhomId);
             return new KetQuaRoiNhomDto(true, thanhVienConLai);
         }

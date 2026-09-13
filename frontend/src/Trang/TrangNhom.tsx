@@ -9,6 +9,9 @@ import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import type { Nhom, NguoiDungTomTat } from '../KieuDuLieu';
 import './TrangNhom.css';
 
+const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
+const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
+
 export function TrangNhom() {
   const { token, nguoiDungHienTai } = useXacThuc();
   const { ketNoi, dangKetNoi } = useChat();
@@ -51,7 +54,10 @@ export function TrangNhom() {
         const thuTu = [...tinNhans].reverse();
         setTinNhanTheoNhom((truoc) => ({ ...truoc, [nhomDangChonId]: thuTu }));
       })
-      .catch(() => setLoi('Không tải được lịch sử tin nhắn nhóm.'))
+      .catch(() => {
+        daTaiLichSuIds.delete(nhomDangChonId);
+        setLoi('Không tải được lịch sử tin nhắn nhóm.');
+      })
       .finally(() => setDangTaiLichSu(false));
   }, [token, nhomDangChonId, daTaiLichSuIds]);
 
@@ -75,15 +81,21 @@ export function TrangNhom() {
       setNhomDangChonId((truoc) => (truoc === nhomId ? null : truoc));
     }
 
+    function xuLyCapNhat(nhom: Nhom) {
+      setDanhSachNhom((truoc) => truoc.map((n) => (n.id === nhom.id ? nhom : n)));
+    }
+
     ketNoi.on('NhanTinNhan', xuLyTinNhanMoi);
     ketNoi.on('DuocThemVaoNhom', xuLyDuocThem);
     ketNoi.on('BiXoaKhoiNhom', xuLyBiXoa);
     ketNoi.on('NhomDaGiaiTan', xuLyBiXoa);
+    ketNoi.on('NhomDaCapNhat', xuLyCapNhat);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
       ketNoi.off('DuocThemVaoNhom', xuLyDuocThem);
       ketNoi.off('BiXoaKhoiNhom', xuLyBiXoa);
       ketNoi.off('NhomDaGiaiTan', xuLyBiXoa);
+      ketNoi.off('NhomDaCapNhat', xuLyCapNhat);
     };
   }, [ketNoi]);
 
@@ -112,6 +124,14 @@ export function TrangNhom() {
 
   function guiTep(tep: File) {
     if (!ketNoi || !nhomDangChon || !token) return;
+
+    const laAnh = tep.type.startsWith('image/');
+    const gioiHan = laAnh ? GIOI_HAN_ANH_BYTES : GIOI_HAN_FILE_BYTES;
+    if (tep.size > gioiHan) {
+      setLoi(`File vượt quá giới hạn ${gioiHan / 1024 / 1024}MB.`);
+      return;
+    }
+
     setDangTaiTep(true);
     TaiLenTep(token, tep)
       .then((daTaiLen) =>
@@ -157,6 +177,10 @@ export function TrangNhom() {
 
   function roiNhom() {
     if (!token || !nhomDangChon) return;
+    const thongDiepXacNhan = laAdmin
+      ? 'Giải tán nhóm sẽ xóa nhóm vĩnh viễn cho mọi thành viên. Bạn có chắc chắn?'
+      : 'Bạn có chắc muốn rời nhóm?';
+    if (!window.confirm(thongDiepXacNhan)) return;
     RoiNhom(token, nhomDangChon.id)
       .then(() => {
         setDanhSachNhom((truoc) => truoc.filter((n) => n.id !== nhomDangChon.id));

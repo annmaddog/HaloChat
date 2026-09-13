@@ -90,7 +90,7 @@ public class ChatHub : Hub
 
             if (nhomId is not null)
             {
-                await Clients.Group("nhom-" + nhomId).SendAsync("NhanTinNhan", tinNhan);
+                await Clients.OthersInGroup("nhom-" + nhomId).SendAsync("NhanTinNhan", tinNhan);
             }
             else
             {

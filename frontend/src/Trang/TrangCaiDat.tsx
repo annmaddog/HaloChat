@@ -29,6 +29,8 @@ export function TrangCaiDat() {
 
   async function luu(choPhepMoi: boolean, hienThiMoi: boolean) {
     if (!token) return;
+    const choPhepCu = choPhepTinNhanTuNguoiLa;
+    const hienThiCu = hienThiTrangThaiHoatDong;
     setChoPhepTinNhanTuNguoiLa(choPhepMoi);
     setHienThiTrangThaiHoatDong(hienThiMoi);
     setDangLuu(true);
@@ -37,6 +39,8 @@ export function TrangCaiDat() {
       await CapNhatCaiDat(token, choPhepMoi, hienThiMoi);
       setDaLuu(true);
     } catch (loiBat) {
+      setChoPhepTinNhanTuNguoiLa(choPhepCu);
+      setHienThiTrangThaiHoatDong(hienThiCu);
       setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Lưu cài đặt thất bại.');
     } finally {
       setDangLuu(false);

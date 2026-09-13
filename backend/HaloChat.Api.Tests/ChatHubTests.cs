@@ -140,6 +140,39 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
     }
 
     [Fact]
+    public async Task TaoNhom_KhiCaHaiDaKetNoiSan_ThanhVienKhacVanNhanDuocTinNhanRealtime()
+    {
+        var tokenChu = await TaoTaiKhoanVaDangNhapAsync("hubnhomchu3");
+        var tokenThanhVien = await TaoTaiKhoanVaDangNhapAsync("hubnhomtv3");
+        var idThanhVien = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubnhomtv3").Id;
+
+        // Cả 2 kết nối Hub được mở TRƯỚC khi nhóm được tạo (đúng kịch bản lỗi C1 đã fix).
+        await using var ketNoiChu = TaoKetNoiHub(tokenChu);
+        await using var ketNoiThanhVien = TaoKetNoiHub(tokenThanhVien);
+
+        TinNhanDto? nhanDuoc = null;
+        var daNhan = new TaskCompletionSource();
+        ketNoiThanhVien.On<TinNhanDto>("NhanTinNhan", tn => { nhanDuoc = tn; daNhan.SetResult(); });
+
+        await ketNoiChu.StartAsync();
+        await ketNoiThanhVien.StartAsync();
+
+        using var clientTao = _factory.CreateClient();
+        clientTao.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenChu);
+        var nhom = await (await clientTao.PostAsJsonAsync(
+            "/api/nhom", new { TenNhom = "Nhóm Hub 3", MoTa = (string?)null, DuongDanAnhDaiDien = (string?)null, ThanhVienIds = new[] { idThanhVien } }))
+            .Content.ReadFromJsonAsync<HaloChat.Api.Dto.NhomDto>();
+
+        await ketNoiChu.InvokeAsync<TinNhanDto>("GuiTinNhan", null, nhom!.Id, "Text", "Chào nhóm mới", null, null, null, null);
+
+        await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.NotNull(nhanDuoc);
+        Assert.Equal("Chào nhóm mới", nhanDuoc!.NoiDungTinNhan);
+        Assert.Equal(nhom.Id, nhanDuoc.NhomId);
+    }
+
+    [Fact]
     public async Task OnConnected_LaBanBe_NhanDuocSuKienTrangThaiHoatDongThayDoi()
     {
         var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubpresencea");

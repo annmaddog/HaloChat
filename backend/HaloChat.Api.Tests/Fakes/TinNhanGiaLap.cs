@@ -62,4 +62,10 @@ public class TinNhanGiaLap : ITinNhanRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task XoaTheoNhomAsync(string nhomId)
+    {
+        DanhSach.RemoveAll(t => t.NhomId == nhomId);
+        return Task.CompletedTask;
+    }
 }

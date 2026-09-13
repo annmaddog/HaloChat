@@ -80,7 +80,7 @@ public class NhomControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     [Fact]
     public async Task CapNhat_KhongPhaiAdmin_TraVe403()
     {
-        var (tokenA, idA) = await TaoTaiKhoanVaDangNhapAsync("nhomnguoif");
+        var (tokenA, _) = await TaoTaiKhoanVaDangNhapAsync("nhomnguoif");
         var (tokenB, _) = await TaoTaiKhoanVaDangNhapAsync("nhomnguoig");
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
         var nhom = await (await _client.PostAsJsonAsync("/api/nhom", new TaoNhomRequest("Nhóm X", null, null, new List<string>())))
@@ -90,7 +90,6 @@ public class NhomControllerTests : IClassFixture<ThietLapKiemThuTichHop>
         var phanHoi = await _client.PutAsJsonAsync($"/api/nhom/{nhom!.Id}", new CapNhatNhomRequest("Tên mới", null, null));
 
         Assert.Equal(HttpStatusCode.Forbidden, phanHoi.StatusCode);
-        Assert.NotEqual(idA, "bo-qua-canh-bao-bien-khong-dung"); // giữ idA có sử dụng, tránh cảnh báo biến không dùng
     }
 
     [Fact]

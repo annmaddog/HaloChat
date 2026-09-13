@@ -47,6 +47,22 @@ describe('TrangCaiDat', () => {
     expect(await screen.findByText('Đã lưu.')).toBeInTheDocument();
   });
 
+  it('lưu thất bại thì hoàn tác trạng thái checkbox và hiển thị lỗi', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
+    });
+    vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockRejectedValue(new DichVuApi.LoiGoiApi(500, 'Lưu thất bại.'));
+
+    renderTrangCaiDat();
+    const [choPhep] = await screen.findAllByRole('checkbox');
+    await waitFor(() => expect(choPhep).not.toBeChecked());
+
+    await userEvent.click(choPhep);
+
+    expect(await screen.findByText('Lưu thất bại.')).toBeInTheDocument();
+    await waitFor(() => expect(choPhep).not.toBeChecked());
+  });
+
   it('chuyển sang mục Tài khoản hiển thị tên tài khoản/email và nút Đăng xuất', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
