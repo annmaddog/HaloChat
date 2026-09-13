@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { KhungXacThuc } from '../ThanhPhan/KhungXacThuc';
 import { TruongNhap } from '../ThanhPhan/TruongNhap';
@@ -56,6 +56,9 @@ export function TrangDangNhap() {
           Đăng nhập <BieuTuongMuiTen />
         </button>
       </form>
+      <p>
+        <Link to="/quen-mat-khau">Quên mật khẩu?</Link>
+      </p>
     </KhungXacThuc>
   );
 }

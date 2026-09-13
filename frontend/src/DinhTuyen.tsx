@@ -3,6 +3,7 @@ import { TuyenDuongRieng } from './ThanhPhan/TuyenDuongRieng';
 import { KhungChinh } from './ThanhPhan/KhungChinh';
 import { TrangDangKy } from './Trang/TrangDangKy';
 import { TrangDangNhap } from './Trang/TrangDangNhap';
+import { TrangQuenMatKhau } from './Trang/TrangQuenMatKhau';
 import { TrangChat } from './Trang/TrangChat';
 import { TrangBanBe } from './Trang/TrangBanBe';
 import { TrangCaiDat } from './Trang/TrangCaiDat';
@@ -13,6 +14,7 @@ export function DinhTuyen() {
     <Routes>
       <Route path="/dang-ky" element={<TrangDangKy />} />
       <Route path="/dang-nhap" element={<TrangDangNhap />} />
+      <Route path="/quen-mat-khau" element={<TrangQuenMatKhau />} />
       <Route
         path="/nguoi-dung"
         element={
