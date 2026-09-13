@@ -110,6 +110,35 @@ public class TinNhanController : ControllerBase
         return Ok(new TepTinDaTaiLenDto($"/uploads/{tenFileLuu}", tep.FileName, tep.Length, (laAnh ? mimeAnh : mimeFile)!));
     }
 
+    [HttpGet("nhom/{id}")]
+    public async Task<IActionResult> LayLichSuNhom(string id, [FromQuery] string? truoc, [FromQuery] int soLuong = 30)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id nhóm không hợp lệ." });
+        }
+
+        try
+        {
+            var soLuongThucTe = Math.Clamp(soLuong, 1, 100);
+            var lichSu = await _dichVuTinNhan.LayLichSuNhomAsync(IdHienTai, id, truoc, soLuongThucTe);
+            return Ok(lichSu);
+        }
+        catch (HaloChat.Api.Services.NhomKhongTonTaiException loi)
+        {
+            return NotFound(new { thongBao = loi.Message });
+        }
+        catch (HaloChat.Api.Services.KhongPhaiThanhVienNhomException loi)
+        {
+            return StatusCode(403, new { thongBao = loi.Message });
+        }
+    }
+
     [HttpGet("hoi-thoai")]
     public async Task<IActionResult> LayDanhSachHoiThoai()
     {

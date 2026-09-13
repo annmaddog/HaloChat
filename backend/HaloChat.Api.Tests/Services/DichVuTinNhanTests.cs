@@ -15,7 +15,9 @@ public class DichVuTinNhanTests
         var khoTinNhan = new TinNhanGiaLap();
         var khoNguoiDung = new NguoiDungGiaLap();
         var khoLoiMoiKetBan = new LoiMoiKetBanGiaLap();
-        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan);
+        var khoNhom = new NhomGiaLap();
+        var quanLyKetNoi = new QuanLyKetNoiChat();
+        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, quanLyKetNoi);
         return (dichVu, khoTinNhan, khoNguoiDung, khoLoiMoiKetBan);
     }
 
@@ -31,7 +33,7 @@ public class DichVuTinNhanTests
         var (dichVu, _, _, _) = TaoDichVu();
 
         await Assert.ThrowsAsync<NguoiNhanKhongTonTaiException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, "khong-ton-tai", "Text", "Xin chào", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, "khong-ton-tai", null, "Text", "Xin chào", null, null, null, null));
     }
 
     [Fact]
@@ -41,7 +43,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "   ", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "   ", null, null, null, null));
     }
 
     [Fact]
@@ -51,7 +53,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "KhongTonTai", "Xin chào", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "KhongTonTai", "Xin chào", null, null, null, null));
     }
 
     [Fact]
@@ -61,7 +63,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Anh", "", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", null, null, null, null));
     }
 
     [Fact]
@@ -71,7 +73,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Anh", "", "../../../etc/passwd", null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "../../../etc/passwd", null, null, null));
     }
 
     [Fact]
@@ -81,7 +83,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         var ketQua = await dichVu.GuiTinNhanAsync(
-            IdNguoiGui, IdNguoiNhan, "Anh", "", "/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", "anh.png", 1024, "image/png");
+            IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", "anh.png", 1024, "image/png");
 
         Assert.Equal("/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", ketQua.DuongDanFile);
     }
@@ -92,7 +94,7 @@ public class DichVuTinNhanTests
         var (dichVu, _, _, _) = TaoDichVu();
 
         await Assert.ThrowsAsync<NguoiNhanKhongTonTaiException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, "khong-phai-object-id", "Text", "Xin chào", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, "khong-phai-object-id", null, "Text", "Xin chào", null, null, null, null));
     }
 
     [Fact]
@@ -101,7 +103,7 @@ public class DichVuTinNhanTests
         var (dichVu, khoTinNhan, khoNguoiDung, _) = TaoDichVu();
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
-        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "Xin chào", null, null, null, null);
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null);
 
         Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
         Assert.Equal(IdNguoiGui, ketQua.NguoiGuiId);
@@ -117,8 +119,8 @@ public class DichVuTinNhanTests
         var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
         khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
-        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "Chào A gửi", null, null, null, null);
-        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Chào B gửi", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Chào A gửi", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "Chào B gửi", null, null, null, null);
 
         var lichSu = await dichVu.LayLichSuAsync(IdNguoiGui, IdNguoiNhan, null, 30);
 
@@ -131,7 +133,7 @@ public class DichVuTinNhanTests
         var (dichVu, khoTinNhan, khoNguoiDung, _) = TaoDichVu();
         khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiHienTai", ChoPhepTinNhanTuNguoiLa = true });
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
-        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Chào", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "Chào", null, null, null, null);
 
         await dichVu.DanhDauDaDocAsync(IdNguoiGui, IdNguoiNhan);
 
@@ -147,7 +149,7 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiNhan, TenTaiKhoan = "NguoiNhan", ChoPhepTinNhanTuNguoiLa = false });
 
         await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
-            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "Xin chào", null, null, null, null));
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null));
     }
 
     [Fact]
@@ -162,7 +164,7 @@ public class DichVuTinNhanTests
             TrangThai = TrangThaiLoiMoiKetBan.DaChapNhan,
         });
 
-        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "Xin chào", null, null, null, null);
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null);
 
         Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
     }
@@ -173,7 +175,7 @@ public class DichVuTinNhanTests
         var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
-        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "Text", "Xin chào", null, null, null, null);
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null);
 
         Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
     }
@@ -184,8 +186,8 @@ public class DichVuTinNhanTests
         var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
         khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
-        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Tin đầu", null, null, null, null);
-        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, "Text", "Tin cuối", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "Tin đầu", null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "Tin cuối", null, null, null, null);
 
         var hoiThoai = await dichVu.LayDanhSachHoiThoaiAsync(IdNguoiGui);
 

@@ -4,6 +4,7 @@ public record TinNhanDto(
     string Id,
     string NguoiGuiId,
     string? NguoiNhanId,
+    string? NhomId,
     string LoaiTinNhan,
     string NoiDungTinNhan,
     string? DuongDanFile,
@@ -11,4 +12,5 @@ public record TinNhanDto(
     long? KichThuocFile,
     string? LoaiFile,
     bool DaDoc,
+    bool DaNhan,
     DateTime ThoiGianTao);

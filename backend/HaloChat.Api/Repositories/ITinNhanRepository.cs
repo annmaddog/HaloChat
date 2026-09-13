@@ -17,4 +17,10 @@ public interface ITinNhanRepository
 
     /// <summary>Toàn bộ tin nhắn 1-1 (NhomId null) mà nguoiDungId là người gửi hoặc người nhận, mới nhất trước.</summary>
     Task<List<TinNhan>> LayTatCaLienQuanAsync(string nguoiDungId);
+
+    /// <summary>Lịch sử tin nhắn của 1 nhóm, mới nhất trước, phân trang lùi giống LayLichSuTheoNguoiDungAsync.</summary>
+    Task<List<TinNhan>> LayLichSuNhomAsync(string nhomId, string? truocId, int soLuong);
+
+    /// <summary>Đánh dấu đã đọc mọi tin nhắn của 1 nhóm (đơn giản hóa: không phân biệt theo từng thành viên).</summary>
+    Task DanhDauDaDocNhomAsync(string nhomId);
 }

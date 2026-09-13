@@ -39,5 +39,10 @@ public class TinNhan
 
     public bool DaDoc { get; set; } = false;
 
+    // [GĐ5b-2] "Đã nhận" — true nếu người nhận đang online (>=1 kết nối
+    // SignalR mở) tại thời điểm gửi. Chỉ có ý nghĩa với tin nhắn 1-1
+    // (NguoiNhanId khác null); tin nhắn nhóm luôn để false, không track.
+    public bool DaNhan { get; set; } = false;
+
     public DateTime ThoiGianTao { get; set; } = DateTime.UtcNow;
 }

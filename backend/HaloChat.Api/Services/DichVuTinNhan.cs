@@ -14,18 +14,29 @@ public class DichVuTinNhan : IDichVuTinNhan
     private readonly ITinNhanRepository _khoTinNhan;
     private readonly INguoiDungRepository _khoNguoiDung;
     private readonly ILoiMoiKetBanRepository _khoLoiMoiKetBan;
+    private readonly INhomRepository _khoNhom;
+    private readonly IQuanLyKetNoiChat _quanLyKetNoi;
 
-    public DichVuTinNhan(ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan)
+    public DichVuTinNhan(
+        ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan,
+        INhomRepository khoNhom, IQuanLyKetNoiChat quanLyKetNoi)
     {
         _khoTinNhan = khoTinNhan;
         _khoNguoiDung = khoNguoiDung;
         _khoLoiMoiKetBan = khoLoiMoiKetBan;
+        _khoNhom = khoNhom;
+        _quanLyKetNoi = quanLyKetNoi;
     }
 
     public async Task<TinNhanDto> GuiTinNhanAsync(
-        string nguoiGuiId, string nguoiNhanId, string loaiTinNhan, string noiDungTinNhan,
+        string nguoiGuiId, string? nguoiNhanId, string? nhomId, string loaiTinNhan, string noiDungTinNhan,
         string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile)
     {
+        if (string.IsNullOrEmpty(nguoiNhanId) == string.IsNullOrEmpty(nhomId))
+        {
+            throw new TinNhanKhongHopLeException("Phải chỉ định đúng 1 trong 2: người nhận hoặc nhóm.");
+        }
+
         if (!Enum.TryParse<LoaiTinNhan>(loaiTinNhan, ignoreCase: true, out var loai))
         {
             throw new TinNhanKhongHopLeException($"Loại tin nhắn không hợp lệ: {loaiTinNhan}.");
@@ -49,30 +60,9 @@ public class DichVuTinNhan : IDichVuTinNhan
             }
         }
 
-        if (!ObjectId.TryParse(nguoiNhanId, out _))
-        {
-            throw new NguoiNhanKhongTonTaiException(nguoiNhanId);
-        }
-
-        var nguoiNhan = await _khoNguoiDung.TimTheoIdAsync(nguoiNhanId);
-        if (nguoiNhan is null)
-        {
-            throw new NguoiNhanKhongTonTaiException(nguoiNhanId);
-        }
-
-        if (nguoiGuiId != nguoiNhanId)
-        {
-            var laBanBe = await _khoLoiMoiKetBan.LaBanBeAsync(nguoiGuiId, nguoiNhanId);
-            if (!laBanBe && !nguoiNhan.ChoPhepTinNhanTuNguoiLa)
-            {
-                throw new TinNhanKhongHopLeException("Người này chỉ nhận tin nhắn từ bạn bè. Hãy gửi lời mời kết bạn trước.");
-            }
-        }
-
         var tinNhan = new TinNhan
         {
             NguoiGuiId = nguoiGuiId,
-            NguoiNhanId = nguoiNhanId,
             LoaiTinNhan = loai,
             NoiDungTinNhan = noiDungTinNhan ?? string.Empty,
             DuongDanFile = duongDanFile,
@@ -80,6 +70,47 @@ public class DichVuTinNhan : IDichVuTinNhan
             KichThuocFile = kichThuocFile,
             LoaiFile = loaiFile,
         };
+
+        if (nhomId is not null)
+        {
+            if (!ObjectId.TryParse(nhomId, out _))
+            {
+                throw new NhomKhongTonTaiException();
+            }
+
+            var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+            if (!nhom.ThanhVienIds.Contains(nguoiGuiId))
+            {
+                throw new KhongPhaiThanhVienNhomException();
+            }
+
+            tinNhan.NhomId = nhomId;
+        }
+        else
+        {
+            if (!ObjectId.TryParse(nguoiNhanId, out _))
+            {
+                throw new NguoiNhanKhongTonTaiException(nguoiNhanId!);
+            }
+
+            var nguoiNhan = await _khoNguoiDung.TimTheoIdAsync(nguoiNhanId!);
+            if (nguoiNhan is null)
+            {
+                throw new NguoiNhanKhongTonTaiException(nguoiNhanId!);
+            }
+
+            if (nguoiGuiId != nguoiNhanId)
+            {
+                var laBanBe = await _khoLoiMoiKetBan.LaBanBeAsync(nguoiGuiId, nguoiNhanId!);
+                if (!laBanBe && !nguoiNhan.ChoPhepTinNhanTuNguoiLa)
+                {
+                    throw new TinNhanKhongHopLeException("Người này chỉ nhận tin nhắn từ bạn bè. Hãy gửi lời mời kết bạn trước.");
+                }
+            }
+
+            tinNhan.NguoiNhanId = nguoiNhanId;
+            tinNhan.DaNhan = _quanLyKetNoi.DangOnline(nguoiNhanId!);
+        }
 
         await _khoTinNhan.ThemMoiAsync(tinNhan);
         return AnhXaDto(tinNhan);
@@ -91,8 +122,31 @@ public class DichVuTinNhan : IDichVuTinNhan
         return lichSu.Select(AnhXaDto).ToList();
     }
 
+    public async Task<List<TinNhanDto>> LayLichSuNhomAsync(string nguoiHienTaiId, string nhomId, string? truocId, int soLuong)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(nguoiHienTaiId))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+
+        var lichSu = await _khoTinNhan.LayLichSuNhomAsync(nhomId, truocId, soLuong);
+        return lichSu.Select(AnhXaDto).ToList();
+    }
+
     public Task DanhDauDaDocAsync(string nguoiHienTaiId, string nguoiGuiId) =>
         _khoTinNhan.DanhDauDaDocAsync(nguoiGuiId, nguoiHienTaiId);
+
+    public async Task DanhDauDaDocNhomAsync(string nguoiHienTaiId, string nhomId)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(nguoiHienTaiId))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+
+        await _khoTinNhan.DanhDauDaDocNhomAsync(nhomId);
+    }
 
     public async Task<List<HoiThoaiTomTatDto>> LayDanhSachHoiThoaiAsync(string nguoiDungId)
     {
@@ -132,6 +186,6 @@ public class DichVuTinNhan : IDichVuTinNhan
     }
 
     private static TinNhanDto AnhXaDto(TinNhan t) => new(
-        t.Id, t.NguoiGuiId, t.NguoiNhanId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
-        t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.ThoiGianTao);
+        t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
+        t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao);
 }

@@ -135,4 +135,70 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
         Assert.Single(danhSach!);
         Assert.Equal(idB, danhSach![0].NguoiDung.Id);
     }
+
+    [Fact]
+    public async Task LayLichSuNhom_LaThanhVien_TraVeDanhSach()
+    {
+        var tokenChu = await DangKyVaDangNhapAsync("tinnhannhomchu");
+        var idChu = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "tinnhannhomchu").Id;
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenChu);
+        var nhom = await (await _client.PostAsJsonAsync(
+            "/api/nhom", new { TenNhom = "Nhóm Test", MoTa = (string?)null, DuongDanAnhDaiDien = (string?)null, ThanhVienIds = Array.Empty<string>() }))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        _factory.KhoTinNhanGiaLap.DanhSach.Add(new TinNhan
+        {
+            NguoiGuiId = idChu,
+            NhomId = nhom!.Id,
+            NoiDungTinNhan = "Chào nhóm",
+        });
+
+        var phanHoi = await _client.GetAsync($"/api/tinnhan/nhom/{nhom.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var danhSach = await phanHoi.Content.ReadFromJsonAsync<List<TinNhanDto>>();
+        Assert.Single(danhSach!);
+        Assert.Equal(nhom.Id, danhSach![0].NhomId);
+    }
+
+    [Fact]
+    public async Task LayLichSuNhom_KhongPhaiThanhVien_TraVe403()
+    {
+        var tokenChu = await DangKyVaDangNhapAsync("tinnhannhomchu2");
+        var tokenNguoiNgoai = await DangKyVaDangNhapAsync("tinnhannhomngoai");
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenChu);
+        var nhom = await (await _client.PostAsJsonAsync(
+            "/api/nhom", new { TenNhom = "Nhóm Test 2", MoTa = (string?)null, DuongDanAnhDaiDien = (string?)null, ThanhVienIds = Array.Empty<string>() }))
+            .Content.ReadFromJsonAsync<NhomDto>();
+
+        using var clientNgoai = _factory.CreateClient();
+        clientNgoai.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenNguoiNgoai);
+        var phanHoi = await clientNgoai.GetAsync($"/api/tinnhan/nhom/{nhom!.Id}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayLichSuNhom_NhomKhongTonTai_TraVe404()
+    {
+        var token = await DangKyVaDangNhapAsync("tinnhannhomkhongton");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nhom/000000000000000000000000");
+
+        Assert.Equal(HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayLichSuNhom_IdKhongPhaiObjectIdHopLe_TraVe400()
+    {
+        var token = await DangKyVaDangNhapAsync("tinnhannhomidxau");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nhom/khong-phai-object-id");
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
 }

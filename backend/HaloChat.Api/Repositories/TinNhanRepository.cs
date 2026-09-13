@@ -55,4 +55,26 @@ public class TinNhanRepository : ITinNhanRepository
 
         return await _collection.Find(boLoc).SortByDescending(t => t.Id).ToListAsync();
     }
+
+    public async Task<List<TinNhan>> LayLichSuNhomAsync(string nhomId, string? truocId, int soLuong)
+    {
+        var boLocNhom = Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId);
+        var boLoc = string.IsNullOrEmpty(truocId)
+            ? boLocNhom
+            : Builders<TinNhan>.Filter.And(boLocNhom, Builders<TinNhan>.Filter.Lt(t => t.Id, truocId));
+
+        return await _collection.Find(boLoc)
+            .SortByDescending(t => t.Id)
+            .Limit(soLuong)
+            .ToListAsync();
+    }
+
+    public async Task DanhDauDaDocNhomAsync(string nhomId)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
+            Builders<TinNhan>.Filter.Eq(t => t.DaDoc, false));
+        var capNhat = Builders<TinNhan>.Update.Set(t => t.DaDoc, true);
+        await _collection.UpdateManyAsync(boLoc, capNhat);
+    }
 }

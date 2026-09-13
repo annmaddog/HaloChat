@@ -42,4 +42,24 @@ public class TinNhanGiaLap : ITinNhanRepository
             .ToList();
         return Task.FromResult(ketQua);
     }
+
+    public Task<List<TinNhan>> LayLichSuNhomAsync(string nhomId, string? truocId, int soLuong)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId)
+            .Where(t => truocId is null || string.CompareOrdinal(t.Id, truocId) < 0)
+            .OrderByDescending(t => t.Id)
+            .Take(soLuong)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
+    public Task DanhDauDaDocNhomAsync(string nhomId)
+    {
+        foreach (var t in DanhSach.Where(t => t.NhomId == nhomId))
+        {
+            t.DaDoc = true;
+        }
+        return Task.CompletedTask;
+    }
 }
