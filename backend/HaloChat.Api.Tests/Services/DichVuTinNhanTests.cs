@@ -206,4 +206,20 @@ public class DichVuTinNhanTests
 
         Assert.Empty(hoiThoai);
     }
+
+    // --- Chuẩn hóa "" == null cho nguoiNhanId/nhomId (bugfix review) ---
+
+    [Fact]
+    public async Task GuiTinNhanAsync_NhomIdChuoiRong_VanGuiThanhCong1_1KhongNemNhomKhongTonTai()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, "", "Text", "Xin chào", null, null, null, null);
+
+        Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
+        Assert.Equal(IdNguoiNhan, ketQua.NguoiNhanId);
+        Assert.Null(ketQua.NhomId);
+        Assert.Single(khoTinNhan.DanhSach);
+    }
 }

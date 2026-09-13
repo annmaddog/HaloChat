@@ -32,7 +32,14 @@ public class DichVuTinNhan : IDichVuTinNhan
         string nguoiGuiId, string? nguoiNhanId, string? nhomId, string loaiTinNhan, string noiDungTinNhan,
         string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile)
     {
-        if (string.IsNullOrEmpty(nguoiNhanId) == string.IsNullOrEmpty(nhomId))
+        // Chuẩn hóa chuỗi rỗng thành null trước khi kiểm tra, để bảo đảm điều
+        // kiện XOR ở đây và nhánh rẽ "nhomId is not null" bên dưới luôn đồng
+        // nhất về khái niệm "đã chỉ định" — tránh trường hợp nhomId = ""
+        // (không phải null) lọt qua XOR rồi bị định tuyến nhầm sang nhánh nhóm.
+        nguoiNhanId = string.IsNullOrEmpty(nguoiNhanId) ? null : nguoiNhanId;
+        nhomId = string.IsNullOrEmpty(nhomId) ? null : nhomId;
+
+        if ((nguoiNhanId is null) == (nhomId is null))
         {
             throw new TinNhanKhongHopLeException("Phải chỉ định đúng 1 trong 2: người nhận hoặc nhóm.");
         }
