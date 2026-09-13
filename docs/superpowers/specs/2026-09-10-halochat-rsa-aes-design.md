@@ -371,6 +371,200 @@ phải** layout `KhungChinh` 4-tab như bản phác thảo ban đầu:
   và **GĐ5b-2 (Nhóm chat: `Nhom`, mở rộng Hub/`TrangChat` cho `NhomId` + Thông báo realtime)** —
   GĐ5b-2 xây trên nền GĐ5b-1, viết plan riêng khi GĐ5b-1 xong.
 
+### 10.7. Thiết kế chi tiết GĐ5b-2 (Nhóm chat + Thông báo realtime)
+
+Quyết định 2026-09-13 (brainstorm thứ ba, sau khi GĐ5b-1 đã hoàn thành và deploy). GĐ5b-1 build
+đúng theo §10.6 (`KhungChinh`, `LoiMoiKetBan`, `ChoPhepTinNhanTuNguoiLa`, `GET /api/tinnhan/hoi-thoai`,
+policy bạn bè trong `GuiTinNhanAsync`) — GĐ5b-2 xây thêm lên trên, không sửa lại các phần đó.
+`TinNhan.NhomId` đã tồn tại sẵn trong model từ GĐ5a (để trống, chưa dùng) — GĐ5b-2 là nơi dùng tới.
+
+**Model & Repository `Nhom`** — đúng nguyên bản §10.2 (`TenNhom`, `NguoiTaoId` là admin duy nhất,
+`ThanhVienIds` nhúng thẳng luôn gồm cả `NguoiTaoId`, `ThoiGianTao`), mở rộng thêm 2 field theo bản
+thiết kế giao diện mới (§10.8): `MoTa: string?` (tùy chọn, để trống khi tạo nhóm không nhập), và
+`DuongDanAnhDaiDien: string?` (tùy chọn, đường dẫn trả về từ `POST /api/tinnhan/upload` có sẵn — tái
+dùng nguyên endpoint đó, không viết endpoint upload riêng cho ảnh nhóm).
+`NhomRepository`: tạo nhóm, tìm theo id, liệt kê nhóm mà 1 user là thành viên (`ThanhVienIds` chứa id
+đó), thêm/xóa 1 phần tử khỏi `ThanhVienIds`, cập nhật `TenNhom`/`MoTa`/`DuongDanAnhDaiDien`, xóa nhóm
+(giải tán).
+
+**`DichVuNhom` + `NhomController`** (`api/nhom`), tất cả yêu cầu JWT:
+- `POST /api/nhom` — body: tên nhóm + mô tả (tùy chọn) + đường dẫn ảnh đại diện (tùy chọn, đã tải lên
+  trước qua `/api/tinnhan/upload`) + danh sách id thành viên ban đầu. Người gọi tự động là
+  `NguoiTaoId` kiêm thành viên. **Ruling (giữ nguyên §10.6):** không giới hạn thành viên phải là bạn
+  bè của người tạo.
+- `GET /api/nhom` — danh sách nhóm mà user hiện tại là thành viên.
+- `PUT /api/nhom/{id}` (chỉ `NguoiTaoId`) — sửa tên/mô tả/ảnh đại diện nhóm.
+- `GET /api/nhom/{id}` — chi tiết 1 nhóm (403 nếu người gọi không phải thành viên).
+- `POST /api/nhom/{id}/thanh-vien` (chỉ `NguoiTaoId`, 403 nếu không phải) — thêm 1 người vào
+  `ThanhVienIds`. Sau khi lưu Mongo: dùng `IHubContext<ChatHub>` gọi `Groups.AddToGroupAsync` cho
+  mọi connection đang online của người mới (tra cứu qua `IUserIdProvider`/`Clients.User` không đủ,
+  cần một bảng ánh xạ `userId -> connectionIds` trong `ChatHub` — xem mục Hub bên dưới), rồi
+  `Clients.User(idThanhVienMoi).SendAsync("DuocThemVaoNhom", nhom)`.
+- `DELETE /api/nhom/{id}/thanh-vien/{userId}` (chỉ `NguoiTaoId`) — xóa khỏi `ThanhVienIds`. Sau khi
+  lưu: `Groups.RemoveFromGroupAsync` cho mọi connection đang online của người bị xóa (gỡ ngay,
+  không đợi họ tự reconnect — quyết định 2026-09-13), rồi
+  `Clients.User(userId).SendAsync("BiXoaKhoiNhom", nhomId)`.
+- `POST /api/nhom/{id}/roi-nhom` — tự rời. Nếu người rời là `NguoiTaoId`: xóa hẳn nhóm (giải tán) vì
+  không có cơ chế chuyển quyền admin ở phạm vi đồ án này (giữ nguyên ruling §10.4); đẩy sự kiện
+  `NhomDaGiaiTan` tới các thành viên còn lại trước khi xóa. Nếu người rời không phải admin: chỉ xóa
+  khỏi `ThanhVienIds`, không đẩy sự kiện riêng (client tự cập nhật danh sách qua response 200).
+
+**Mở rộng `ChatHub`:**
+- Thêm bảng tĩnh trong `ChatHub` (hoặc 1 service singleton `IQuanLyKetNoiChat`) ánh xạ
+  `userId -> HashSet<connectionId>`, cập nhật trong `OnConnectedAsync`/`OnDisconnectedAsync` — cần
+  thiết vì `Groups.AddToGroupAsync`/`RemoveFromGroupAsync` đòi `connectionId` cụ thể, còn
+  `Clients.User(id)` chỉ gửi được sự kiện chứ không thêm/gỡ khỏi group.
+- `OnConnectedAsync` (override mới): đăng ký connection vào bảng trên, rồi load danh sách `Nhom` của
+  user hiện tại qua `IDichVuNhom`, `Groups.AddToGroupAsync(Context.ConnectionId, "nhom-" + id)` cho
+  từng nhóm.
+- `OnDisconnectedAsync` (override mới): gỡ connection khỏi bảng trên (SignalR tự gỡ khỏi mọi group
+  khi connection đóng, không cần gọi `RemoveFromGroupAsync` thủ công lúc này).
+- `GuiTinNhan` đổi chữ ký: thêm tham số `string? nhomId` (giữ `nguoiNhanId` là `string?` thay vì bắt
+  buộc — đúng 1 trong 2 phải có giá trị). Nếu `nhomId` có giá trị: kiểm tra người gửi có trong
+  `ThanhVienIds` (qua `IDichVuNhom`, ném `HubException` nếu không), lưu `TinNhan` với `NhomId` thay
+  vì `NguoiNhanId`, rồi `Clients.Group("nhom-" + nhomId).SendAsync("NhanTinNhan", tinNhan)` (gửi cho
+  tất cả bao gồm cả người gửi — client tự lọc tin trùng bằng id như đã làm ở GĐ5a, không cần đổi).
+- `DanhDauDaDoc` đổi chữ ký thêm `string? nhomId`, nhánh nhóm set `DaDoc=true` cho tin nhắn của
+  nhóm đó mà người gọi chưa đọc (định nghĩa "đã đọc" cho nhóm ở mức đơn giản: đã đọc = đã mở khung
+  chat nhóm đó, không track theo từng thành viên — chấp nhận đơn giản hóa cho phạm vi đồ án, không
+  làm read-receipt kiểu "N người đã xem").
+
+**Mở rộng `DichVuTinNhan`:**
+- `GuiTinNhanAsync` thêm tham số `string? nhomId`, tách nhánh: `nhomId` có giá trị → kiểm tra thành
+  viên nhóm (không kiểm tra bạn bè) → lưu `TinNhan.NhomId`; ngược lại giữ nguyên logic 1-1 hiện có.
+- `LayLichSuAsync` thêm hàm chị em `LayLichSuNhomAsync(nguoiHienTaiId, nhomId, truocId, soLuong)` —
+  kiểm tra người gọi là thành viên trước khi trả lịch sử (403 nếu không).
+- `TinNhanController` thêm `GET /api/tinnhan/nhom/{id}?truoc=&soLuong=30`, cùng khuôn mẫu endpoint
+  1-1 đã có.
+
+**Đẩy sự kiện lời mời kết bạn qua Hub (nợ kỹ thuật từ GĐ5b-1):** `KetBanController` hiện xử lý
+gửi/chấp nhận/từ chối lời mời nhưng chưa đẩy `NhanLoiMoiKetBan`/`LoiMoiKetBanDuocChapNhan` qua
+`IHubContext<ChatHub>` như thiết kế gốc §10.3 mô tả — chỉ trả về qua REST response. GĐ5b-2 bổ sung:
+tiêm `IHubContext<ChatHub>` vào `KetBanController`, gọi `Clients.User(nguoiNhanId).SendAsync(...)`
+tại đúng 2 điểm đó.
+
+**Frontend — component chat dùng chung `KhungTinNhan.tsx`:**
+- Rút phần hiển thị danh sách tin nhắn (bong bóng text/ảnh/file), form gửi, nút "tải thêm", nút
+  đính kèm file — hiện đang nằm trong `TrangChat.tsx` (`<main className="trang-chat__khung-chinh">`
+  trở xuống) — thành component riêng `KhungTinNhan`, nhận props:
+  `{ loaiHoiThoai: 'nguoiDung' | 'nhom'; idHoiThoai: string; tenHienThi: string }`. Bên trong tự
+  chọn gọi `LayLichSuTinNhan`/`LayLichSuNhom` và Hub method `GuiTinNhan` với đúng tham số
+  (`nguoiNhanId` hoặc `nhomId`) theo `loaiHoiThoai`.
+- `TrangChat.tsx` giữ nguyên sidebar danh sách hội thoại (từ `GET /api/tinnhan/hoi-thoai`, không đổi
+  ở GĐ5b-2), thay phần render chat bên phải bằng `<KhungTinNhan loaiHoiThoai="nguoiDung" .../>`.
+- `TrangNhom.tsx` (trang mới): sidebar trái là danh sách nhóm (`GET /api/nhom`) + nút "Tạo nhóm" (mở
+  form chọn tên + thành viên từ `LayDanhSachNguoiDung` có sẵn); chọn 1 nhóm → hiện
+  `<KhungTinNhan loaiHoiThoai="nhom" .../>` bên phải, cùng bố cục 2 cột như `TrangChat`.
+- `DinhTuyen.tsx` thêm route `/nhom` (dùng chung `KhungChinh`, cùng khuôn mẫu `/ban-be`/`/cai-dat`).
+- `KhungChinh.tsx`: đổi mục "Nhóm" từ `<span>` placeholder "sắp ra mắt" thành `<NavLink to="/nhom">`
+  thật.
+- `DichVuApi.ts` thêm: `TaoNhom`, `LayDanhSachNhom`, `LayChiTietNhom`, `ThemThanhVien`,
+  `XoaThanhVien`, `RoiNhom`, `LayLichSuNhom`.
+- `KieuDuLieu.ts` thêm `interface Nhom { id; tenNhom; nguoiTaoId; thanhVien: NguoiDungTomTat[]; thoiGianTao }`.
+
+**Frontend — dropdown thông báo trong `KhungChinh`:**
+- Component mới `ThongBao.tsx`, đặt cạnh nút đăng xuất trong `khung-chinh__rail`. Gộp 2 nguồn: lời
+  mời kết bạn đến (`GET /api/ketban/loi-moi-den`, lọc `trangThai === 'ChoDuyet'`) + hội thoại có
+  `soTinChuaDoc > 0` (từ `GET /api/tinnhan/hoi-thoai`, đã có sẵn field này từ GĐ5b-1). Số lượng hiển
+  thị dạng chấm đỏ + số trên biểu tượng chuông.
+- Lắng nghe realtime để cập nhật badge ngay: `NhanLoiMoiKetBan`, `LoiMoiKetBanDuocChapNhan` (mới đẩy
+  qua Hub ở trên), `NhanTinNhan` (tăng đếm nếu hội thoại đó không đang mở).
+- Click 1 mục lời mời kết bạn → điều hướng sang tab Bạn bè; click 1 mục hội thoại chưa đọc → điều
+  hướng sang Tin nhắn/Nhóm tương ứng và mở đúng hội thoại đó (dùng `location.state` như GĐ5a Task 9
+  đã làm với `moNguoiDung`).
+
+**Không thuộc phạm vi GĐ5b-2:** đổi danh sách "Tin nhắn" (`hoi-thoai`) để gộp cả nhóm chung 1 danh
+sách với hội thoại 1-1 — giữ 2 tab tách biệt (Tin nhắn = 1-1, Nhóm = nhóm) theo đúng bố cục rail 4
+mục đã chốt, không có trong yêu cầu ban đầu và làm phức tạp thêm kiểu dữ liệu `HoiThoaiTomTat`
+không cần thiết cho phạm vi đồ án.
+
+### 10.8. Redesign giao diện + presence + trạng thái tin nhắn (quyết định 2026-09-13, cùng đợt GĐ5b-2)
+
+Sau khi thiết kế xong §10.7, người dùng cung cấp 1 bản mockup giao diện mới (8 màn hình: Tin nhắn,
+Danh sách nhóm, Chat nhóm, Tạo nhóm, Bạn bè, Cài đặt, Mobile, các trạng thái tin nhắn/empty state) và
+yêu cầu áp dụng cho **toàn bộ ứng dụng** (không chỉ phần nhóm mới), cùng đợt với GĐ5b-2, kèm 3 tính
+năng thật đứng sau các chi tiết trực quan trong mockup (không chỉ trình bày tĩnh). Mục này bổ sung
+thiết kế cho phần đó — không thay đổi các quyết định ở §10.7.
+
+**Xác nhận lại (không đổi hành vi):** `NoiDungTinNhan` (kể cả tin nhắn nhóm mới ở §10.7) tiếp tục
+lưu **plaintext** trên MongoDB đúng chính sách §9 — `DichVuMaHoa` vẫn là stub rỗng, không được gọi ở
+GĐ5b-2. Việc mã hóa thật thuộc GĐ6, nhóm tự làm sau.
+
+**Sửa lỗi cấu trúc: di chuyển `DichVuMatKhau` sang `HaloChat.Security`** — §3 quy định
+`HaloChat.Security` chứa "băm mật khẩu (thật)" cùng với stub mã hóa GĐ6, nhưng hiện `DichVuMatKhau`/
+`IDichVuMatKhau` (băm SHA-256+Salt thật, đã dùng từ GĐ3) đang nằm sai chỗ ở
+`HaloChat.Api/Services/`. GĐ5b-2 tranh thủ sửa lại cho đúng kiến trúc gốc trước khi phình thêm code
+mới: chuyển 2 file đó sang `HaloChat.Security/` (namespace `HaloChat.Security`), cập nhật `using` ở
+`Program.cs`/`DichVuNguoiDung.cs`, di chuyển `DichVuMatKhauTests.cs` theo (namespace test tương ứng,
+không cần đổi `.csproj` vì `HaloChat.Api.Tests` đã tham chiếu `HaloChat.Api` → tham chiếu bắc cầu tới
+`HaloChat.Security`). Đăng ký DI (`AddScoped<IDichVuMatKhau, DichVuMatKhau>()`) giữ nguyên ở
+`Program.cs`, chỉ đổi `using HaloChat.Security;`.
+
+**Presence (online/offline) — thật:**
+- Tái dùng bảng `userId -> HashSet<connectionId>` đã có ở §10.7 (mục Hub) để suy ra trạng thái: user
+  được coi là online khi tập connection của họ khác rỗng.
+- `ChatHub.OnConnectedAsync`: nếu đây là connection đầu tiên của user (tập trước đó rỗng), đẩy sự
+  kiện `TrangThaiHoatDongThayDoi(userId, true)` tới bạn bè đang online của họ (dùng
+  `ILoiMoiKetBanRepository.LaBanBeAsync` lặp qua danh sách bạn bè, hoặc thêm hàm
+  `LayDanhSachBanBeIdAsync` nếu lặp từng cặp không hiệu quả — chấp nhận ở quy mô đồ án).
+- `OnDisconnectedAsync`: nếu đây là connection cuối cùng của user (tập sau khi gỡ rỗng), đẩy
+  `TrangThaiHoatDongThayDoi(userId, false)` tương tự.
+- `GET /api/nguoidung/trang-thai?ids=a,b,c` — tra cứu online/offline hàng loạt (dùng lúc mới load
+  trang, trước khi nhận được sự kiện realtime đầu tiên); trả về `Dictionary<string, bool>`.
+- Frontend hiển thị "Đang hoạt động" (xanh) / để trống (offline) ở header khung chat 1-1 và ở mỗi
+  mục trong sidebar Tin nhắn — **chỉ áp dụng cho hội thoại 1-1**, nhóm không hiển thị online/offline
+  theo từng thành viên ở phạm vi này (mockup ảnh 3 chỉ ghi tĩnh "5 thành viên · Đang hoạt động" cho
+  cụm, không phải theo từng người).
+
+**Trạng thái tin nhắn 4 mức (chỉ áp dụng hội thoại 1-1):**
+- `TinNhan` thêm field `DaNhan: bool` (mặc định `false`) — tách biệt với `DaDoc` đã có (đã xem).
+- `DichVuTinNhan.GuiTinNhanAsync` (nhánh 1-1): sau khi lưu Mongo, kiểm tra người nhận có đang online
+  không (qua bảng connection ở trên); nếu có, set `DaNhan = true` trước khi trả `TinNhanDto` — tức
+  "đã nhận" nghĩa là tại thời điểm gửi, người nhận có ít nhất 1 kết nối đang mở (chấp nhận đơn giản
+  hóa: không phải ack thật từ client, tránh round-trip phức tạp không cần thiết ở quy mô đồ án).
+- Client suy ra 4 mức hiển thị (chỉ với tin nhắn của chính mình gửi, hội thoại 1-1):
+  **Đang gửi** — khoảnh khắc `ketNoi.invoke('GuiTinNhan', ...)` promise chưa resolve (hiển thị
+  optimistic, chưa có `id` thật từ server); **Đã gửi** — promise đã resolve nhưng `DaNhan=false`;
+  **Đã nhận** — `DaNhan=true` nhưng `DaDoc=false`; **Đã xem** — `DaDoc=true`. Không cần thêm state
+  phía client cho việc này — suy trực tiếp từ 2 field boolean có sẵn trên `TinNhanDto`.
+- `TinNhanDto` thêm field `daNhan: bool` tương ứng.
+
+**Redesign giao diện — nguyên tắc chung:**
+- Đây là thay đổi CSS/cấu trúc JSX, không đổi luồng dữ liệu/API đã thiết kế ở trên (trừ các điểm nêu
+  rõ). Theo đúng mockup: nền xanh nhạt (`#EFF6FF`-ish) bao quanh khung ứng dụng bo góc lớn, rail trái
+  thu gọn chỉ icon + nhãn ngắn, avatar tròn có chữ cái đầu khi không có ảnh, bong bóng tin nhắn của
+  mình màu xanh dương lệch phải bo góc, form gửi có icon ghim + emoji + nút gửi tròn màu xanh, dòng
+  chữ nhỏ "Được mã hóa bằng AES-256-GCM" dưới form gửi (**chỉ là dòng chữ trình bày** — mã hóa thật
+  thuộc GĐ6 theo §9, không implement ở đây).
+- **`KhungChinh.tsx`**: thêm ô tìm kiếm ở đầu mỗi trang con (tìm cuộc trò chuyện / tìm nhóm / tìm bạn
+  bè — lọc phía client trên danh sách đã tải, không thêm endpoint tìm kiếm server-side mới).
+- **`TrangCaiDat.tsx`**: tổ chức lại thành sidebar con 4 mục (Quyền riêng tư, Tài khoản, Bảo mật,
+  Thông báo) đúng ảnh 6 — chỉ mục **Quyền riêng tư** có hành vi thật (`ChoPhepTinNhanTuNguoiLa` đã
+  có, cộng 2 toggle mới **để trình bày** "Cho phép nhận lời mời kết bạn" và "Hiển thị trạng thái hoạt
+  động" — toggle sau map thẳng vào 1 field mới `HienThiTrangThaiHoatDong: bool` trên `NguoiDung`,
+  dùng để quyết định server có đẩy sự kiện `TrangThaiHoatDongThayDoi` cho user đó hay không, tức là
+  tính năng thật, không phải trình bày). Mục **Tài khoản** hiện email/tên hiện tại (đã có dữ liệu qua
+  `HoSoCaNhanDto`) — nút "Đổi mật khẩu"/"Chỉnh sửa" tên hiển thị nhưng disabled kèm tooltip "Sắp ra
+  mắt" (chưa thiết kế đổi mật khẩu/đổi tên ở giai đoạn này, đúng tinh thần đơn giản hóa YAGNI). Mục
+  **Bảo mật** (mã hóa tin nhắn, quản lý khóa RSA) và **Thông báo** (bật/tắt loại thông báo) hiển thị
+  tĩnh, không có hành vi — thuộc GĐ6/không nằm trong yêu cầu ban đầu, ghi rõ nhãn "Sắp ra mắt".
+- **Responsive (mobile <768px):**
+  - `KhungChinh.tsx`: rail trái (`khung-chinh__rail`) chuyển từ cột dọc bên trái thành thanh ngang cố
+    định **dưới cùng màn hình** (`position: fixed; bottom: 0`), chỉ hiện icon + nhãn ngắn, ẩn logo và
+    nút đăng xuất (đăng xuất chuyển vào trang Cài đặt trên mobile).
+  - Layout 2 cột (danh sách hội thoại/nhóm/bạn bè bên trái + khung chat/chi tiết bên phải) của
+    `TrangChat`/`TrangNhom`: dùng CSS Grid 2 cột trên desktop, nhưng trên mobile chỉ hiện **1 cột tại
+    1 thời điểm** — danh sách khi chưa chọn hội thoại nào, khung chat toàn màn hình kèm nút "←" quay
+    lại danh sách khi đã chọn (giữ state `nguoiDangChon`/nhóm đang chọn hiện có, chỉ ẩn/hiện bằng CSS
+    theo breakpoint, không cần thêm route con).
+  - Test: mở rộng test hiện có của `TrangChat`/`KhungChinh` để phủ thêm hành vi ẩn/hiện theo
+    `nguoiDangChon`, không cần giả lập `matchMedia` phức tạp — dùng class CSS có điều kiện
+    (`trang-chat--da-chon`) mà test có thể assert qua `className`, để logic ẩn/hiện thực sự nằm ở
+    CSS/media query (dễ kiểm tra bằng mắt khi build) chứ không phải JS đọc kích thước màn hình.
+- **Empty state** ("Chào mừng đến HaloChat" khi chưa chọn hội thoại nào — ảnh 8): áp dụng cho cả
+  `TrangChat` và `TrangNhom` khi `nguoiDangChon`/nhóm đang chọn là `null`, thay cho dòng chữ đơn giản
+  hiện tại ("Chọn một người để bắt đầu trò chuyện.").
+
 ## 11. Quên mật khẩu (module riêng, làm sau)
 
 Email → Server tạo OTP → gửi OTP qua Email → xác thực OTP → nhập mật khẩu mới → SHA-256 + Salt →
