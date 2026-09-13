@@ -197,6 +197,34 @@ describe('TrangChat', () => {
     expect(await screen.findByText(/vượt quá giới hạn/)).toBeInTheDocument();
   });
 
+  it('ô tìm kiếm lọc đúng danh sách hội thoại theo tên', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
+      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }),
+      taoHoiThoaiGiaLap({ id: '3', tenTaiKhoan: 'LeCuong', email: 'c@gmail.com' }),
+    ]);
+
+    renderTrangChat();
+    await screen.findByText('TranBinh');
+    expect(screen.getByText('LeCuong')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByPlaceholderText('Tìm cuộc trò chuyện...'), 'Cuong');
+
+    expect(screen.getByText('LeCuong')).toBeInTheDocument();
+    expect(screen.queryByText('TranBinh')).not.toBeInTheDocument();
+  });
+
+  it('class "trang-chat--da-chon" chỉ xuất hiện trên phần tử gốc sau khi đã chọn hội thoại', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    const { container } = renderTrangChat();
+
+    await screen.findByText('TranBinh');
+    expect(container.querySelector('.trang-chat')).not.toHaveClass('trang-chat--da-chon');
+
+    await userEvent.click(screen.getByText('TranBinh'));
+
+    expect(container.querySelector('.trang-chat')).toHaveClass('trang-chat--da-chon');
+  });
+
   it('mở hội thoại mới từ điều hướng (chưa có trong danh sách hội thoại) tự động được chọn', async () => {
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);

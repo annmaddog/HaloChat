@@ -76,6 +76,37 @@ describe('TrangNhom', () => {
     expect(await screen.findByText('Chào nhóm')).toBeInTheDocument();
   });
 
+  it('ô tìm kiếm lọc đúng danh sách nhóm theo tên', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+      { id: 'n2', tenNhom: 'Nhóm Toán', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+
+    renderTrangNhom();
+    await screen.findByText('Nhóm CNTT');
+    expect(screen.getByText('Nhóm Toán')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByPlaceholderText('Tìm nhóm...'), 'Toán');
+
+    expect(screen.getByText('Nhóm Toán')).toBeInTheDocument();
+    expect(screen.queryByText('Nhóm CNTT')).not.toBeInTheDocument();
+  });
+
+  it('class "trang-nhom--da-chon" chỉ xuất hiện trên phần tử gốc sau khi đã chọn nhóm', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+
+    const { container } = renderTrangNhom();
+    await screen.findByText('Nhóm CNTT');
+    expect(container.querySelector('.trang-nhom')).not.toHaveClass('trang-nhom--da-chon');
+
+    await userEvent.click(screen.getByText('Nhóm CNTT'));
+
+    expect(container.querySelector('.trang-nhom')).toHaveClass('trang-nhom--da-chon');
+  });
+
   it('tạo nhóm mới gọi TaoNhom với đúng tên và thành viên đã chọn', async () => {
     vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'TaoNhom').mockResolvedValue({
