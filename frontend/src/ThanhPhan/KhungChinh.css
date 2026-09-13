@@ -35,11 +35,6 @@
   color: var(--mau-chinh-dam);
 }
 
-.khung-chinh__muc--sap-ra-mat {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .khung-chinh__noi-dung {
   flex: 1;
   min-width: 0;

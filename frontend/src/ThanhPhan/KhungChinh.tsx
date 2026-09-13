@@ -22,10 +22,10 @@ export function KhungChinh({ children }: { children: ReactNode }) {
           <BieuTuongBanBe />
           <span>Bạn bè</span>
         </NavLink>
-        <span className="khung-chinh__muc khung-chinh__muc--sap-ra-mat" title="Sắp ra mắt">
+        <NavLink to="/nhom" className={lopMuc}>
           <BieuTuongNhom />
           <span>Nhóm</span>
-        </span>
+        </NavLink>
         <NavLink to="/cai-dat" className={lopMuc}>
           <BieuTuongCaiDat />
           <span>Cài đặt</span>

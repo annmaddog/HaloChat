@@ -6,6 +6,7 @@ import { TrangDangNhap } from './Trang/TrangDangNhap';
 import { TrangChat } from './Trang/TrangChat';
 import { TrangBanBe } from './Trang/TrangBanBe';
 import { TrangCaiDat } from './Trang/TrangCaiDat';
+import { TrangNhom } from './Trang/TrangNhom';
 
 export function DinhTuyen() {
   return (
@@ -28,6 +29,16 @@ export function DinhTuyen() {
           <TuyenDuongRieng>
             <KhungChinh>
               <TrangBanBe />
+            </KhungChinh>
+          </TuyenDuongRieng>
+        }
+      />
+      <Route
+        path="/nhom"
+        element={
+          <TuyenDuongRieng>
+            <KhungChinh>
+              <TrangNhom />
             </KhungChinh>
           </TuyenDuongRieng>
         }
