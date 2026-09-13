@@ -37,8 +37,8 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IQuanLyKetNoiChat, QuanLyKetNoiChat>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, HaloChat.Api.Services.NguoiDungIdProvider>();
 
-builder.Services.Configure<TuyChonSmtpEmail>(builder.Configuration.GetSection(TuyChonSmtpEmail.TenMuc));
-builder.Services.AddScoped<IDichVuEmail, DichVuEmail>();
+builder.Services.Configure<TuyChonResendEmail>(builder.Configuration.GetSection(TuyChonResendEmail.TenMuc));
+builder.Services.AddHttpClient<IDichVuEmail, DichVuEmail>();
 
 builder.Services.Configure<TuyChonJwt>(builder.Configuration.GetSection(TuyChonJwt.TenMuc));
 var tuyChonJwt = builder.Configuration.GetSection(TuyChonJwt.TenMuc).Get<TuyChonJwt>()

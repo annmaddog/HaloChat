@@ -1,39 +1,48 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using HaloChat.Api.Options;
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.Extensions.Options;
-using MimeKit;
 
 namespace HaloChat.Api.Services;
 
+// Gửi email qua API HTTPS của Resend (thay vì SMTP trực tiếp) — nhiều nền
+// tảng PaaS miễn phí (Render, Railway, ...) chặn cổng SMTP (25/465/587) ra
+// ngoài để chống spam, khiến MailKit không bao giờ kết nối được. HTTPS
+// (cổng 443) thì không bị chặn, nên chuyển hẳn sang gọi API qua HttpClient.
 public class DichVuEmail : IDichVuEmail
 {
-    private readonly TuyChonSmtpEmail _tuyChon;
+    private readonly HttpClient _httpClient;
+    private readonly TuyChonResendEmail _tuyChon;
 
-    public DichVuEmail(IOptions<TuyChonSmtpEmail> tuyChon)
+    public DichVuEmail(HttpClient httpClient, IOptions<TuyChonResendEmail> tuyChon)
     {
+        _httpClient = httpClient;
         _tuyChon = tuyChon.Value;
+        _httpClient.BaseAddress = new Uri("https://api.resend.com/");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tuyChon.ApiKey);
     }
 
     public async Task GuiEmailOtpAsync(string diaChiNhan, string maOtp)
     {
-        var thongDiep = new MimeMessage();
-        thongDiep.From.Add(new MailboxAddress(_tuyChon.NguoiGuiHienThi, _tuyChon.TenDangNhap));
-        thongDiep.To.Add(MailboxAddress.Parse(diaChiNhan));
-        thongDiep.Subject = "Mã OTP đặt lại mật khẩu HaloChat";
-        thongDiep.Body = new TextPart("plain")
+        var noiDung =
+            "Xin chào,\n\n" +
+            $"Mã OTP để đặt lại mật khẩu HaloChat của bạn là: {maOtp}\n\n" +
+            "Mã này có hiệu lực trong 10 phút. Không chia sẻ mã này với bất kỳ ai.\n\n" +
+            "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.";
+
+        var yeuCau = new
         {
-            Text =
-                $"Xin chào,\n\n" +
-                $"Mã OTP để đặt lại mật khẩu HaloChat của bạn là: {maOtp}\n\n" +
-                "Mã này có hiệu lực trong 10 phút. Không chia sẻ mã này với bất kỳ ai.\n\n" +
-                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.",
+            from = $"{_tuyChon.NguoiGuiHienThi} <{_tuyChon.NguoiGuiEmail}>",
+            to = new[] { diaChiNhan },
+            subject = "Mã OTP đặt lại mật khẩu HaloChat",
+            text = noiDung,
         };
 
-        using var client = new SmtpClient();
-        await client.ConnectAsync(_tuyChon.MayChu, _tuyChon.Cong, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(_tuyChon.TenDangNhap, _tuyChon.MatKhauUngDung);
-        await client.SendAsync(thongDiep);
-        await client.DisconnectAsync(true);
+        var phanHoi = await _httpClient.PostAsJsonAsync("emails", yeuCau);
+        if (!phanHoi.IsSuccessStatusCode)
+        {
+            var noiDungLoi = await phanHoi.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Resend trả lỗi {(int)phanHoi.StatusCode}: {noiDungLoi}");
+        }
     }
 }
