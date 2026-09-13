@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi,
-  GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai,
+  GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai, TaoNhom,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -241,15 +241,18 @@ describe('DichVuApi', () => {
     expect(danhSach).toEqual([]);
   });
 
-  it('CapNhatCaiDat gửi đúng PUT với body choPhepTinNhanTuNguoiLa', async () => {
+  it('CapNhatCaiDat gửi đúng PUT với body choPhepTinNhanTuNguoiLa và hienThiTrangThaiHoatDong', async () => {
     const fetchGiaLap = vi.fn().mockResolvedValue(new Response(JSON.stringify({ thongBao: 'OK' }), { status: 200 }));
     vi.stubGlobal('fetch', fetchGiaLap);
 
-    await CapNhatCaiDat('token-gia-lap', true);
+    await CapNhatCaiDat('token-gia-lap', true, false);
 
     expect(fetchGiaLap).toHaveBeenCalledWith(
       expect.stringContaining('/nguoidung/cai-dat'),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify({ choPhepTinNhanTuNguoiLa: true }) }),
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({ choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: false }),
+      }),
     );
   });
 
@@ -259,5 +262,29 @@ describe('DichVuApi', () => {
     const danhSach = await LayDanhSachHoiThoai('token-gia-lap');
 
     expect(danhSach).toEqual([]);
+  });
+
+  it('TaoNhom gửi đúng POST và trả về nhóm vừa tạo', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null,
+          nguoiTaoId: 'a', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z',
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const nhom = await TaoNhom('token-gia-lap', 'Nhóm CNTT', null, null, ['b']);
+
+    expect(nhom.tenNhom).toBe('Nhóm CNTT');
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nhom'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, thanhVienIds: ['b'] }),
+      }),
+    );
   });
 });

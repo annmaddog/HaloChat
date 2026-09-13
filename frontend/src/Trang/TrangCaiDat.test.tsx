@@ -21,7 +21,7 @@ describe('TrangCaiDat', () => {
 
   it('tải và hiển thị đúng trạng thái cài đặt ban đầu', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
-      id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true,
+      id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: false,
     });
 
     renderTrangCaiDat();
@@ -31,7 +31,7 @@ describe('TrangCaiDat', () => {
 
   it('bật toggle gọi CapNhatCaiDat với true', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
-      id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: false,
     });
     const capNhatSpy = vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockResolvedValue(undefined);
 
@@ -40,7 +40,7 @@ describe('TrangCaiDat', () => {
 
     await userEvent.click(screen.getByRole('checkbox'));
 
-    await waitFor(() => expect(capNhatSpy).toHaveBeenCalledWith('token-gia-lap', true));
+    await waitFor(() => expect(capNhatSpy).toHaveBeenCalledWith('token-gia-lap', true, false));
     expect(await screen.findByText('Đã lưu.')).toBeInTheDocument();
   });
 });

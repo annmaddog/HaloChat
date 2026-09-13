@@ -6,6 +6,7 @@ import './TrangCaiDat.css';
 export function TrangCaiDat() {
   const { token } = useXacThuc();
   const [choPhep, setChoPhep] = useState(false);
+  const [hienThiTrangThai, setHienThiTrangThai] = useState(false);
   const [dangTai, setDangTai] = useState(true);
   const [dangLuu, setDangLuu] = useState(false);
   const [daLuu, setDaLuu] = useState(false);
@@ -14,7 +15,10 @@ export function TrangCaiDat() {
   useEffect(() => {
     if (!token) return;
     LayThongTinCaNhan(token)
-      .then((hoSo) => setChoPhep(hoSo.choPhepTinNhanTuNguoiLa))
+      .then((hoSo) => {
+        setChoPhep(hoSo.choPhepTinNhanTuNguoiLa);
+        setHienThiTrangThai(hoSo.hienThiTrangThaiHoatDong);
+      })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được cài đặt.'))
       .finally(() => setDangTai(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -26,7 +30,7 @@ export function TrangCaiDat() {
     setDangLuu(true);
     setDaLuu(false);
     try {
-      await CapNhatCaiDat(token, gtMoi);
+      await CapNhatCaiDat(token, gtMoi, hienThiTrangThai);
       setDaLuu(true);
     } catch (loiBat) {
       setChoPhep(!gtMoi);

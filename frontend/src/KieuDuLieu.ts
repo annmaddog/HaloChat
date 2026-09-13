@@ -18,6 +18,7 @@ export interface TinNhan {
   id: string;
   nguoiGuiId: string;
   nguoiNhanId: string | null;
+  nhomId: string | null;
   loaiTinNhan: LoaiTinNhan;
   noiDungTinNhan: string;
   duongDanFile: string | null;
@@ -25,6 +26,7 @@ export interface TinNhan {
   kichThuocFile: number | null;
   loaiFile: string | null;
   daDoc: boolean;
+  daNhan: boolean;
   thoiGianTao: string;
 }
 
@@ -55,4 +57,20 @@ export interface HoSoCaNhan {
   tenTaiKhoan: string;
   email: string;
   choPhepTinNhanTuNguoiLa: boolean;
+  hienThiTrangThaiHoatDong: boolean;
+}
+
+export interface Nhom {
+  id: string;
+  tenNhom: string;
+  moTa: string | null;
+  duongDanAnhDaiDien: string | null;
+  nguoiTaoId: string;
+  thanhVien: NguoiDungTomTat[];
+  thoiGianTao: string;
+}
+
+export interface KetQuaRoiNhom {
+  daGiaiTan: boolean;
+  thanhVienConLai: string[];
 }

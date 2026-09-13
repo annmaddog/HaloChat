@@ -1,6 +1,6 @@
 import type {
   KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen,
-  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan,
+  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom,
 } from './KieuDuLieu';
 
 // Đọc từ biến môi trường lúc build (VITE_API_BASE_URL) để trỏ đúng backend
@@ -177,16 +177,85 @@ export async function LayThongTinCaNhan(token: string): Promise<HoSoCaNhan> {
   });
 }
 
-export async function CapNhatCaiDat(token: string, choPhepTinNhanTuNguoiLa: boolean): Promise<void> {
+export async function CapNhatCaiDat(
+  token: string, choPhepTinNhanTuNguoiLa: boolean, hienThiTrangThaiHoatDong: boolean,
+): Promise<void> {
   await goiApi('/nguoidung/cai-dat', {
     method: 'PUT',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ choPhepTinNhanTuNguoiLa }),
+    body: JSON.stringify({ choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong }),
   });
 }
 
 export async function LayDanhSachHoiThoai(token: string): Promise<HoiThoaiTomTat[]> {
   return goiApi<HoiThoaiTomTat[]>('/tinnhan/hoi-thoai', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayTrangThaiHoatDong(token: string, ids: string[]): Promise<Record<string, boolean>> {
+  if (ids.length === 0) return {};
+  return goiApi<Record<string, boolean>>(`/nguoidung/trang-thai?ids=${ids.join(',')}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function TaoNhom(
+  token: string, tenNhom: string, moTa: string | null, duongDanAnhDaiDien: string | null, thanhVienIds: string[],
+): Promise<Nhom> {
+  return goiApi<Nhom>('/nhom', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenNhom, moTa, duongDanAnhDaiDien, thanhVienIds }),
+  });
+}
+
+export async function LayDanhSachNhom(token: string): Promise<Nhom[]> {
+  return goiApi<Nhom[]>('/nhom', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function LayChiTietNhom(token: string, id: string): Promise<Nhom> {
+  return goiApi<Nhom>(`/nhom/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export async function CapNhatNhom(
+  token: string, id: string, tenNhom: string, moTa: string | null, duongDanAnhDaiDien: string | null,
+): Promise<Nhom> {
+  return goiApi<Nhom>(`/nhom/${id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenNhom, moTa, duongDanAnhDaiDien }),
+  });
+}
+
+export async function ThemThanhVien(token: string, nhomId: string, thanhVienId: string): Promise<Nhom> {
+  return goiApi<Nhom>(`/nhom/${nhomId}/thanh-vien`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ thanhVienId }),
+  });
+}
+
+export async function XoaThanhVien(token: string, nhomId: string, userId: string): Promise<Nhom> {
+  return goiApi<Nhom>(`/nhom/${nhomId}/thanh-vien/${userId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function RoiNhom(token: string, nhomId: string): Promise<KetQuaRoiNhom> {
+  return goiApi<KetQuaRoiNhom>(`/nhom/${nhomId}/roi-nhom`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayLichSuNhom(
+  token: string, nhomId: string, truoc?: string, soLuong = 30,
+): Promise<TinNhan[]> {
+  const thamSo = new URLSearchParams({ soLuong: String(soLuong) });
+  if (truoc) thamSo.set('truoc', truoc);
+  return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}?${thamSo.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 }

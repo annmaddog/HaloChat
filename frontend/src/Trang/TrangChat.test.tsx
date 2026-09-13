@@ -48,6 +48,7 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     id: 'm1',
     nguoiGuiId: '2',
     nguoiNhanId: '1',
+    nhomId: null,
     loaiTinNhan: 'Text' as const,
     noiDungTinNhan: 'Chào bạn',
     duongDanFile: null,
@@ -55,6 +56,7 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     kichThuocFile: null,
     loaiFile: null,
     daDoc: false,
+    daNhan: false,
     thoiGianTao: new Date().toISOString(),
     ...gan,
   };
