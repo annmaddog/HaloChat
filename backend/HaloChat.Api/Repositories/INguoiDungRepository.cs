@@ -16,4 +16,5 @@ public interface INguoiDungRepository
     Task XoaThoiGianGuiOtpAsync(string id);
     Task TangSoLanThuSaiOtpAsync(string id);
     Task DatLaiMatKhauAsync(string id, string matKhauBamMoi, string saltMoi);
+    Task CapNhatTenHienThiAsync(string id, string tenHienThi);
 }

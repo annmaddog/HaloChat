@@ -251,4 +251,50 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
     }
+
+    [Fact]
+    public async Task DoiTenHienThi_DangNhap_CapNhatVaTraVeHoSoMoi()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky",
+            new { tenTaiKhoan = "doiten1", email = "doiten1@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap",
+            new { tenDangNhap = "doiten1", matKhau = "MatKhau123!" });
+        var ketQuaDangNhap = await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/ten-hien-thi",
+            new { tenHienThi = "Tên Mới Của Tôi" });
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
+        Assert.Equal("Tên Mới Của Tôi", hoSo!.TenHienThi);
+        Assert.Equal("doiten1", hoSo.TenTaiKhoan);
+    }
+
+    [Fact]
+    public async Task DoiTenHienThi_ChuaDangNhap_TraVe401()
+    {
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/ten-hien-thi",
+            new { tenHienThi = "Tên Mới" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task DoiTenHienThi_ChuoiRongSauTrim_TraVe400()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky",
+            new { tenTaiKhoan = "doiten2", email = "doiten2@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap",
+            new { tenDangNhap = "doiten2", matKhau = "MatKhau123!" });
+        var ketQuaDangNhap = await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/ten-hien-thi",
+            new { tenHienThi = "   " });
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
 }

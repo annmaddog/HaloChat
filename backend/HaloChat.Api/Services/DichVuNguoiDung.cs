@@ -106,6 +106,12 @@ public class DichVuNguoiDung : IDichVuNguoiDung
                 nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom, nguoiDung.TenHienThiThucTe());
     }
 
+    public async Task<HoSoCaNhanDto?> DoiTenHienThiAsync(string idHienTai, string tenHienThiMoi)
+    {
+        await _kho.CapNhatTenHienThiAsync(idHienTai, tenHienThiMoi.Trim());
+        return await LayThongTinCaNhanAsync(idHienTai);
+    }
+
     public async Task YeuCauOtpDatLaiMatKhauAsync(string email)
     {
         var nguoiDung = await _kho.TimTheoTenTaiKhoanHoacEmailAsync(email);

@@ -89,6 +89,25 @@ public class NguoiDungController : ControllerBase
         return Ok(new { thongBao = "Đã cập nhật cài đặt." });
     }
 
+    [HttpPut("ten-hien-thi")]
+    [Authorize]
+    public async Task<IActionResult> DoiTenHienThi([FromBody] DoiTenHienThiRequest yeuCau)
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(yeuCau.TenHienThi))
+        {
+            return BadRequest(new { thongBao = "Tên hiển thị không được để trống." });
+        }
+
+        var hoSo = await _dichVu.DoiTenHienThiAsync(idHienTai, yeuCau.TenHienThi);
+        return hoSo is null ? NotFound() : Ok(hoSo);
+    }
+
     [HttpGet("trang-thai")]
     [Authorize]
     public async Task<IActionResult> LayTrangThaiHoatDong([FromQuery] string ids)

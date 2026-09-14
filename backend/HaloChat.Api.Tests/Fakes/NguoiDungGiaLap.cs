@@ -93,4 +93,14 @@ public class NguoiDungGiaLap : INguoiDungRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task CapNhatTenHienThiAsync(string id, string tenHienThi)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.TenHienThi = tenHienThi;
+        }
+        return Task.CompletedTask;
+    }
 }
