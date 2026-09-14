@@ -51,4 +51,12 @@ public class NguoiDung
     // (cooldown 60 giây), tách biệt với MaOtpHetHan (thời điểm OTP đó
     // hết hạn sử dụng, 10 phút sau khi gửi).
     public DateTime? MaOtpGuiLucNao { get; set; }
+
+    // [GĐ5f] Rỗng = chưa từng đặt tên hiển thị riêng — dùng TenTaiKhoan làm
+    // tên hiển thị mặc định (xem TenHienThiThucTe()). Tách biệt hẳn khỏi
+    // TenTaiKhoan (định danh đăng nhập duy nhất, không đổi được).
+    public string TenHienThi { get; set; } = string.Empty;
+
+    /// <summary>Tên thực sự dùng để hiển thị — TenHienThi nếu đã đặt, không thì TenTaiKhoan.</summary>
+    public string TenHienThiThucTe() => string.IsNullOrWhiteSpace(TenHienThi) ? TenTaiKhoan : TenHienThi;
 }

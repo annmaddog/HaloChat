@@ -83,7 +83,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         var tatCa = await _kho.LayTatCaAsync();
         return tatCa
             .Where(nd => nd.Id != idHienTai)
-            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa))
+            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa, nd.TenHienThiThucTe()))
             .ToList();
     }
 
@@ -103,7 +103,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
                 nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email,
                 nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong,
                 nguoiDung.ChoPhepThemVaoNhom, nguoiDung.ThongBaoTinNhanMoi,
-                nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom);
+                nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom, nguoiDung.TenHienThiThucTe());
     }
 
     public async Task YeuCauOtpDatLaiMatKhauAsync(string email)

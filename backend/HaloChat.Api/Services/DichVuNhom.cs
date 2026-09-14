@@ -116,7 +116,7 @@ public class DichVuNhom : IDichVuNhom
             var nd = await _khoNguoiDung.TimTheoIdAsync(id);
             if (nd is not null)
             {
-                thanhVien.Add(new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa));
+                thanhVien.Add(new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa, nd.TenHienThiThucTe()));
             }
         }
         return new NhomDto(nhom.Id, nhom.TenNhom, nhom.MoTa, nhom.DuongDanAnhDaiDien, nhom.NguoiTaoId, thanhVien, nhom.ThoiGianTao);

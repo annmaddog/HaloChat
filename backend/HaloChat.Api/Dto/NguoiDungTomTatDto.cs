@@ -1,3 +1,3 @@
 namespace HaloChat.Api.Dto;
 
-public record NguoiDungTomTatDto(string Id, string TenTaiKhoan, string Email, bool ChoPhepTinNhanTuNguoiLa);
+public record NguoiDungTomTatDto(string Id, string TenTaiKhoan, string Email, bool ChoPhepTinNhanTuNguoiLa, string TenHienThi);
