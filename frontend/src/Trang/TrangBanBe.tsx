@@ -86,7 +86,8 @@ export function TrangBanBe() {
   ]);
 
   return (
-    <div className="trang-ban-be">
+    <div className="trang-ban-be-bo-cuc">
+      <div className="trang-ban-be">
       <input
         type="text"
         className="trang-ban-be__tim-kiem"
@@ -155,6 +156,7 @@ export function TrangBanBe() {
             ))}
         </ul>
       </section>
+      </div>
 
       {hoSoDangXem && (
         <aside className="trang-ban-be__ho-so">

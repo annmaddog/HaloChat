@@ -1,4 +1,11 @@
+.trang-ban-be-bo-cuc {
+  display: flex;
+  align-items: flex-start;
+}
+
 .trang-ban-be {
+  flex: 1;
+  min-width: 0;
   max-width: 640px;
   margin: 0 auto;
   padding: 32px 24px;
@@ -87,11 +94,9 @@
 }
 
 .trang-ban-be__ho-so {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  flex-shrink: 0;
   width: 280px;
+  min-height: 100vh;
   background: var(--mau-nen-the);
   border-left: 1px solid var(--mau-vien);
   padding: 24px;
