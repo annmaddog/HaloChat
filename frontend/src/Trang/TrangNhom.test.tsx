@@ -46,6 +46,7 @@ describe('TrangNhom', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
+    ketNoiGiaLap.invoke.mockResolvedValue(undefined);
     localStorage.setItem('haloChatToken', 'token-gia-lap');
     vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }]);
   });
@@ -74,6 +75,7 @@ describe('TrangNhom', () => {
     await userEvent.click(await screen.findByText('Nhóm CNTT'));
 
     expect(await screen.findByText('Chào nhóm')).toBeInTheDocument();
+    expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('DanhDauDaDoc', null, 'n1');
   });
 
   it('ô tìm kiếm lọc đúng danh sách nhóm theo tên', async () => {

@@ -61,19 +61,6 @@
   background: var(--mau-nen-tren);
 }
 
-.trang-nhom__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .trang-nhom__ten-cum {
   display: flex;
   flex-direction: column;

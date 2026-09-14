@@ -6,6 +6,7 @@ import {
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
+import { Avatar } from '../ThanhPhan/Avatar';
 import type { Nhom, NguoiDungTomTat } from '../KieuDuLieu';
 import './TrangNhom.css';
 
@@ -212,9 +213,12 @@ export function TrangNhom() {
             <li key={n.id}>
               <button
                 className={`trang-nhom__muc${nhomDangChonId === n.id ? ' trang-nhom__muc--dang-chon' : ''}`}
-                onClick={() => setNhomDangChonId(n.id)}
+                onClick={() => {
+                  setNhomDangChonId(n.id);
+                  ketNoi?.invoke('DanhDauDaDoc', null, n.id).catch(() => {});
+                }}
               >
-                <span className="trang-nhom__avatar">{n.tenNhom.charAt(0).toUpperCase()}</span>
+                <Avatar id={n.id} ten={n.tenNhom} kichThuoc="nho" />
                 <div className="trang-nhom__ten-cum">
                   <span className="trang-nhom__ten">{n.tenNhom}</span>
                   <span className="trang-nhom__so-thanh-vien">{n.thanhVien.length} thành viên</span>

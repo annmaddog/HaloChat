@@ -4,6 +4,7 @@ import { LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangTh
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
+import { Avatar } from '../ThanhPhan/Avatar';
 import type { NguoiDungTomTat, HoiThoaiTomTat } from '../KieuDuLieu';
 import './TrangChat.css';
 
@@ -205,9 +206,12 @@ export function TrangChat() {
               <li key={nd.id}>
                 <button
                   className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
-                  onClick={() => setNguoiDangChon(nd)}
+                  onClick={() => {
+                    setNguoiDangChon(nd);
+                    ketNoi?.invoke('DanhDauDaDoc', nd.id, null).catch(() => {});
+                  }}
                 >
-                  <span className="trang-chat__avatar">{nd.tenTaiKhoan.charAt(0).toUpperCase()}</span>
+                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} kichThuoc="nho" />
                   <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>
                   {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
                 </button>

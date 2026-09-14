@@ -70,6 +70,7 @@ describe('TrangChat', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
+    ketNoiGiaLap.invoke.mockResolvedValue(undefined);
     const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
     localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
@@ -91,6 +92,7 @@ describe('TrangChat', () => {
     await userEvent.click(await screen.findByText('TranBinh'));
 
     expect(await screen.findByText('Chào bạn')).toBeInTheDocument();
+    expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('DanhDauDaDoc', '2', null);
   });
 
   it('gửi tin nhắn văn bản hiện ngay "Đang gửi" rồi cập nhật khi Hub xác nhận', async () => {
