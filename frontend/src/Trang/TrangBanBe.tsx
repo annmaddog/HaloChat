@@ -156,7 +156,7 @@ export function TrangBanBe() {
           <section className="trang-ban-be__phan">
             <h2>Kết quả tìm kiếm</h2>
             {ketQuaTimKiem.length === 0 && <p className="trang-ban-be__trong">Không tìm thấy người dùng nào.</p>}
-            <ul className="trang-ban-be__danh-sach">
+            <ul className="trang-ban-be__danh-sach trang-ban-be__danh-sach--tim-kiem">
               {ketQuaTimKiem.map((nd) => (
                 <li key={nd.id} className="trang-ban-be__card trang-ban-be__card--tim-kiem">
                   <Avatar id={nd.id} ten={nd.tenTaiKhoan} />
