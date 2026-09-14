@@ -69,13 +69,13 @@ public class TinNhanRepository : ITinNhanRepository
             .ToListAsync();
     }
 
-    public async Task DanhDauDaDocNhomAsync(string nhomId)
+    public async Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId)
     {
-        var boLoc = Builders<TinNhan>.Filter.And(
-            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
-            Builders<TinNhan>.Filter.Eq(t => t.DaDoc, false));
-        var capNhat = Builders<TinNhan>.Update.Set(t => t.DaDoc, true);
-        await _collection.UpdateManyAsync(boLoc, capNhat);
+        var boLocNhom = Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId);
+        var boLoc = sauId is null
+            ? boLocNhom
+            : Builders<TinNhan>.Filter.And(boLocNhom, Builders<TinNhan>.Filter.Gt(t => t.Id, sauId));
+        return (int)await _collection.CountDocumentsAsync(boLoc);
     }
 
     public async Task XoaTheoNhomAsync(string nhomId)

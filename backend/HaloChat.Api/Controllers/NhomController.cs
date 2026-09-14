@@ -57,6 +57,10 @@ public class NhomController : ControllerBase
         {
             return BadRequest(new { thongBao = loi.Message });
         }
+        catch (KhongChoPhepThemVaoNhomException loi)
+        {
+            return BadRequest(new { thongBao = loi.Message });
+        }
     }
 
     [HttpGet]
@@ -147,6 +151,10 @@ public class NhomController : ControllerBase
         {
             return BadRequest(new { thongBao = loi.Message });
         }
+        catch (KhongChoPhepThemVaoNhomException loi)
+        {
+            return BadRequest(new { thongBao = loi.Message });
+        }
     }
 
     [HttpDelete("{id}/thanh-vien/{userId}")]
@@ -214,5 +222,17 @@ public class NhomController : ControllerBase
         {
             return StatusCode(403, new { thongBao = loi.Message });
         }
+    }
+
+    [HttpGet("so-tin-chua-doc")]
+    public async Task<IActionResult> LaySoTinChuaDoc()
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var soTinChuaDoc = await _dichVu.DemTongChuaDocAsync(IdHienTai);
+        return Ok(new { soTinChuaDoc });
     }
 }

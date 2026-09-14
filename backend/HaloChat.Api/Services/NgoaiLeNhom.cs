@@ -39,3 +39,12 @@ public class KhongTheXoaNguoiTaoException : Exception
     {
     }
 }
+
+/// <summary>Ném ra khi cố thêm 1 người đã tắt "cho phép thêm vào nhóm" vào bất kỳ nhóm nào.</summary>
+public class KhongChoPhepThemVaoNhomException : Exception
+{
+    public KhongChoPhepThemVaoNhomException(string tenTaiKhoan)
+        : base($"{tenTaiKhoan} không cho phép người khác thêm vào nhóm.")
+    {
+    }
+}

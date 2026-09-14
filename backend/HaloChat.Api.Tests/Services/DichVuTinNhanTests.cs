@@ -16,8 +16,9 @@ public class DichVuTinNhanTests
         var khoNguoiDung = new NguoiDungGiaLap();
         var khoLoiMoiKetBan = new LoiMoiKetBanGiaLap();
         var khoNhom = new NhomGiaLap();
+        var khoDocNhom = new DocNhomGiaLap();
         var quanLyKetNoi = new QuanLyKetNoiChat();
-        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, quanLyKetNoi);
+        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoDocNhom, quanLyKetNoi);
         return (dichVu, khoTinNhan, khoNguoiDung, khoLoiMoiKetBan);
     }
 

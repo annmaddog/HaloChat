@@ -54,13 +54,13 @@ public class TinNhanGiaLap : ITinNhanRepository
         return Task.FromResult(ketQua);
     }
 
-    public Task DanhDauDaDocNhomAsync(string nhomId)
+    public Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId)
     {
-        foreach (var t in DanhSach.Where(t => t.NhomId == nhomId))
-        {
-            t.DaDoc = true;
-        }
-        return Task.CompletedTask;
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId)
+            .Where(t => sauId is null || string.CompareOrdinal(t.Id, sauId) > 0)
+            .Count();
+        return Task.FromResult(ketQua);
     }
 
     public Task XoaTheoNhomAsync(string nhomId)

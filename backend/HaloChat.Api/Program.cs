@@ -31,6 +31,7 @@ builder.Services.AddScoped<ITinNhanRepository, TinNhanRepository>();
 builder.Services.AddScoped<ILoiMoiKetBanRepository, LoiMoiKetBanRepository>();
 builder.Services.AddScoped<INhomRepository, NhomRepository>();
 builder.Services.AddScoped<IDichVuNhom, DichVuNhom>();
+builder.Services.AddScoped<IDocNhomRepository, DocNhomRepository>();
 builder.Services.AddScoped<IDichVuKetBan, DichVuKetBan>();
 builder.Services.AddScoped<IDichVuTinNhan, DichVuTinNhan>();
 builder.Services.AddSignalR();
@@ -128,6 +129,12 @@ if (!app.Configuration.GetValue<bool>("BoQuaKhoiTaoChiMuc"))
         new CreateIndexModel<HaloChat.Api.Models.NguoiDung>(indexKeys1, indexOptions),
         new CreateIndexModel<HaloChat.Api.Models.NguoiDung>(indexKeys2, indexOptions),
     });
+
+    var docNhomCollection = csdl.GetCollection<HaloChat.Api.Models.DocNhom>("DocNhom");
+    var indexKeysDocNhom = Builders<HaloChat.Api.Models.DocNhom>.IndexKeys
+        .Ascending(d => d.NguoiDungId).Ascending(d => d.NhomId);
+    await docNhomCollection.Indexes.CreateOneAsync(
+        new CreateIndexModel<HaloChat.Api.Models.DocNhom>(indexKeysDocNhom, new CreateIndexOptions { Unique = true }));
 }
 
 if (app.Environment.IsDevelopment())

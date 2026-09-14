@@ -15,16 +15,18 @@ public class DichVuTinNhan : IDichVuTinNhan
     private readonly INguoiDungRepository _khoNguoiDung;
     private readonly ILoiMoiKetBanRepository _khoLoiMoiKetBan;
     private readonly INhomRepository _khoNhom;
+    private readonly IDocNhomRepository _khoDocNhom;
     private readonly IQuanLyKetNoiChat _quanLyKetNoi;
 
     public DichVuTinNhan(
         ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan,
-        INhomRepository khoNhom, IQuanLyKetNoiChat quanLyKetNoi)
+        INhomRepository khoNhom, IDocNhomRepository khoDocNhom, IQuanLyKetNoiChat quanLyKetNoi)
     {
         _khoTinNhan = khoTinNhan;
         _khoNguoiDung = khoNguoiDung;
         _khoLoiMoiKetBan = khoLoiMoiKetBan;
         _khoNhom = khoNhom;
+        _khoDocNhom = khoDocNhom;
         _quanLyKetNoi = quanLyKetNoi;
     }
 
@@ -152,7 +154,11 @@ public class DichVuTinNhan : IDichVuTinNhan
             throw new KhongPhaiThanhVienNhomException();
         }
 
-        await _khoTinNhan.DanhDauDaDocNhomAsync(nhomId);
+        var tinMoiNhat = await _khoTinNhan.LayLichSuNhomAsync(nhomId, null, 1);
+        if (tinMoiNhat.Count > 0)
+        {
+            await _khoDocNhom.DanhDauDaDocAsync(nguoiHienTaiId, nhomId, tinMoiNhat[0].Id);
+        }
     }
 
     public async Task<List<HoiThoaiTomTatDto>> LayDanhSachHoiThoaiAsync(string nguoiDungId)

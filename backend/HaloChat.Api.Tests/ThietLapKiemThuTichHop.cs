@@ -31,6 +31,7 @@ public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
     public TinNhanGiaLap KhoTinNhanGiaLap { get; } = new();
     public LoiMoiKetBanGiaLap KhoLoiMoiKetBanGiaLap { get; } = new();
     public NhomGiaLap KhoNhomGiaLap { get; } = new();
+    public DocNhomGiaLap KhoDocNhomGiaLap { get; } = new();
     public DichVuEmailGiaLap KhoEmailGiaLap { get; } = new();
 
     static ThietLapKiemThuTichHop()
@@ -63,6 +64,8 @@ public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
             dichVu.AddSingleton<ILoiMoiKetBanRepository>(KhoLoiMoiKetBanGiaLap);
             dichVu.RemoveAll<INhomRepository>();
             dichVu.AddSingleton<INhomRepository>(KhoNhomGiaLap);
+            dichVu.RemoveAll<IDocNhomRepository>();
+            dichVu.AddSingleton<IDocNhomRepository>(KhoDocNhomGiaLap);
             dichVu.RemoveAll<IDichVuEmail>();
             dichVu.AddSingleton<IDichVuEmail>(KhoEmailGiaLap);
         });

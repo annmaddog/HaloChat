@@ -10,12 +10,16 @@ public class DichVuNhom : IDichVuNhom
     private readonly INhomRepository _khoNhom;
     private readonly INguoiDungRepository _khoNguoiDung;
     private readonly ITinNhanRepository _khoTinNhan;
+    private readonly IDocNhomRepository _khoDocNhom;
 
-    public DichVuNhom(INhomRepository khoNhom, INguoiDungRepository khoNguoiDung, ITinNhanRepository khoTinNhan)
+    public DichVuNhom(
+        INhomRepository khoNhom, INguoiDungRepository khoNguoiDung, ITinNhanRepository khoTinNhan,
+        IDocNhomRepository khoDocNhom)
     {
         _khoNhom = khoNhom;
         _khoNguoiDung = khoNguoiDung;
         _khoTinNhan = khoTinNhan;
+        _khoDocNhom = khoDocNhom;
     }
 
     public async Task<NhomDto> TaoNhomAsync(
@@ -24,9 +28,20 @@ public class DichVuNhom : IDichVuNhom
         var idThanhVien = new HashSet<string>(thanhVienIds) { nguoiTaoId };
         foreach (var id in idThanhVien)
         {
-            if (!ObjectId.TryParse(id, out _) || await _khoNguoiDung.TimTheoIdAsync(id) is null)
+            if (!ObjectId.TryParse(id, out _))
             {
                 throw new ThanhVienKhongTonTaiException(id);
+            }
+
+            var nguoiDung = await _khoNguoiDung.TimTheoIdAsync(id);
+            if (nguoiDung is null)
+            {
+                throw new ThanhVienKhongTonTaiException(id);
+            }
+
+            if (id != nguoiTaoId && !nguoiDung.ChoPhepThemVaoNhom)
+            {
+                throw new KhongChoPhepThemVaoNhomException(nguoiDung.TenTaiKhoan);
             }
         }
 
@@ -111,9 +126,20 @@ public class DichVuNhom : IDichVuNhom
     {
         var nhom = await LayNhomKiemTraQuanTriAsync(nguoiGoiId, nhomId);
 
-        if (!ObjectId.TryParse(thanhVienMoiId, out _) || await _khoNguoiDung.TimTheoIdAsync(thanhVienMoiId) is null)
+        if (!ObjectId.TryParse(thanhVienMoiId, out _))
         {
             throw new ThanhVienKhongTonTaiException(thanhVienMoiId);
+        }
+
+        var thanhVienMoi = await _khoNguoiDung.TimTheoIdAsync(thanhVienMoiId);
+        if (thanhVienMoi is null)
+        {
+            throw new ThanhVienKhongTonTaiException(thanhVienMoiId);
+        }
+
+        if (!thanhVienMoi.ChoPhepThemVaoNhom)
+        {
+            throw new KhongChoPhepThemVaoNhomException(thanhVienMoi.TenTaiKhoan);
         }
 
         if (!nhom.ThanhVienIds.Contains(thanhVienMoiId))
@@ -154,5 +180,17 @@ public class DichVuNhom : IDichVuNhom
 
         await _khoNhom.XoaThanhVienAsync(nhomId, nguoiGoiId);
         return new KetQuaRoiNhomDto(false, new List<string>());
+    }
+
+    public async Task<int> DemTongChuaDocAsync(string nguoiDungId)
+    {
+        var danhSachNhom = await _khoNhom.LayTheoThanhVienAsync(nguoiDungId);
+        var tong = 0;
+        foreach (var nhom in danhSachNhom)
+        {
+            var tinCuoiDaDoc = await _khoDocNhom.LayTinNhanCuoiDaDocAsync(nguoiDungId, nhom.Id);
+            tong += await _khoTinNhan.DemTinNhanSauIdAsync(nhom.Id, tinCuoiDaDoc);
+        }
+        return tong;
     }
 }

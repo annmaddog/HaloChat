@@ -11,4 +11,5 @@ public interface IDichVuNhom
     Task<NhomDto> ThemThanhVienAsync(string nguoiGoiId, string nhomId, string thanhVienMoiId);
     Task<NhomDto> XoaThanhVienAsync(string nguoiGoiId, string nhomId, string thanhVienId);
     Task<KetQuaRoiNhomDto> RoiNhomAsync(string nguoiGoiId, string nhomId);
+    Task<int> DemTongChuaDocAsync(string nguoiDungId);
 }
