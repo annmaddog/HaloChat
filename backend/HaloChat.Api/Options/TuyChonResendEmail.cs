@@ -6,9 +6,9 @@ public class TuyChonResendEmail
 
     public string ApiKey { get; set; } = string.Empty;
 
-    // Mặc định "onboarding@resend.dev" — địa chỉ gửi thử miễn phí của Resend,
-    // dùng được ngay không cần xác minh domain riêng, nhưng chỉ gửi tới đúng
-    // email đã đăng ký tài khoản Resend cho tới khi domain được xác minh.
-    public string NguoiGuiEmail { get; set; } = "onboarding@resend.dev";
+    // Domain halochat.website đã xác minh với Resend (SPF/DKIM/DMARC) nên có
+    // thể gửi tới bất kỳ người nhận nào, không còn giới hạn "chỉ gửi cho
+    // chính mình" của địa chỉ resend.dev dùng thử ban đầu.
+    public string NguoiGuiEmail { get; set; } = "otp@halochat.website";
     public string NguoiGuiHienThi { get; set; } = "HaloChat";
 }
