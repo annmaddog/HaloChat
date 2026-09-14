@@ -36,12 +36,12 @@ public class TinNhanController : ControllerBase
     private const long GioiHanFileBytes = 20L * 1024 * 1024;
 
     private readonly IDichVuTinNhan _dichVuTinNhan;
-    private readonly IWebHostEnvironment _moiTruong;
+    private readonly IDichVuLuuTruFile _dichVuLuuTruFile;
 
-    public TinNhanController(IDichVuTinNhan dichVuTinNhan, IWebHostEnvironment moiTruong)
+    public TinNhanController(IDichVuTinNhan dichVuTinNhan, IDichVuLuuTruFile dichVuLuuTruFile)
     {
         _dichVuTinNhan = dichVuTinNhan;
-        _moiTruong = moiTruong;
+        _dichVuLuuTruFile = dichVuLuuTruFile;
     }
 
     private string? IdHienTai => User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
@@ -95,19 +95,28 @@ public class TinNhanController : ControllerBase
             return BadRequest(new { thongBao = $"File vượt quá giới hạn {gioiHan / 1024 / 1024}MB." });
         }
 
-        var thuMucTaiLen = Path.Combine(_moiTruong.ContentRootPath, "uploads");
-        Directory.CreateDirectory(thuMucTaiLen);
-        var tenFileLuu = $"{Guid.NewGuid()}{phanMoRong}";
-        var duongDanDayDu = Path.Combine(thuMucTaiLen, tenFileLuu);
+        var loaiMimeThucTe = (laAnh ? mimeAnh : mimeFile)!;
+        await using var luongDoc = tep.OpenReadStream();
+        var id = await _dichVuLuuTruFile.LuuAsync(luongDoc, tep.FileName, loaiMimeThucTe);
 
-        // Stream thẳng ra đĩa (spec §8) — CopyToAsync không tạo byte[] trung
-        // gian trong bộ nhớ ứng dụng.
-        await using (var luongGhi = new FileStream(duongDanDayDu, FileMode.Create))
+        return Ok(new TepTinDaTaiLenDto($"/api/tinnhan/file/{id}", tep.FileName, tep.Length, loaiMimeThucTe));
+    }
+
+    // Không [Authorize] — thẻ <img>/<a> trên trình duyệt không tự đính kèm
+    // được header Authorization. Id là ObjectId ngẫu nhiên của GridFS nên
+    // chỉ ai có đúng đường link (nhận qua tin nhắn) mới xem được — cùng mô
+    // hình bảo mật "biết link mới xem được" như file tĩnh trước đây.
+    [HttpGet("file/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> LayFile(string id)
+    {
+        var ketQua = await _dichVuLuuTruFile.LayAsync(id);
+        if (ketQua is null)
         {
-            await tep.CopyToAsync(luongGhi);
+            return NotFound();
         }
 
-        return Ok(new TepTinDaTaiLenDto($"/uploads/{tenFileLuu}", tep.FileName, tep.Length, (laAnh ? mimeAnh : mimeFile)!));
+        return File(ketQua.NoiDung, ketQua.LoaiMime, ketQua.TenFile);
     }
 
     [HttpGet("nhom/{id}")]

@@ -33,6 +33,7 @@ public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
     public NhomGiaLap KhoNhomGiaLap { get; } = new();
     public DocNhomGiaLap KhoDocNhomGiaLap { get; } = new();
     public DichVuEmailGiaLap KhoEmailGiaLap { get; } = new();
+    public DichVuLuuTruFileGiaLap KhoFileGiaLap { get; } = new();
 
     static ThietLapKiemThuTichHop()
     {
@@ -68,6 +69,8 @@ public class ThietLapKiemThuTichHop : WebApplicationFactory<Program>
             dichVu.AddSingleton<IDocNhomRepository>(KhoDocNhomGiaLap);
             dichVu.RemoveAll<IDichVuEmail>();
             dichVu.AddSingleton<IDichVuEmail>(KhoEmailGiaLap);
+            dichVu.RemoveAll<IDichVuLuuTruFile>();
+            dichVu.AddSingleton<IDichVuLuuTruFile>(KhoFileGiaLap);
         });
     }
 }

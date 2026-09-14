@@ -106,15 +106,39 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
         var ketQua = await phanHoi.Content.ReadFromJsonAsync<TepTinDaTaiLenDto>();
-        Assert.StartsWith("/uploads/", ketQua!.DuongDanFile);
-        Assert.EndsWith(".png", ketQua.DuongDanFile);
+        Assert.StartsWith("/api/tinnhan/file/", ketQua!.DuongDanFile);
+    }
 
-        // Dọn file test tạo ra trên đĩa thật (thư mục uploads/ đã gitignore,
-        // nhưng dọn để không tích tụ rác qua nhiều lần chạy test cục bộ).
-        var duongDanThat = Path.Combine(
-            AppContext.BaseDirectory, "..", "..", "..", "..", "HaloChat.Api",
-            "uploads", Path.GetFileName(ketQua.DuongDanFile));
-        if (File.Exists(duongDanThat)) File.Delete(duongDanThat);
+    [Fact]
+    public async Task TaiLenRoiLayFile_TraVeDungNoiDungGoc()
+    {
+        var token = await DangKyVaDangNhapAsync("tinnhannguoif");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var noiDungGoc = new byte[] { 10, 20, 30, 40, 50 };
+
+        using var formUpload = new MultipartFormDataContent();
+        formUpload.Add(new ByteArrayContent(noiDungGoc), "tep", "anh-mau.png");
+        var phanHoiUpload = await _client.PostAsync("/api/tinnhan/upload", formUpload);
+        var ketQuaUpload = await phanHoiUpload.Content.ReadFromJsonAsync<TepTinDaTaiLenDto>();
+
+        // LayFile không cần đăng nhập — dùng client mới không gắn token, đúng
+        // như cách <img>/<a> trên trình duyệt tải file (không đính kèm được
+        // header Authorization).
+        using var clientKhongDangNhap = _factory.CreateClient();
+        var phanHoiFile = await clientKhongDangNhap.GetAsync(ketQuaUpload!.DuongDanFile);
+
+        Assert.Equal(HttpStatusCode.OK, phanHoiFile.StatusCode);
+        var noiDungTaiVe = await phanHoiFile.Content.ReadAsByteArrayAsync();
+        Assert.Equal(noiDungGoc, noiDungTaiVe);
+        Assert.Equal("image/png", phanHoiFile.Content.Headers.ContentType?.MediaType);
+    }
+
+    [Fact]
+    public async Task LayFile_KhongTonTai_TraVe404()
+    {
+        var phanHoi = await _client.GetAsync("/api/tinnhan/file/khong-ton-tai");
+
+        Assert.Equal(HttpStatusCode.NotFound, phanHoi.StatusCode);
     }
 
     [Fact]

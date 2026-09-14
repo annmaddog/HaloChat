@@ -5,7 +5,6 @@ using HaloChat.Api.Repositories;
 using HaloChat.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
@@ -34,6 +33,12 @@ builder.Services.AddScoped<IDichVuNhom, DichVuNhom>();
 builder.Services.AddScoped<IDocNhomRepository, DocNhomRepository>();
 builder.Services.AddScoped<IDichVuKetBan, DichVuKetBan>();
 builder.Services.AddScoped<IDichVuTinNhan, DichVuTinNhan>();
+
+// [Sửa lỗi tải file] Lưu file đính kèm trong MongoDB (GridFS) thay vì ổ đĩa
+// container — xem lý do đầy đủ ở IDichVuLuuTruFile.cs.
+builder.Services.AddSingleton<MongoDB.Driver.GridFS.IGridFSBucket>(sp =>
+    new MongoDB.Driver.GridFS.GridFSBucket(sp.GetRequiredService<IMongoDatabase>()));
+builder.Services.AddScoped<IDichVuLuuTruFile, DichVuLuuTruFileGridFs>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IQuanLyKetNoiChat, QuanLyKetNoiChat>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, HaloChat.Api.Services.NguoiDungIdProvider>();
@@ -153,17 +158,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseHttpsRedirection();
 app.UseCors(TenChinhSachCors);
-
-// File tải lên phục vụ công khai qua đường dẫn tĩnh, không cần JWT — thẻ
-// <img>/<a> không tự đính kèm được header Authorization. Tên file là GUID
-// ngẫu nhiên nên chỉ ai có đúng đường link (nhận qua tin nhắn) mới xem được.
-var thuMucTaiLen = Path.Combine(app.Environment.ContentRootPath, "uploads");
-Directory.CreateDirectory(thuMucTaiLen);
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(thuMucTaiLen),
-    RequestPath = "/uploads",
-});
 
 app.UseAuthentication();
 app.UseAuthorization();
