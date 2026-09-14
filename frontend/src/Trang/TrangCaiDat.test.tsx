@@ -22,6 +22,7 @@ describe('TrangCaiDat', () => {
   it('tải và hiển thị đúng trạng thái cài đặt ban đầu (mục Quyền riêng tư)', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: false,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
 
     renderTrangCaiDat();
@@ -34,6 +35,7 @@ describe('TrangCaiDat', () => {
   it('bật toggle "cho phép người lạ" gọi CapNhatCaiDat với 3 tham số đúng', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
     const capNhatSpy = vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockResolvedValue(undefined);
 
@@ -43,13 +45,14 @@ describe('TrangCaiDat', () => {
 
     await userEvent.click(choPhep);
 
-    await waitFor(() => expect(capNhatSpy).toHaveBeenCalledWith('token-gia-lap', true, true));
+    await waitFor(() => expect(capNhatSpy).toHaveBeenCalledWith('token-gia-lap', true, true, true, true, true, true));
     expect(await screen.findByText('Đã lưu.')).toBeInTheDocument();
   });
 
   it('lưu thất bại thì hoàn tác trạng thái checkbox và hiển thị lỗi', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
     vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockRejectedValue(new DichVuApi.LoiGoiApi(500, 'Lưu thất bại.'));
 
@@ -66,6 +69,7 @@ describe('TrangCaiDat', () => {
   it('chuyển sang mục Tài khoản hiển thị tên tài khoản/email và nút Đăng xuất', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
 
     renderTrangCaiDat();
@@ -77,6 +81,7 @@ describe('TrangCaiDat', () => {
   it('chuyển sang mục Bảo mật và Thông báo hiển thị nội dung "sắp ra mắt"', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
 
     renderTrangCaiDat();

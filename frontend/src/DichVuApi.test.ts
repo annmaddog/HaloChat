@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi,
   GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai, TaoNhom,
-  GuiYeuCauQuenMatKhau, DatLaiMatKhau,
+  GuiYeuCauQuenMatKhau, DatLaiMatKhau, DoiMatKhau, LaySoTinNhomChuaDoc,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -246,13 +246,20 @@ describe('DichVuApi', () => {
     const fetchGiaLap = vi.fn().mockResolvedValue(new Response(JSON.stringify({ thongBao: 'OK' }), { status: 200 }));
     vi.stubGlobal('fetch', fetchGiaLap);
 
-    await CapNhatCaiDat('token-gia-lap', true, false);
+    await CapNhatCaiDat('token-gia-lap', true, false, true, true, true, true);
 
     expect(fetchGiaLap).toHaveBeenCalledWith(
       expect.stringContaining('/nguoidung/cai-dat'),
       expect.objectContaining({
         method: 'PUT',
-        body: JSON.stringify({ choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: false }),
+        body: JSON.stringify({
+          choPhepTinNhanTuNguoiLa: true,
+          hienThiTrangThaiHoatDong: false,
+          choPhepThemVaoNhom: true,
+          thongBaoTinNhanMoi: true,
+          thongBaoLoiMoiKetBan: true,
+          thongBaoNhom: true,
+        }),
       }),
     );
   });
@@ -314,5 +321,31 @@ describe('DichVuApi', () => {
       trangThai: 400,
       message: 'Mã OTP không đúng.',
     });
+  });
+
+  it('DoiMatKhau goi dung endpoint POST /nguoidung/doi-mat-khau voi body dung', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ thongBao: 'Đã đổi mật khẩu thành công.' }), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await DoiMatKhau('token123', 'MatKhauCu', 'MatKhauMoi');
+
+    expect(ketQua.thongBao).toBe('Đã đổi mật khẩu thành công.');
+    const [duongDan, tuyChon] = fetchGiaLap.mock.calls[0];
+    expect(duongDan).toContain('/nguoidung/doi-mat-khau');
+    expect(JSON.parse(tuyChon.body as string)).toEqual({ matKhauCu: 'MatKhauCu', matKhauMoi: 'MatKhauMoi' });
+  });
+
+  it('LaySoTinNhomChuaDoc goi dung endpoint GET /nhom/so-tin-chua-doc', async () => {
+    const fetchGiaLap = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ soTinChuaDoc: 5 }), { status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await LaySoTinNhomChuaDoc('token123');
+
+    expect(ketQua.soTinChuaDoc).toBe(5);
+    expect(fetchGiaLap.mock.calls[0][0]).toContain('/nhom/so-tin-chua-doc');
   });
 });

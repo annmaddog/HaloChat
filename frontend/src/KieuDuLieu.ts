@@ -58,6 +58,10 @@ export interface HoSoCaNhan {
   email: string;
   choPhepTinNhanTuNguoiLa: boolean;
   hienThiTrangThaiHoatDong: boolean;
+  choPhepThemVaoNhom: boolean;
+  thongBaoTinNhanMoi: boolean;
+  thongBaoLoiMoiKetBan: boolean;
+  thongBaoNhom: boolean;
 }
 
 export interface Nhom {
@@ -77,4 +81,8 @@ export interface KetQuaRoiNhom {
 
 export interface KetQuaThongBao {
   thongBao: string;
+}
+
+export interface SoTinNhomChuaDoc {
+  soTinChuaDoc: number;
 }

@@ -10,6 +10,10 @@ export function TrangCaiDat() {
   const [mucDangChon, setMucDangChon] = useState<MucCaiDat>('quyen-rieng-tu');
   const [choPhepTinNhanTuNguoiLa, setChoPhepTinNhanTuNguoiLa] = useState(false);
   const [hienThiTrangThaiHoatDong, setHienThiTrangThaiHoatDong] = useState(true);
+  const [choPhepThemVaoNhom, setChoPhepThemVaoNhom] = useState(true);
+  const [thongBaoTinNhanMoi, setThongBaoTinNhanMoi] = useState(true);
+  const [thongBaoLoiMoiKetBan, setThongBaoLoiMoiKetBan] = useState(true);
+  const [thongBaoNhom, setThongBaoNhom] = useState(true);
   const [dangTai, setDangTai] = useState(true);
   const [dangLuu, setDangLuu] = useState(false);
   const [daLuu, setDaLuu] = useState(false);
@@ -21,6 +25,10 @@ export function TrangCaiDat() {
       .then((hoSo) => {
         setChoPhepTinNhanTuNguoiLa(hoSo.choPhepTinNhanTuNguoiLa);
         setHienThiTrangThaiHoatDong(hoSo.hienThiTrangThaiHoatDong);
+        setChoPhepThemVaoNhom(hoSo.choPhepThemVaoNhom);
+        setThongBaoTinNhanMoi(hoSo.thongBaoTinNhanMoi);
+        setThongBaoLoiMoiKetBan(hoSo.thongBaoLoiMoiKetBan);
+        setThongBaoNhom(hoSo.thongBaoNhom);
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được cài đặt.'))
       .finally(() => setDangTai(false));
@@ -36,7 +44,15 @@ export function TrangCaiDat() {
     setDangLuu(true);
     setDaLuu(false);
     try {
-      await CapNhatCaiDat(token, choPhepMoi, hienThiMoi);
+      await CapNhatCaiDat(
+        token,
+        choPhepMoi,
+        hienThiMoi,
+        choPhepThemVaoNhom,
+        thongBaoTinNhanMoi,
+        thongBaoLoiMoiKetBan,
+        thongBaoNhom,
+      );
       setDaLuu(true);
     } catch (loiBat) {
       setChoPhepTinNhanTuNguoiLa(choPhepCu);

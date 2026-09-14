@@ -1,6 +1,6 @@
 import type {
   KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen,
-  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom, KetQuaThongBao,
+  LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom, KetQuaThongBao, SoTinNhomChuaDoc,
 } from './KieuDuLieu';
 
 // Đọc từ biến môi trường lúc build (VITE_API_BASE_URL) để trỏ đúng backend
@@ -178,12 +178,21 @@ export async function LayThongTinCaNhan(token: string): Promise<HoSoCaNhan> {
 }
 
 export async function CapNhatCaiDat(
-  token: string, choPhepTinNhanTuNguoiLa: boolean, hienThiTrangThaiHoatDong: boolean,
+  token: string,
+  choPhepTinNhanTuNguoiLa: boolean,
+  hienThiTrangThaiHoatDong: boolean,
+  choPhepThemVaoNhom: boolean,
+  thongBaoTinNhanMoi: boolean,
+  thongBaoLoiMoiKetBan: boolean,
+  thongBaoNhom: boolean,
 ): Promise<void> {
   await goiApi('/nguoidung/cai-dat', {
     method: 'PUT',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong }),
+    body: JSON.stringify({
+      choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong,
+      choPhepThemVaoNhom, thongBaoTinNhanMoi, thongBaoLoiMoiKetBan, thongBaoNhom,
+    }),
   });
 }
 
@@ -273,5 +282,19 @@ export async function DatLaiMatKhau(email: string, maOtp: string, matKhauMoi: st
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, maOtp, matKhauMoi }),
+  });
+}
+
+export async function DoiMatKhau(token: string, matKhauCu: string, matKhauMoi: string): Promise<KetQuaThongBao> {
+  return goiApi<KetQuaThongBao>('/nguoidung/doi-mat-khau', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ matKhauCu, matKhauMoi }),
+  });
+}
+
+export async function LaySoTinNhomChuaDoc(token: string): Promise<SoTinNhomChuaDoc> {
+  return goiApi<SoTinNhomChuaDoc>('/nhom/so-tin-chua-doc', {
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
