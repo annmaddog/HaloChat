@@ -43,39 +43,10 @@
   margin-bottom: 20px;
 }
 
-.trang-cai-dat__dong {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--mau-nen-the);
-  border-radius: var(--ban-kinh-o);
-  border: 1px solid var(--mau-vien);
-  cursor: pointer;
-  margin-bottom: 12px;
-}
-
-.trang-cai-dat__dong input {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
 .trang-cai-dat__da-luu {
   color: var(--mau-chinh-dam);
   font-size: 13px;
   margin-top: 8px;
-}
-
-.trang-cai-dat__nut-sap-ra-mat {
-  margin: 12px 0;
-  border: 1px solid var(--mau-vien);
-  background: #fff;
-  color: var(--mau-chu-phu);
-  border-radius: var(--ban-kinh-o);
-  padding: 8px 16px;
-  font-family: inherit;
-  cursor: not-allowed;
 }
 
 .trang-cai-dat__nut-dang-xuat {
@@ -105,4 +76,65 @@
     flex-direction: row;
     overflow-x: auto;
   }
+}
+
+.trang-cai-dat__dong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-o);
+  border: 1px solid var(--mau-vien);
+  margin-bottom: 12px;
+}
+
+.trang-cai-dat__form-mat-khau {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-o);
+  border: 1px solid var(--mau-vien);
+}
+
+.trang-cai-dat__form-mat-khau h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.trang-cai-dat__form-mat-khau input {
+  padding: 10px 12px;
+  border: 1px solid var(--mau-vien);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+}
+
+.trang-cai-dat__giao-dien {
+  display: flex;
+  gap: 12px;
+}
+
+.trang-cai-dat__nut-giao-dien {
+  padding: 10px 20px;
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.trang-cai-dat__nut-giao-dien--chon {
+  background: var(--mau-chinh);
+  border-color: var(--mau-chinh);
+  color: #fff;
+  font-weight: 700;
 }
