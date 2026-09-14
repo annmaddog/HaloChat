@@ -68,3 +68,51 @@
   color: var(--mau-chu-dam) !important;
   border: 1px solid var(--mau-vien) !important;
 }
+
+.trang-ban-be__hang {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trang-ban-be__hang--bam-duoc {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.trang-ban-be__ho-so {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  background: var(--mau-nen-the);
+  border-left: 1px solid var(--mau-vien);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.trang-ban-be__dong-ho-so {
+  align-self: flex-end;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--mau-chu-phu);
+}
+
+.trang-ban-be__email-ho-so {
+  color: var(--mau-chu-phu);
+  font-size: 13px;
+  margin: 0 0 12px;
+}

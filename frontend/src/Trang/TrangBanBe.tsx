@@ -12,6 +12,7 @@ import {
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import type { NguoiDungTomTat, LoiMoiKetBan } from '../KieuDuLieu';
+import { Avatar } from '../ThanhPhan/Avatar';
 import './TrangBanBe.css';
 
 export function TrangBanBe() {
@@ -25,6 +26,7 @@ export function TrangBanBe() {
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTai, setDangTai] = useState(true);
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
+  const [hoSoDangXem, setHoSoDangXem] = useState<NguoiDungTomTat | null>(null);
 
   async function taiLaiTatCa(tokenHienTai: string) {
     const [dsBanBe, dsLoiMoiDen, dsLoiMoiGui, dsTatCa] = await Promise.all([
@@ -105,7 +107,10 @@ export function TrangBanBe() {
         <ul className="trang-ban-be__danh-sach">
           {loiMoiDen.map((l) => (
             <li key={l.id} className="trang-ban-be__muc">
-              <span>{l.nguoiGui.tenTaiKhoan}</span>
+              <span className="trang-ban-be__hang">
+                <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenTaiKhoan} kichThuoc="nho" />
+                {l.nguoiGui.tenTaiKhoan}
+              </span>
               <div className="trang-ban-be__hanh-dong">
                 <button onClick={() => chapNhan(l.id)}>Chấp nhận</button>
                 <button className="trang-ban-be__nut-phu" onClick={() => tuChoi(l.id)}>
@@ -123,7 +128,10 @@ export function TrangBanBe() {
         <ul className="trang-ban-be__danh-sach">
           {banBe.map((b) => (
             <li key={b.id} className="trang-ban-be__muc">
-              <span>{b.tenTaiKhoan}</span>
+              <button className="trang-ban-be__hang trang-ban-be__hang--bam-duoc" onClick={() => setHoSoDangXem(b)}>
+                <Avatar id={b.id} ten={b.tenTaiKhoan} kichThuoc="nho" />
+                <span>{b.tenTaiKhoan}</span>
+              </button>
               <button onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: b } })}>Nhắn tin</button>
             </li>
           ))}
@@ -138,12 +146,30 @@ export function TrangBanBe() {
             .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
             .map((nd) => (
               <li key={nd.id} className="trang-ban-be__muc">
-                <span>{nd.tenTaiKhoan}</span>
+                <span className="trang-ban-be__hang">
+                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} kichThuoc="nho" />
+                  {nd.tenTaiKhoan}
+                </span>
                 <button onClick={() => guiLoiMoi(nd.id)}>Kết bạn</button>
               </li>
             ))}
         </ul>
       </section>
+
+      {hoSoDangXem && (
+        <aside className="trang-ban-be__ho-so">
+          <button className="trang-ban-be__dong-ho-so" onClick={() => setHoSoDangXem(null)} aria-label="Đóng hồ sơ">×</button>
+          <Avatar id={hoSoDangXem.id} ten={hoSoDangXem.tenTaiKhoan} kichThuoc="lon" />
+          <h3>{hoSoDangXem.tenTaiKhoan}</h3>
+          <p className="trang-ban-be__email-ho-so">{hoSoDangXem.email}</p>
+          <button
+            className="nut-chinh"
+            onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: hoSoDangXem } })}
+          >
+            Nhắn tin
+          </button>
+        </aside>
+      )}
     </div>
   );
 }

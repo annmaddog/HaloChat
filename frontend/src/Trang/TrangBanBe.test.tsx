@@ -87,4 +87,13 @@ describe('TrangBanBe', () => {
 
     await waitFor(() => expect(chapNhanSpy).toHaveBeenCalledWith('token-gia-lap', 'l1'));
   });
+
+  it('bấm vào 1 người trong danh sách bạn bè mở khung hồ sơ', async () => {
+    renderTrangBanBe();
+    await screen.findByText('TranBinh');
+
+    await userEvent.click(screen.getByRole('button', { name: /TranBinh/i }));
+
+    expect(screen.getByText('b@gmail.com')).toBeInTheDocument();
+  });
 });
