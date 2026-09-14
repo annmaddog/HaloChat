@@ -73,3 +73,12 @@ body {
   margin: 0 0 16px;
   text-align: left;
 }
+
+:root[data-theme='toi'] {
+  --mau-nen-tren: #0f1729;
+  --mau-nen-duoi: #0a0f1c;
+  --mau-nen-the: #16213a;
+  --mau-chu-dam: #e8ecf5;
+  --mau-chu-phu: #8b96ab;
+  --mau-vien: #263452;
+}
