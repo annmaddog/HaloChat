@@ -63,6 +63,11 @@ export function TrangNhom() {
   }, [token, nhomDangChonId, daTaiLichSuIds]);
 
   useEffect(() => {
+    if (!ketNoi || !nhomDangChonId) return;
+    ketNoi.invoke('DanhDauDaDoc', null, nhomDangChonId).catch(() => {});
+  }, [ketNoi, nhomDangChonId]);
+
+  useEffect(() => {
     if (!ketNoi) return;
 
     function xuLyTinNhanMoi(tinNhan: TinNhanHienThi) {
@@ -213,10 +218,7 @@ export function TrangNhom() {
             <li key={n.id}>
               <button
                 className={`trang-nhom__muc${nhomDangChonId === n.id ? ' trang-nhom__muc--dang-chon' : ''}`}
-                onClick={() => {
-                  setNhomDangChonId(n.id);
-                  ketNoi?.invoke('DanhDauDaDoc', null, n.id).catch(() => {});
-                }}
+                onClick={() => setNhomDangChonId(n.id)}
               >
                 <Avatar id={n.id} ten={n.tenNhom} kichThuoc="nho" />
                 <div className="trang-nhom__ten-cum">

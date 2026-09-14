@@ -90,4 +90,18 @@ public class DichVuNhomTests
 
         Assert.Equal(2, tong);
     }
+
+    [Fact]
+    public async Task DemTongChuaDoc_TinNhanCuaChinhMinh_KhongTinhLaChuaDoc()
+    {
+        var (dichVu, khoNhom, khoNguoiDung, khoTinNhan, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = "toi", TenTaiKhoan = "Toi" });
+        khoNhom.DanhSach.Add(new Nhom { Id = "n1", TenNhom = "N1", NguoiTaoId = "toi", ThanhVienIds = new() { "toi" } });
+        khoTinNhan.DanhSach.Add(new TinNhan { Id = "1", NhomId = "n1", NguoiGuiId = "toi" });
+        khoTinNhan.DanhSach.Add(new TinNhan { Id = "2", NhomId = "n1", NguoiGuiId = "nguoi-khac" });
+
+        var tong = await dichVu.DemTongChuaDocAsync("toi");
+
+        Assert.Equal(1, tong);
+    }
 }

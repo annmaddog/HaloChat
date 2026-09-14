@@ -150,7 +150,7 @@
 }
 
 .trang-nhom__modal {
-  background: #fff;
+  background: var(--mau-nen-the);
   border-radius: var(--ban-kinh-the);
   padding: 24px;
   width: 360px;

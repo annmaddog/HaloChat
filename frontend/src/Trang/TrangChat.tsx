@@ -84,6 +84,11 @@ export function TrangChat() {
   }, [token, nguoiDangChon]);
 
   useEffect(() => {
+    if (!ketNoi || !nguoiDangChon) return;
+    ketNoi.invoke('DanhDauDaDoc', nguoiDangChon.id, null).catch(() => {});
+  }, [ketNoi, nguoiDangChon]);
+
+  useEffect(() => {
     if (!ketNoi) return;
 
     function xuLyTinNhanMoi(tinNhan: TinNhanHienThi) {
@@ -206,10 +211,7 @@ export function TrangChat() {
               <li key={nd.id}>
                 <button
                   className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
-                  onClick={() => {
-                    setNguoiDangChon(nd);
-                    ketNoi?.invoke('DanhDauDaDoc', nd.id, null).catch(() => {});
-                  }}
+                  onClick={() => setNguoiDangChon(nd)}
                 >
                   <Avatar id={nd.id} ten={nd.tenTaiKhoan} kichThuoc="nho" />
                   <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>

@@ -71,7 +71,7 @@
 }
 
 .trang-ban-be__nut-phu {
-  background: #fff !important;
+  background: var(--mau-nen-the) !important;
   color: var(--mau-chu-dam) !important;
   border: 1px solid var(--mau-vien) !important;
 }

@@ -69,9 +69,11 @@ public class TinNhanRepository : ITinNhanRepository
             .ToListAsync();
     }
 
-    public async Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId)
+    public async Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId, string loaiTruNguoiGuiId)
     {
-        var boLocNhom = Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId);
+        var boLocNhom = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
+            Builders<TinNhan>.Filter.Ne(t => t.NguoiGuiId, loaiTruNguoiGuiId));
         var boLoc = sauId is null
             ? boLocNhom
             : Builders<TinNhan>.Filter.And(boLocNhom, Builders<TinNhan>.Filter.Gt(t => t.Id, sauId));

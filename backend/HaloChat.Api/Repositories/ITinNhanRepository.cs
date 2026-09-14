@@ -21,8 +21,11 @@ public interface ITinNhanRepository
     /// <summary>Lịch sử tin nhắn của 1 nhóm, mới nhất trước, phân trang lùi giống LayLichSuTheoNguoiDungAsync.</summary>
     Task<List<TinNhan>> LayLichSuNhomAsync(string nhomId, string? truocId, int soLuong);
 
-    /// <summary>Đếm số tin nhắn của 1 nhóm có Id lớn hơn sauId (mới hơn) — null thì đếm tất cả tin nhắn của nhóm.</summary>
-    Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId);
+    /// <summary>
+    /// Đếm số tin nhắn của 1 nhóm có Id lớn hơn sauId (mới hơn) — null thì đếm tất cả tin nhắn của nhóm.
+    /// Loại trừ tin nhắn do loaiTruNguoiGuiId gửi (không tính tin nhắn của chính người đang xem là "chưa đọc").
+    /// </summary>
+    Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId, string loaiTruNguoiGuiId);
 
     /// <summary>Xóa toàn bộ tin nhắn của 1 nhóm (dùng khi giải tán nhóm).</summary>
     Task XoaTheoNhomAsync(string nhomId);

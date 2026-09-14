@@ -189,7 +189,7 @@ public class DichVuNhom : IDichVuNhom
         foreach (var nhom in danhSachNhom)
         {
             var tinCuoiDaDoc = await _khoDocNhom.LayTinNhanCuoiDaDocAsync(nguoiDungId, nhom.Id);
-            tong += await _khoTinNhan.DemTinNhanSauIdAsync(nhom.Id, tinCuoiDaDoc);
+            tong += await _khoTinNhan.DemTinNhanSauIdAsync(nhom.Id, tinCuoiDaDoc, nguoiDungId);
         }
         return tong;
     }

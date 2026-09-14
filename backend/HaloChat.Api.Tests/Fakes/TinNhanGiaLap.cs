@@ -54,10 +54,11 @@ public class TinNhanGiaLap : ITinNhanRepository
         return Task.FromResult(ketQua);
     }
 
-    public Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId)
+    public Task<int> DemTinNhanSauIdAsync(string nhomId, string? sauId, string loaiTruNguoiGuiId)
     {
         var ketQua = DanhSach
             .Where(t => t.NhomId == nhomId)
+            .Where(t => t.NguoiGuiId != loaiTruNguoiGuiId)
             .Where(t => sauId is null || string.CompareOrdinal(t.Id, sauId) > 0)
             .Count();
         return Task.FromResult(ketQua);
