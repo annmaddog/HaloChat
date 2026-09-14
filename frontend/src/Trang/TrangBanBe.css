@@ -1,14 +1,29 @@
 .trang-ban-be-bo-cuc {
   display: flex;
   align-items: flex-start;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .trang-ban-be {
   flex: 1;
   min-width: 0;
   max-width: 900px;
+  height: 100%;
   margin: 0 auto;
   padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Chỉ khu vực danh sách (kết quả tìm kiếm / bạn bè / lời mời) cuộn riêng —
+   thanh tìm kiếm và 2 tab phía trên đứng yên, không bị cuộn mất theo. */
+.trang-ban-be__noi-dung-cuon {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .trang-ban-be__tim-kiem {
@@ -87,12 +102,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.trang-ban-be__danh-sach--tim-kiem {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 4px;
 }
 
 .trang-ban-be__card {
@@ -225,7 +234,8 @@
 .trang-ban-be__ho-so {
   flex-shrink: 0;
   width: 280px;
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
   background: var(--mau-nen-the);
   border-left: 1px solid var(--mau-vien);
   padding: 24px;
@@ -234,6 +244,7 @@
   align-items: center;
   gap: 8px;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .trang-ban-be__dong-ho-so {

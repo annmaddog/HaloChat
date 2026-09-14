@@ -150,13 +150,14 @@ export function TrangBanBe() {
           </div>
         )}
 
+        <div className="trang-ban-be__noi-dung-cuon">
         {dangTai && <p>Đang tải...</p>}
 
         {dangTimKiem && (
           <section className="trang-ban-be__phan">
             <h2>Kết quả tìm kiếm</h2>
             {ketQuaTimKiem.length === 0 && <p className="trang-ban-be__trong">Không tìm thấy người dùng nào.</p>}
-            <ul className="trang-ban-be__danh-sach trang-ban-be__danh-sach--tim-kiem">
+            <ul className="trang-ban-be__danh-sach">
               {ketQuaTimKiem.map((nd) => (
                 <li key={nd.id} className="trang-ban-be__card trang-ban-be__card--tim-kiem">
                   <Avatar id={nd.id} ten={nd.tenTaiKhoan} />
@@ -263,6 +264,7 @@ export function TrangBanBe() {
             )}
           </section>
         )}
+        </div>
       </div>
 
       {hoSoDangXem && (
