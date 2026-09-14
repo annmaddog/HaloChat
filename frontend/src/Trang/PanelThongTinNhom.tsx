@@ -22,7 +22,7 @@ export function PanelThongTinNhom({ nhom, laAdmin, onDong, onMoQuanLy, onRoiNhom
     <aside className="panel-thong-tin-nhom">
       <button className="panel-thong-tin-nhom__dong" onClick={onDong} aria-label="Đóng">×</button>
 
-      <Avatar id={nhom.id} ten={nhom.tenNhom} kichThuoc="lon" />
+      <Avatar id={nhom.id} ten={nhom.tenNhom} kichThuoc="lon" duongDanAnh={nhom.duongDanAnhDaiDien} />
       <h3 className="panel-thong-tin-nhom__ten">{nhom.tenNhom}</h3>
       <p className="panel-thong-tin-nhom__so-thanh-vien">{nhom.thanhVien.length} thành viên</p>
 

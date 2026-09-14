@@ -102,30 +102,6 @@
   min-width: 0;
 }
 
-.trang-nhom__thong-tin {
-  width: 240px;
-  flex-shrink: 0;
-  border-left: 1px solid var(--mau-vien);
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.trang-nhom__ds-thanh-vien {
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.trang-nhom__ds-thanh-vien li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
 .trang-nhom__nut-roi {
   margin-top: 16px;
   width: 100%;
@@ -195,12 +171,6 @@
 
   .trang-nhom__khung-phai {
     flex-direction: column;
-  }
-
-  .trang-nhom__thong-tin {
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid var(--mau-vien);
   }
 
   .trang-nhom__sidebar,

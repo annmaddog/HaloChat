@@ -9,6 +9,10 @@
   user-select: none;
 }
 
+img.avatar {
+  object-fit: cover;
+}
+
 .avatar--nho {
   width: 28px;
   height: 28px;

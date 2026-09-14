@@ -60,7 +60,7 @@ export function PanelQuanLyNhom({
       {loi && <p className="thong-bao-loi" role="alert">{loi}</p>}
 
       <div className="panel-quan-ly-nhom__doi-anh">
-        <Avatar id={nhom.id} ten={nhom.tenNhom} kichThuoc="lon" />
+        <Avatar id={nhom.id} ten={nhom.tenNhom} kichThuoc="lon" duongDanAnh={nhom.duongDanAnhDaiDien} />
         <label className="nut-phu panel-quan-ly-nhom__nut-doi-anh">
           {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
           <input

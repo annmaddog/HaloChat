@@ -117,3 +117,12 @@
   background: var(--mau-nen-the);
   color: var(--mau-chu-dam);
 }
+
+@media (max-width: 640px) {
+  .panel-quan-ly-nhom {
+    width: 100%;
+    min-height: auto;
+    border-left: none;
+    border-top: 1px solid var(--mau-vien);
+  }
+}

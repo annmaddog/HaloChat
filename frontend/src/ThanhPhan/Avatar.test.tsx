@@ -20,4 +20,16 @@ describe('Avatar', () => {
     const mau2 = (c2.querySelector('.avatar') as HTMLElement).style.background;
     expect(mau1).toBe(mau2);
   });
+
+  it('co duongDanAnh: render the img thay vi chu cai', () => {
+    const { container } = render(<Avatar id="n1" ten="Nhóm CNTT" duongDanAnh="/uploads/anh.png" />);
+    const anh = container.querySelector('img.avatar');
+    expect(anh).toBeInTheDocument();
+    expect(anh).toHaveAttribute('alt', 'Nhóm CNTT');
+  });
+
+  it('duongDanAnh la null: van hien chu cai nhu cu', () => {
+    render(<Avatar id="n1" ten="Nhóm CNTT" duongDanAnh={null} />);
+    expect(screen.getByText('N')).toBeInTheDocument();
+  });
 });

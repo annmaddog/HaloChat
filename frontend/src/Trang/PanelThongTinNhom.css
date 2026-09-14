@@ -86,3 +86,12 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+@media (max-width: 640px) {
+  .panel-thong-tin-nhom {
+    width: 100%;
+    min-height: auto;
+    border-left: none;
+    border-top: 1px solid var(--mau-vien);
+  }
+}

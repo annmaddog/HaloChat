@@ -227,7 +227,7 @@ export function TrangNhom() {
                   setPanelDangMo('khong');
                 }}
               >
-                <Avatar id={n.id} ten={n.tenNhom} kichThuoc="nho" />
+                <Avatar id={n.id} ten={n.tenNhom} kichThuoc="nho" duongDanAnh={n.duongDanAnhDaiDien} />
                 <div className="trang-nhom__ten-cum">
                   <span className="trang-nhom__ten">{n.tenNhom}</span>
                   <span className="trang-nhom__so-thanh-vien">{n.thanhVien.length} thành viên</span>
