@@ -305,4 +305,48 @@ public class DichVuNguoiDungTests
         Assert.False(ketQua.ThanhCong);
         Assert.Equal("Mã OTP đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại mã mới.", ketQua.ThongBao);
     }
+
+    [Fact]
+    public async Task DoiMatKhau_DungMatKhauCu_DoiThanhCong()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var matKhau = new DichVuMatKhau();
+        var salt = matKhau.TaoSalt();
+        var nguoiDung = new NguoiDung
+        {
+            Id = "1", TenTaiKhoan = "NguoiA", Salt = salt, MatKhauBam = matKhau.BamMatKhau("MatKhauCu123", salt),
+        };
+        kho.DanhSach.Add(nguoiDung);
+
+        var ketQua = await dichVu.DoiMatKhauAsync("1", "MatKhauCu123", "MatKhauMoi456");
+
+        Assert.True(ketQua.ThanhCong);
+        Assert.True(matKhau.KiemTraMatKhau("MatKhauMoi456", nguoiDung.Salt, nguoiDung.MatKhauBam));
+    }
+
+    [Fact]
+    public async Task DoiMatKhau_SaiMatKhauCu_TraVeThatBaiKhongDoiGiMatKhau()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var matKhau = new DichVuMatKhau();
+        var salt = matKhau.TaoSalt();
+        var matKhauBamGoc = matKhau.BamMatKhau("MatKhauCu123", salt);
+        var nguoiDung = new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA", Salt = salt, MatKhauBam = matKhauBamGoc };
+        kho.DanhSach.Add(nguoiDung);
+
+        var ketQua = await dichVu.DoiMatKhauAsync("1", "SaiMatKhau", "MatKhauMoi456");
+
+        Assert.False(ketQua.ThanhCong);
+        Assert.Equal(matKhauBamGoc, nguoiDung.MatKhauBam);
+    }
+
+    [Fact]
+    public async Task DoiMatKhau_NguoiDungKhongTonTai_TraVeThatBai()
+    {
+        var (dichVu, _, _) = TaoDichVu();
+
+        var ketQua = await dichVu.DoiMatKhauAsync("khong-ton-tai", "MatKhauCu123", "MatKhauMoi456");
+
+        Assert.False(ketQua.ThanhCong);
+    }
 }

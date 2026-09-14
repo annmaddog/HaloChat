@@ -167,6 +167,26 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         return new KetQuaDatLaiMatKhauDto(true, "Đặt lại mật khẩu thành công.");
     }
 
+    public async Task<KetQuaDoiMatKhauDto> DoiMatKhauAsync(string idHienTai, string matKhauCu, string matKhauMoi)
+    {
+        var nguoiDung = await _kho.TimTheoIdAsync(idHienTai);
+        if (nguoiDung is null)
+        {
+            return new KetQuaDoiMatKhauDto(false, "Không tìm thấy tài khoản.");
+        }
+
+        if (!_dichVuMatKhau.KiemTraMatKhau(matKhauCu, nguoiDung.Salt, nguoiDung.MatKhauBam))
+        {
+            return new KetQuaDoiMatKhauDto(false, "Mật khẩu cũ không đúng.");
+        }
+
+        var saltMoi = _dichVuMatKhau.TaoSalt();
+        var matKhauBamMoi = _dichVuMatKhau.BamMatKhau(matKhauMoi, saltMoi);
+        await _kho.DatLaiMatKhauAsync(nguoiDung.Id, matKhauBamMoi, saltMoi);
+
+        return new KetQuaDoiMatKhauDto(true, "Đã đổi mật khẩu thành công.");
+    }
+
     private static string TaoMaOtp()
     {
         var so = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 1_000_000);

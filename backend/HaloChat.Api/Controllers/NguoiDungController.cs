@@ -108,6 +108,24 @@ public class NguoiDungController : ControllerBase
         return Ok(ketQua);
     }
 
+    [HttpPost("doi-mat-khau")]
+    [Authorize]
+    public async Task<IActionResult> DoiMatKhau([FromBody] DoiMatKhauRequest yeuCau)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var ketQua = await _dichVu.DoiMatKhauAsync(IdHienTai, yeuCau.MatKhauCu, yeuCau.MatKhauMoi);
+        if (!ketQua.ThanhCong)
+        {
+            return BadRequest(new { thongBao = ketQua.ThongBao });
+        }
+
+        return Ok(new { thongBao = ketQua.ThongBao });
+    }
+
     [HttpPost("quen-mat-khau")]
     public async Task<IActionResult> QuenMatKhau([FromBody] QuenMatKhauRequest yeuCau)
     {
