@@ -2,6 +2,7 @@ export interface NguoiDungTomTat {
   id: string;
   tenTaiKhoan: string;
   email: string;
+  choPhepTinNhanTuNguoiLa: boolean;
 }
 
 export interface KetQuaDangKy {

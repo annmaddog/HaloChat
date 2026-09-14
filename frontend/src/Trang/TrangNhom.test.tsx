@@ -48,7 +48,7 @@ describe('TrangNhom', () => {
     vi.clearAllMocks();
     ketNoiGiaLap.invoke.mockResolvedValue(undefined);
     localStorage.setItem('haloChatToken', 'token-gia-lap');
-    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }]);
+    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]);
   });
 
   it('hiển thị danh sách nhóm đã tham gia', async () => {

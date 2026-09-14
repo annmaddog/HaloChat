@@ -51,8 +51,8 @@ describe('SuDungSoLuongChuaDoc', () => {
       choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
     });
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
-      { nguoiDung: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com' }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 2 },
-      { nguoiDung: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 3 },
+      { nguoiDung: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 2 },
+      { nguoiDung: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 3 },
     ]);
     vi.spyOn(DichVuApi, 'LayLoiMoiDen').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'LaySoTinNhomChuaDoc').mockResolvedValue({ soTinChuaDoc: 0 });

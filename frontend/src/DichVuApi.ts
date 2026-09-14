@@ -298,3 +298,10 @@ export async function LaySoTinNhomChuaDoc(token: string): Promise<SoTinNhomChuaD
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function XoaBanBe(token: string, idBanBe: string): Promise<KetQuaThongBao> {
+  return goiApi<KetQuaThongBao>(`/ketban/ban-be/${idBanBe}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

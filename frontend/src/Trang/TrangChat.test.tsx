@@ -74,7 +74,7 @@ describe('TrangChat', () => {
     const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
     localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
-      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }),
+      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }),
     ]);
     vi.spyOn(DichVuApi, 'LayTrangThaiHoatDong').mockResolvedValue({});
   });
@@ -201,8 +201,8 @@ describe('TrangChat', () => {
 
   it('ô tìm kiếm lọc đúng danh sách hội thoại theo tên', async () => {
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
-      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }),
-      taoHoiThoaiGiaLap({ id: '3', tenTaiKhoan: 'LeCuong', email: 'c@gmail.com' }),
+      taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }),
+      taoHoiThoaiGiaLap({ id: '3', tenTaiKhoan: 'LeCuong', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true }),
     ]);
 
     renderTrangChat();
@@ -231,7 +231,7 @@ describe('TrangChat', () => {
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
 
-    renderTrangChat({ moNguoiDung: { id: '9', tenTaiKhoan: 'NguoiMoi', email: 'moi@gmail.com' } });
+    renderTrangChat({ moNguoiDung: { id: '9', tenTaiKhoan: 'NguoiMoi', email: 'moi@gmail.com', choPhepTinNhanTuNguoiLa: true } });
 
     expect(await screen.findByText('NguoiMoi')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Nhập tin nhắn...')).toBeInTheDocument();
