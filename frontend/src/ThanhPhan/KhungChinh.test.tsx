@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { KhungChinh } from './KhungChinh';
 import { NhaCungCapXacThuc } from '../NguCanh/NguCanhXacThuc';
+
+vi.mock('../NguCanh/SuDungSoLuongChuaDoc', () => ({
+  SuDungSoLuongChuaDoc: () => ({ tinNhan: 3, banBe: 0, nhom: 0 }),
+}));
 
 describe('KhungChinh', () => {
   it('hiển thị đủ 4 mục điều hướng và nội dung con', () => {
@@ -49,5 +53,19 @@ describe('KhungChinh', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
+  });
+
+  it('hien badge so tin nhan chua doc tren muc Tin nhan', () => {
+    render(
+      <MemoryRouter initialEntries={['/nguoi-dung']}>
+        <NhaCungCapXacThuc>
+          <KhungChinh>
+            <p>Nội dung</p>
+          </KhungChinh>
+        </NhaCungCapXacThuc>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 });

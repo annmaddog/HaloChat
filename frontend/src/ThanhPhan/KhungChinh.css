@@ -19,14 +19,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 10px 8px;
+  width: 60px;
+  height: 52px;
+  box-sizing: border-box;
   border-radius: var(--ban-kinh-o);
   color: var(--mau-chu-phu);
   text-decoration: none;
   font-size: 11px;
-  width: 60px;
   cursor: pointer;
+}
+
+.khung-chinh__muc svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.khung-chinh__icon-cum {
+  position: relative;
+  display: flex;
+}
+
+.khung-chinh__icon-cum .huy {
+  position: absolute;
+  top: -6px;
+  right: -8px;
 }
 
 .khung-chinh__muc:hover,
