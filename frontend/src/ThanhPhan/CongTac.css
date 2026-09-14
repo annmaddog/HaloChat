@@ -1,0 +1,34 @@
+.cong-tac {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: var(--mau-vien);
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.cong-tac--bat {
+  background: var(--mau-chinh);
+}
+
+.cong-tac:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cong-tac__nut {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.cong-tac--bat .cong-tac__nut {
+  transform: translateX(18px);
+}
