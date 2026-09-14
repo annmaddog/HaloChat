@@ -84,9 +84,22 @@ public class DichVuTinNhanTests
         khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
 
         var ketQua = await dichVu.GuiTinNhanAsync(
-            IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", "anh.png", 1024, "image/png");
+            IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439099", "anh.png", 1024, "image/png");
 
-        Assert.Equal("/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", ketQua.DuongDanFile);
+        Assert.Equal("/api/tinnhan/file/507f1f77bcf86cd799439099", ketQua.DuongDanFile);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_DuongDanFileKieuCuUploadsKhongConHopLe_NemNgoaiLe()
+    {
+        // [Sửa lỗi] File giờ lưu qua GridFS, trả về đường dẫn dạng
+        // /api/tinnhan/file/<id> — định dạng /uploads/<guid>.<ext> cũ (ổ đĩa
+        // container, đã bỏ vì Render xóa sạch mỗi lần deploy) không còn hợp lệ.
+        var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() => dichVu.GuiTinNhanAsync(
+            IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/uploads/3f2a1b4c-5d6e-7f80-9a1b-2c3d4e5f6789.png", "anh.png", 1024, "image/png"));
     }
 
     [Fact]

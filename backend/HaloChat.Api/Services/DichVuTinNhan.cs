@@ -7,8 +7,15 @@ namespace HaloChat.Api.Services;
 
 public class DichVuTinNhan : IDichVuTinNhan
 {
+    // [Sửa lỗi] File đính kèm giờ lưu qua MongoDB GridFS
+    // (Services/DichVuLuuTruFileGridFs.cs), trả về đường dẫn dạng
+    // /api/tinnhan/file/<ObjectId 24 ký tự hex> — KHÔNG còn dạng
+    // /uploads/<guid>.<ext> cũ (ổ đĩa container, bị Render xóa sạch mỗi lần
+    // deploy). Quên cập nhật pattern này khi đổi nơi lưu file là nguyên nhân
+    // khiến GuiTinNhan luôn báo "Đường dẫn file không hợp lệ" dù upload đã
+    // thành công.
     private static readonly System.Text.RegularExpressions.Regex MauDuongDanFileHopLe = new(
-        @"^/uploads/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.(jpg|jpeg|png|gif|webp|pdf|docx|xlsx|zip)$",
+        @"^/api/tinnhan/file/[0-9a-fA-F]{24}$",
         System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
     private readonly ITinNhanRepository _khoTinNhan;
