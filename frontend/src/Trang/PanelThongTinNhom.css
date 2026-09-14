@@ -1,0 +1,88 @@
+.panel-thong-tin-nhom {
+  flex-shrink: 0;
+  width: 300px;
+  min-height: 100vh;
+  background: var(--mau-nen-the);
+  border-left: 1px solid var(--mau-vien);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.panel-thong-tin-nhom__dong {
+  align-self: flex-end;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--mau-chu-phu);
+}
+
+.panel-thong-tin-nhom__ten {
+  margin: 8px 0 0;
+}
+
+.panel-thong-tin-nhom__so-thanh-vien {
+  color: var(--mau-chu-phu);
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+.panel-thong-tin-nhom__hang-nut {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.panel-thong-tin-nhom__hang-nut .nut-chinh,
+.panel-thong-tin-nhom__hang-nut .nut-phu {
+  flex: 1;
+  width: auto;
+}
+
+.panel-thong-tin-nhom__phan {
+  width: 100%;
+  text-align: left;
+  margin-top: 16px;
+}
+
+.panel-thong-tin-nhom__phan h4 {
+  font-size: 13px;
+  color: var(--mau-chu-phu);
+  margin: 0 0 8px;
+}
+
+.panel-thong-tin-nhom__avatar-hang {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.panel-thong-tin-nhom__nut-them {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--mau-vien);
+  background: var(--mau-nen-tren);
+  color: var(--mau-chu-phu);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.panel-thong-tin-nhom__hang-lien-ket {
+  width: 100%;
+  text-align: left;
+  margin-top: 16px;
+  padding: 10px 0;
+  border: none;
+  border-top: 1px solid var(--mau-vien);
+  background: none;
+  color: var(--mau-chinh-dam);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
