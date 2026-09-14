@@ -47,3 +47,11 @@ public class KhongCoQuyenXuLyLoiMoiException : Exception
     {
     }
 }
+
+/// <summary>Ném ra khi cố xóa bạn với 1 người hiện chưa (hoặc không còn) là bạn bè.</summary>
+public class KhongPhaiBanBeException : Exception
+{
+    public KhongPhaiBanBeException() : base("Người này không phải bạn bè của bạn.")
+    {
+    }
+}

@@ -50,4 +50,10 @@ public class LoiMoiKetBanGiaLap : ILoiMoiKetBanRepository
 
     public Task<bool> LaBanBeAsync(string nguoiA, string nguoiB) =>
         Task.FromResult(DanhSach.Any(l => KhopCapDoi(l, nguoiA, nguoiB) && l.TrangThai == TrangThaiLoiMoiKetBan.DaChapNhan));
+
+    public Task XoaAsync(string nguoiA, string nguoiB)
+    {
+        DanhSach.RemoveAll(l => KhopCapDoi(l, nguoiA, nguoiB) && l.TrangThai == TrangThaiLoiMoiKetBan.DaChapNhan);
+        return Task.CompletedTask;
+    }
 }

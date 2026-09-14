@@ -73,4 +73,12 @@ public class LoiMoiKetBanRepository : ILoiMoiKetBanRepository
             Builders<LoiMoiKetBan>.Filter.Eq(l => l.TrangThai, TrangThaiLoiMoiKetBan.DaChapNhan));
         return await _collection.Find(boLoc).AnyAsync();
     }
+
+    public async Task XoaAsync(string nguoiA, string nguoiB)
+    {
+        var boLoc = Builders<LoiMoiKetBan>.Filter.And(
+            BoLocCapDoi(nguoiA, nguoiB),
+            Builders<LoiMoiKetBan>.Filter.Eq(l => l.TrangThai, TrangThaiLoiMoiKetBan.DaChapNhan));
+        await _collection.DeleteOneAsync(boLoc);
+    }
 }

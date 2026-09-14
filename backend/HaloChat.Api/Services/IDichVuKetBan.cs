@@ -10,4 +10,5 @@ public interface IDichVuKetBan
     Task<List<NguoiDungTomTatDto>> LayBanBeAsync(string nguoiDungId);
     Task<List<LoiMoiKetBanDto>> LayLoiMoiDenAsync(string nguoiDungId);
     Task<List<LoiMoiKetBanDto>> LayLoiMoiGuiAsync(string nguoiDungId);
+    Task HuyKetBanAsync(string nguoiHienTaiId, string idBanBe);
 }

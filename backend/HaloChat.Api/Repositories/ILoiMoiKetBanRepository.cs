@@ -21,4 +21,7 @@ public interface ILoiMoiKetBanRepository
     Task<List<LoiMoiKetBan>> LayLoiMoiGuiAsync(string nguoiDungId);
 
     Task<bool> LaBanBeAsync(string nguoiA, string nguoiB);
+
+    /// <summary>Xóa hẳn bản ghi lời mời đã chấp nhận giữa 2 người (dùng cho tính năng xóa bạn).</summary>
+    Task XoaAsync(string nguoiA, string nguoiB);
 }

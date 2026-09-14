@@ -147,4 +147,35 @@ public class DichVuKetBanTests
 
         Assert.Single(loiMoiDen);
     }
+
+    [Fact]
+    public async Task HuyKetBanAsync_DangLaBanBe_XoaBanGhiKetBan()
+    {
+        var (dichVu, khoLoiMoi, _) = TaoDichVu();
+        khoLoiMoi.DanhSach.Add(new LoiMoiKetBan { Id = IdLoiMoi1, NguoiGuiId = IdA, NguoiNhanId = IdB, TrangThai = TrangThaiLoiMoiKetBan.DaChapNhan });
+
+        await dichVu.HuyKetBanAsync(IdA, IdB);
+
+        Assert.Empty(khoLoiMoi.DanhSach);
+    }
+
+    [Fact]
+    public async Task HuyKetBanAsync_KhongPhaiBanBe_NemNgoaiLe()
+    {
+        var (dichVu, _, _) = TaoDichVu();
+
+        await Assert.ThrowsAsync<KhongPhaiBanBeException>(() => dichVu.HuyKetBanAsync(IdA, IdB));
+    }
+
+    [Fact]
+    public async Task HuyKetBanAsync_SauKhiXoa_CoTheGuiLaiLoiMoiMoi()
+    {
+        var (dichVu, khoLoiMoi, _) = TaoDichVu();
+        khoLoiMoi.DanhSach.Add(new LoiMoiKetBan { Id = IdLoiMoi1, NguoiGuiId = IdA, NguoiNhanId = IdB, TrangThai = TrangThaiLoiMoiKetBan.DaChapNhan });
+
+        await dichVu.HuyKetBanAsync(IdA, IdB);
+        var ketQua = await dichVu.GuiLoiMoiAsync(IdA, IdB);
+
+        Assert.Equal("ChoDuyet", ketQua.TrangThai);
+    }
 }

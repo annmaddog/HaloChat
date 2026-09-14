@@ -134,4 +134,14 @@ public class DichVuKetBan : IDichVuKetBan
         new NguoiDungTomTatDto(nguoiNhan.Id, nguoiNhan.TenTaiKhoan, nguoiNhan.Email, nguoiNhan.ChoPhepTinNhanTuNguoiLa),
         l.TrangThai.ToString(),
         l.ThoiGianTao);
+
+    public async Task HuyKetBanAsync(string nguoiHienTaiId, string idBanBe)
+    {
+        if (!ObjectId.TryParse(idBanBe, out _) || !await _khoLoiMoi.LaBanBeAsync(nguoiHienTaiId, idBanBe))
+        {
+            throw new KhongPhaiBanBeException();
+        }
+
+        await _khoLoiMoi.XoaAsync(nguoiHienTaiId, idBanBe);
+    }
 }

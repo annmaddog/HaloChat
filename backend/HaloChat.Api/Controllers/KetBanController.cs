@@ -138,4 +138,23 @@ public class KetBanController : ControllerBase
 
         return Ok(await _dichVu.LayLoiMoiGuiAsync(IdHienTai));
     }
+
+    [HttpDelete("ban-be/{idBanBe}")]
+    public async Task<IActionResult> XoaBanBe(string idBanBe)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await _dichVu.HuyKetBanAsync(IdHienTai, idBanBe);
+            return Ok(new { thongBao = "Đã xóa bạn." });
+        }
+        catch (KhongPhaiBanBeException loi)
+        {
+            return NotFound(new { thongBao = loi.Message });
+        }
+    }
 }

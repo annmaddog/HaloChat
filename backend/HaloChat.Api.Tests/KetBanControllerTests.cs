@@ -144,4 +144,40 @@ public class KetBanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.OK, phanHoiTuChoi.StatusCode);
     }
+
+    [Fact]
+    public async Task XoaBanBe_ChuaDangNhap_TraVe401()
+    {
+        var phanHoi = await _client.DeleteAsync("/api/ketban/ban-be/000000000000000000000000");
+        Assert.Equal(HttpStatusCode.Unauthorized, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task XoaBanBe_DangLaBanBe_TraVe200VaXoaKhoiDanhSach()
+    {
+        var (tokenA, idA) = await DangKyVaDangNhapAsync("xoabannguoia");
+        var (_, idB) = await DangKyVaDangNhapAsync("xoabannguoib");
+        _factory.KhoLoiMoiKetBanGiaLap.DanhSach.Add(new HaloChat.Api.Models.LoiMoiKetBan
+        {
+            NguoiGuiId = idA, NguoiNhanId = idB, TrangThai = HaloChat.Api.Models.TrangThaiLoiMoiKetBan.DaChapNhan,
+        });
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var phanHoi = await _client.DeleteAsync($"/api/ketban/ban-be/{idB}");
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        Assert.Empty(_factory.KhoLoiMoiKetBanGiaLap.DanhSach);
+    }
+
+    [Fact]
+    public async Task XoaBanBe_KhongPhaiBanBe_TraVe404()
+    {
+        var (tokenA, _) = await DangKyVaDangNhapAsync("xoabankhac1");
+        var (_, idB) = await DangKyVaDangNhapAsync("xoabankhac2");
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var phanHoi = await _client.DeleteAsync($"/api/ketban/ban-be/{idB}");
+
+        Assert.Equal(HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
 }
