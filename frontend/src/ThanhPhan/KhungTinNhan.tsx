@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FormEvent, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
 import { BieuTuongGhim } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
@@ -11,11 +11,12 @@ function dinhDangKichThuoc(bytes: number): string {
   return mb >= 1 ? `${mb.toFixed(1)}MB` : `${Math.ceil(bytes / 1024)}KB`;
 }
 
-function nhanTrangThaiGui(tn: TinNhanHienThi): string {
-  if (tn.dangGui) return 'Đang gửi';
-  if (tn.daDoc) return 'Đã xem';
-  if (tn.daNhan) return 'Đã nhận';
-  return 'Đã gửi';
+// [Bỏ trạng thái đã gửi/đã nhận/đã xem] Theo yêu cầu, không hiện trạng thái
+// tin nhắn thường trực nữa — chỉ hiện giờ:phút gửi khi người dùng bấm vào
+// đúng tin nhắn đó (xem state tinDangMoId bên dưới).
+function dinhDangGio(thoiGianTao: string): string {
+  const ngay = new Date(thoiGianTao);
+  return ngay.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
 interface PropsKhungTinNhan {
@@ -37,12 +38,13 @@ interface PropsKhungTinNhan {
 }
 
 export function KhungTinNhan({
-  loaiHoiThoai, tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
+  tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
   const noiDungRef = useRef<HTMLInputElement | null>(null);
+  const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
 
   useEffect(() => {
     cuoiDanhSachRef.current?.scrollIntoView?.({ block: 'end' });
@@ -108,18 +110,24 @@ export function KhungTinNhan({
         {danhSachTinNhan.map((tn) => {
           const laCuaMinh = tn.nguoiGuiId === idHienTai;
           return (
-            <div key={tn.id} className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}>
+            <div
+              key={tn.id}
+              className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
+              onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}
+              role="button"
+              tabIndex={0}
+            >
               {tn.loaiTinNhan === 'Anh' && (
                 <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
               )}
               {tn.loaiTinNhan === 'File' && (
-                <a className="khung-tin-nhan__file" href={`${DIA_CHI_GOC}${tn.duongDanFile}`} target="_blank" rel="noreferrer">
+                <a className="khung-tin-nhan__file" href={`${DIA_CHI_GOC}${tn.duongDanFile}`} target="_blank" rel="noreferrer" onClick={(su) => su.stopPropagation()}>
                   📎 {tn.tenFileGoc} ({dinhDangKichThuoc(tn.kichThuocFile ?? 0)})
                 </a>
               )}
               {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
-              {laCuaMinh && loaiHoiThoai === 'nguoiDung' && (
-                <span className="khung-tin-nhan__trang-thai-gui">{nhanTrangThaiGui(tn)}</span>
+              {tinDangMoId === tn.id && (
+                <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>
               )}
             </div>
           );

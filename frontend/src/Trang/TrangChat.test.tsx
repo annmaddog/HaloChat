@@ -95,7 +95,37 @@ describe('TrangChat', () => {
     expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('DanhDauDaDoc', '2', null);
   });
 
-  it('gửi tin nhắn văn bản hiện ngay "Đang gửi" rồi cập nhật khi Hub xác nhận', async () => {
+  it('tai lich su lan dau yeu cau dung 20 tin nhan', async () => {
+    const layLichSuSpy = vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([taoTinNhanGiaLap({})]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+
+    await waitFor(() => expect(layLichSuSpy).toHaveBeenCalledWith(expect.any(String), '2', undefined, 20));
+  });
+
+  it('lan tai dau tra ve it hon 20 tin thi an nut Tai tin nhan cu hon', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([taoTinNhanGiaLap({})]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await screen.findByText('Chào bạn');
+
+    expect(screen.queryByRole('button', { name: /Tải tin nhắn cũ hơn/ })).not.toBeInTheDocument();
+  });
+
+  it('lan tai dau tra ve dung 20 tin thi van hien nut Tai tin nhan cu hon', async () => {
+    const haiMuoiTin = Array.from({ length: 20 }, (_, i) => taoTinNhanGiaLap({ id: `m${i}`, noiDungTinNhan: `Tin ${i}` }));
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue(haiMuoiTin);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await screen.findByText('Tin 0');
+
+    expect(screen.getByRole('button', { name: /Tải tin nhắn cũ hơn/ })).toBeInTheDocument();
+  });
+
+  it('gửi tin nhắn văn bản hiện ngay lập tức rồi cập nhật khi Hub xác nhận', async () => {
     vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
     let phanGiai: (tn: unknown) => void = () => {};
     ketNoiGiaLap.invoke.mockReturnValue(new Promise((resolve) => { phanGiai = resolve; }));
@@ -107,12 +137,11 @@ describe('TrangChat', () => {
     await userEvent.type(screen.getByPlaceholderText('Nhập tin nhắn...'), 'Xin chào');
     await userEvent.click(screen.getByRole('button', { name: 'Gửi' }));
 
-    expect(await screen.findByText('Đang gửi')).toBeInTheDocument();
+    expect(await screen.findByText('Xin chào')).toBeInTheDocument();
 
     phanGiai(taoTinNhanGiaLap({ id: 'm2', nguoiGuiId: '1', nguoiNhanId: '2', noiDungTinNhan: 'Xin chào', daNhan: true }));
 
-    await waitFor(() => expect(screen.getByText('Đã nhận')).toBeInTheDocument());
-    expect(screen.getByText('Xin chào')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Xin chào')).toBeInTheDocument());
   });
 
   it('nhận tin nhắn realtime qua sự kiện NhanTinNhan hiển thị ngay trong khung đang mở', async () => {

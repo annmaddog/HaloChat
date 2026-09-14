@@ -78,6 +78,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
 }
 
 .khung-tin-nhan__bong--minh {
@@ -86,10 +87,9 @@
   color: #fff;
 }
 
-.khung-tin-nhan__trang-thai-gui {
+.khung-tin-nhan__thoi-gian {
   font-size: 11px;
   opacity: 0.85;
-  align-self: flex-end;
 }
 
 .khung-tin-nhan__form-gui {

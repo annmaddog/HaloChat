@@ -10,6 +10,12 @@ import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
 const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
+// [Tải lịch sử] Lần đầu tải ít hơn (20) để mở hội thoại nhanh hơn; mỗi lần
+// bấm "Tải tin nhắn cũ hơn" tải thêm nhiều hơn (30). Ẩn nút khi lần tải gần
+// nhất trả về ít hơn số lượng yêu cầu — nghĩa là đã hết lịch sử, không cần
+// phân biệt theo ngày lịch thật.
+const SO_LUONG_LICH_SU_DAU = 20;
+const SO_LUONG_LICH_SU_THEM = 30;
 
 function idNguoiKia(tinNhan: TinNhanHienThi, idHienTai: string): string {
   return tinNhan.nguoiGuiId === idHienTai ? (tinNhan.nguoiNhanId ?? '') : tinNhan.nguoiGuiId;
@@ -30,6 +36,7 @@ export function TrangChat() {
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTaiTep, setDangTaiTep] = useState(false);
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
+  const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -64,8 +71,11 @@ export function TrangChat() {
     idDaTaiLichSuRef.current.add(nguoiDangChon.id);
 
     setDangTaiLichSu(true);
-    LayLichSuTinNhan(token, nguoiDangChon.id)
+    LayLichSuTinNhan(token, nguoiDangChon.id, undefined, SO_LUONG_LICH_SU_DAU)
       .then((moiNhatTruoc) => {
+        if (moiNhatTruoc.length < SO_LUONG_LICH_SU_DAU) {
+          setConThemLichSu((truoc) => ({ ...truoc, [nguoiDangChon.id]: false }));
+        }
         const thuTuThoiGian = [...moiNhatTruoc].reverse();
         setTinNhanTheoNguoiDung((truoc) => {
           const gop = new Map<string, TinNhanHienThi>();
@@ -181,8 +191,11 @@ export function TrangChat() {
     if (!cuNhat) return;
 
     setDangTaiLichSu(true);
-    LayLichSuTinNhan(token, nguoiDangChon.id, cuNhat.id)
+    LayLichSuTinNhan(token, nguoiDangChon.id, cuNhat.id, SO_LUONG_LICH_SU_THEM)
       .then((cuHon) => {
+        if (cuHon.length < SO_LUONG_LICH_SU_THEM) {
+          setConThemLichSu((truoc) => ({ ...truoc, [nguoiDangChon.id]: false }));
+        }
         const thuTuThoiGian = [...cuHon].reverse();
         setTinNhanTheoNguoiDung((truoc) => ({
           ...truoc,
@@ -237,7 +250,7 @@ export function TrangChat() {
           idHienTai={idHienTai}
           dangKetNoi={dangKetNoi}
           dangTaiLichSu={dangTaiLichSu}
-          coTheTaiThem
+          coTheTaiThem={conThemLichSu[nguoiDangChon.id] !== false}
           onTaiThemLichSuCu={taiThemLichSuCu}
           onGuiVanBan={guiTinNhanVanBan}
           onGuiTep={guiTep}

@@ -14,6 +14,9 @@ import './TrangNhom.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
 const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
+// [Tải lịch sử] Xem giải thích ở TrangChat.tsx.
+const SO_LUONG_LICH_SU_DAU = 20;
+const SO_LUONG_LICH_SU_THEM = 30;
 
 export function TrangNhom() {
   const { token, nguoiDungHienTai } = useXacThuc();
@@ -34,6 +37,7 @@ export function TrangNhom() {
   const [daTaiLichSuIds] = useState<Set<string>>(() => new Set());
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const [panelDangMo, setPanelDangMo] = useState<'khong' | 'thong-tin' | 'quan-ly'>('khong');
+  const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
 
@@ -53,8 +57,11 @@ export function TrangNhom() {
     daTaiLichSuIds.add(nhomDangChonId);
 
     setDangTaiLichSu(true);
-    LayLichSuNhom(token, nhomDangChonId)
+    LayLichSuNhom(token, nhomDangChonId, undefined, SO_LUONG_LICH_SU_DAU)
       .then((tinNhans) => {
+        if (tinNhans.length < SO_LUONG_LICH_SU_DAU) {
+          setConThemLichSu((truoc) => ({ ...truoc, [nhomDangChonId]: false }));
+        }
         const thuTu = [...tinNhans].reverse();
         setTinNhanTheoNhom((truoc) => ({ ...truoc, [nhomDangChonId]: thuTu }));
       })
@@ -161,8 +168,11 @@ export function TrangNhom() {
     const cuNhat = (tinNhanTheoNhom[nhomDangChon.id] ?? [])[0];
     if (!cuNhat) return;
     setDangTaiLichSu(true);
-    LayLichSuNhom(token, nhomDangChon.id, cuNhat.id)
+    LayLichSuNhom(token, nhomDangChon.id, cuNhat.id, SO_LUONG_LICH_SU_THEM)
       .then((cuHon) => {
+        if (cuHon.length < SO_LUONG_LICH_SU_THEM) {
+          setConThemLichSu((truoc) => ({ ...truoc, [nhomDangChon.id]: false }));
+        }
         const thuTu = [...cuHon].reverse();
         setTinNhanTheoNhom((truoc) => ({ ...truoc, [nhomDangChon.id]: [...thuTu, ...(truoc[nhomDangChon.id] ?? [])] }));
       })
@@ -254,7 +264,7 @@ export function TrangNhom() {
             idHienTai={idHienTai}
             dangKetNoi={dangKetNoi}
             dangTaiLichSu={dangTaiLichSu}
-            coTheTaiThem
+            coTheTaiThem={conThemLichSu[nhomDangChon.id] !== false}
             onTaiThemLichSuCu={taiThemLichSuCu}
             onGuiVanBan={guiTinNhanVanBan}
             onGuiTep={guiTep}
