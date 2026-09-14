@@ -83,7 +83,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         var tatCa = await _kho.LayTatCaAsync();
         return tatCa
             .Where(nd => nd.Id != idHienTai)
-            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email))
+            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa))
             .ToList();
     }
 

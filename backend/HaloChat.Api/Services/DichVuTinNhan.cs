@@ -189,7 +189,7 @@ public class DichVuTinNhan : IDichVuTinNhan
                 : tn.LoaiTinNhan == LoaiTinNhan.Anh ? "[Ảnh]" : "[File]";
 
             ketQua.Add(new HoiThoaiTomTatDto(
-                new NguoiDungTomTatDto(nguoiKia.Id, nguoiKia.TenTaiKhoan, nguoiKia.Email),
+                new NguoiDungTomTatDto(nguoiKia.Id, nguoiKia.TenTaiKhoan, nguoiKia.Email, nguoiKia.ChoPhepTinNhanTuNguoiLa),
                 xemTruoc,
                 tn.ThoiGianTao,
                 soChuaDoc));
