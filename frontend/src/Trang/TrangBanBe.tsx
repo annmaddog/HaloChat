@@ -170,7 +170,7 @@ export function TrangBanBe() {
                   <div className="trang-ban-be__card-hanh-dong">
                     {nd.choPhepTinNhanTuNguoiLa && (
                       <button
-                        className="nut-phu"
+                        className="trang-ban-be__nut-phu"
                         onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: nd } })}
                       >
                         Nhắn tin
@@ -255,7 +255,7 @@ export function TrangBanBe() {
                     </div>
                     <div className="trang-ban-be__card-hanh-dong">
                       <button className="nut-chinh" onClick={() => chapNhan(l.id)}>Chấp nhận</button>
-                      <button className="nut-phu" onClick={() => tuChoi(l.id)}>Từ chối</button>
+                      <button className="trang-ban-be__nut-phu" onClick={() => tuChoi(l.id)}>Từ chối</button>
                     </div>
                   </li>
                 ))}

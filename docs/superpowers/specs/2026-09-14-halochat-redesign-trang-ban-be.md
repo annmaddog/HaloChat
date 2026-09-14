@@ -169,8 +169,11 @@ mời hay chưa (`idDaGuiLoiMoi` — set các id trong `loiMoiGui`):
   </div>
 </div>
 ```
-Người đã là bạn bè hoặc đang có lời mời đến/đi thì **không xuất hiện**
-trong kết quả tìm kiếm (giữ đúng logic lọc `idDaLaBanBeHoacDangCho` đã có).
+Người đã là bạn bè hoặc đang có lời mời **đến** (người khác gửi cho mình) thì
+**không xuất hiện** trong kết quả tìm kiếm. Người mình đã gửi lời mời đi (lời
+mời **đi**) vẫn xuất hiện, nhưng nút đổi thành "Đã gửi lời mời" (disabled) —
+nếu không, tính năng hiển thị trạng thái "Đã gửi lời mời" mô tả ở phần Trạng
+thái sẽ không bao giờ render được.
 
 **Tab Lời mời:**
 ```tsx

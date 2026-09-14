@@ -204,7 +204,7 @@
   color: var(--mau-loi) !important;
 }
 
-.nut-phu {
+.trang-ban-be__nut-phu {
   border: 1px solid var(--mau-vien);
   background: var(--mau-nen-the);
   color: var(--mau-chu-dam);

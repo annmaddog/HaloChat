@@ -66,7 +66,7 @@ describe('DichVuApi', () => {
 
   it('LayDanhSachNguoiDung gửi kèm Bearer token và trả về danh sách', async () => {
     const fetchGiaLap = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify([{ id: '1', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com' }]), { status: 200 }),
+      new Response(JSON.stringify([{ id: '1', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]), { status: 200 }),
     );
     vi.stubGlobal('fetch', fetchGiaLap);
 
@@ -181,8 +181,8 @@ describe('DichVuApi', () => {
       new Response(
         JSON.stringify({
           id: '1',
-          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com' },
-          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' },
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
           trangThai: 'ChoDuyet',
           thoiGianTao: '2026-01-01T00:00:00Z',
         }),
@@ -205,8 +205,8 @@ describe('DichVuApi', () => {
       new Response(
         JSON.stringify({
           id: '1',
-          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com' },
-          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' },
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
           trangThai: 'DaChapNhan',
           thoiGianTao: '2026-01-01T00:00:00Z',
         }),
@@ -226,7 +226,7 @@ describe('DichVuApi', () => {
   it('LayBanBe trả về danh sách bạn bè', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com' }]), { status: 200 })),
+      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]), { status: 200 })),
     );
 
     const danhSach = await LayBanBe('token-gia-lap');
