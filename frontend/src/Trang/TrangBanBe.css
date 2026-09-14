@@ -6,19 +6,45 @@
 .trang-ban-be {
   flex: 1;
   min-width: 0;
-  max-width: 640px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px;
 }
 
 .trang-ban-be__tim-kiem {
   width: 100%;
-  padding: 10px 14px;
+  padding: 14px 18px;
   border: 1px solid var(--mau-vien);
-  border-radius: var(--ban-kinh-o);
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  margin-bottom: 20px;
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  box-sizing: border-box;
+}
+
+.trang-ban-be__tab-cum {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.trang-ban-be__tab {
+  border: none;
+  background: none;
+  padding: 10px 18px;
+  border-radius: 12px;
   font-family: inherit;
   font-size: 14px;
-  margin-bottom: 24px;
+  font-weight: 600;
+  color: var(--mau-chu-phu);
+  cursor: pointer;
+}
+
+.trang-ban-be__tab--chon {
+  background: var(--mau-nen-tren);
+  color: var(--mau-chinh-dam);
 }
 
 .trang-ban-be__phan {
@@ -35,62 +61,159 @@
   font-size: 14px;
 }
 
+.trang-ban-be__trong-toan-trang {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--mau-chu-phu);
+}
+
+.trang-ban-be__trong-tieu-de {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mau-chu-dam);
+  margin-bottom: 6px;
+}
+
+.trang-ban-be__trong-toan-trang .nut-chinh {
+  width: auto;
+  margin: 16px auto 0;
+  padding: 10px 24px;
+}
+
 .trang-ban-be__danh-sach {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.trang-ban-be__muc {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--mau-nen-the);
-  border-radius: var(--ban-kinh-o);
-  border: 1px solid var(--mau-vien);
-}
-
-.trang-ban-be__muc button {
-  border: none;
-  border-radius: 999px;
-  padding: 6px 16px;
-  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
-  color: #fff;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.trang-ban-be__hanh-dong {
-  display: flex;
-  gap: 8px;
-}
-
-.trang-ban-be__nut-phu {
-  background: var(--mau-nen-the) !important;
-  color: var(--mau-chu-dam) !important;
-  border: 1px solid var(--mau-vien) !important;
-}
-
-.trang-ban-be__hang {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.trang-ban-be__hang--bam-duoc {
+.trang-ban-be__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--mau-nen-the);
+  border-radius: 14px;
+  border: 1px solid var(--mau-vien);
+  box-shadow: 0 2px 8px -4px rgba(31, 66, 135, 0.15);
+  min-width: 0;
+}
+
+.trang-ban-be__card-thong-tin {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trang-ban-be__card-ten {
+  font-weight: 600;
+  color: var(--mau-chu-dam);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trang-ban-be__card-email,
+.trang-ban-be__card-phu {
+  font-size: 12px;
+  color: var(--mau-chu-phu);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trang-ban-be__card-trang-thai {
+  font-size: 12px;
+  color: var(--mau-chinh);
+}
+
+.trang-ban-be__card-khoa {
+  font-size: 12px;
+  color: var(--mau-chu-phu);
+}
+
+.trang-ban-be__card-hanh-dong {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.trang-ban-be__nut-nhan-tin {
+  width: auto;
+  flex-shrink: 0;
+  padding: 8px 18px;
+  min-height: 36px;
+}
+
+.trang-ban-be__menu-cum {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.trang-ban-be__nut-menu {
   border: none;
   background: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 8px;
   cursor: pointer;
+  color: var(--mau-chu-phu);
+  border-radius: 8px;
+}
+
+.trang-ban-be__nut-menu:hover {
+  background: var(--mau-nen-tren);
+}
+
+.trang-ban-be__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 160px;
+  background: var(--mau-nen-the);
+  border: 1px solid var(--mau-vien);
+  border-radius: 10px;
+  box-shadow: var(--bong-the);
+  padding: 6px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.trang-ban-be__menu button {
+  border: none;
+  background: none;
   text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--mau-chu-dam);
+  cursor: pointer;
+}
+
+.trang-ban-be__menu button:hover {
+  background: var(--mau-nen-tren);
+}
+
+.trang-ban-be__menu-nguy-hiem {
+  color: var(--mau-loi) !important;
+}
+
+.nut-phu {
+  border: 1px solid var(--mau-vien);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .trang-ban-be__ho-so {
@@ -120,4 +243,32 @@
   color: var(--mau-chu-phu);
   font-size: 13px;
   margin: 0 0 12px;
+}
+
+@media (max-width: 640px) {
+  .trang-ban-be {
+    padding: 16px 12px;
+  }
+
+  .trang-ban-be__card {
+    flex-wrap: wrap;
+  }
+
+  .trang-ban-be__nut-nhan-tin {
+    min-height: 40px;
+    flex: 1;
+  }
+
+  .trang-ban-be__menu {
+    right: 0;
+    left: auto;
+    max-width: calc(100vw - 32px);
+  }
+
+  .trang-ban-be__ho-so {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    z-index: 20;
+  }
 }

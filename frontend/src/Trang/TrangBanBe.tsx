@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayBanBe,
   LayLoiMoiDen,
   LayLoiMoiGui,
   LayDanhSachNguoiDung,
+  LayTrangThaiHoatDong,
   GuiLoiMoiKetBan,
   ChapNhanLoiMoiKetBan,
   TuChoiLoiMoiKetBan,
+  XoaBanBe,
   LoiGoiApi,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import type { NguoiDungTomTat, LoiMoiKetBan } from '../KieuDuLieu';
 import { Avatar } from '../ThanhPhan/Avatar';
 import './TrangBanBe.css';
+
+type Tab = 'ban-be' | 'loi-moi';
 
 export function TrangBanBe() {
   const { token } = useXacThuc();
@@ -23,10 +27,14 @@ export function TrangBanBe() {
   const [loiMoiDen, setLoiMoiDen] = useState<LoiMoiKetBan[]>([]);
   const [loiMoiGui, setLoiMoiGui] = useState<LoiMoiKetBan[]>([]);
   const [tatCaNguoiDung, setTatCaNguoiDung] = useState<NguoiDungTomTat[]>([]);
+  const [trangThaiOnline, setTrangThaiOnline] = useState<Record<string, boolean>>({});
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTai, setDangTai] = useState(true);
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
+  const [tabDangChon, setTabDangChon] = useState<Tab>('ban-be');
+  const [menuMoChoId, setMenuMoChoId] = useState<string | null>(null);
   const [hoSoDangXem, setHoSoDangXem] = useState<NguoiDungTomTat | null>(null);
+  const inputTimKiemRef = useRef<HTMLInputElement | null>(null);
 
   async function taiLaiTatCa(tokenHienTai: string) {
     const [dsBanBe, dsLoiMoiDen, dsLoiMoiGui, dsTatCa] = await Promise.all([
@@ -39,6 +47,11 @@ export function TrangBanBe() {
     setLoiMoiDen(dsLoiMoiDen);
     setLoiMoiGui(dsLoiMoiGui);
     setTatCaNguoiDung(dsTatCa);
+    if (dsBanBe.length > 0) {
+      LayTrangThaiHoatDong(tokenHienTai, dsBanBe.map((b) => b.id))
+        .then(setTrangThaiOnline)
+        .catch(() => {});
+    }
   }
 
   useEffect(() => {
@@ -79,83 +92,177 @@ export function TrangBanBe() {
     }
   }
 
+  function xoaBan(b: NguoiDungTomTat) {
+    if (!token) return;
+    setMenuMoChoId(null);
+    if (!window.confirm(`Xóa ${b.tenTaiKhoan} khỏi danh sách bạn bè?`)) return;
+    XoaBanBe(token, b.id)
+      .then(() => setBanBe((truoc) => truoc.filter((x) => x.id !== b.id)))
+      .catch((loiBat) => setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Xóa bạn thất bại.'));
+  }
+
+  // Khong loai nguoi da gui loi moi (loiMoiGui) khoi ket qua tim kiem: ho
+  // van phai hien voi nut "Da gui loi moi" (disabled) thay vi bien mat khoi
+  // danh sach, xem nhanh idDaGuiLoiMoi/ketQuaTimKiem ben duoi.
   const idDaLaBanBeHoacDangCho = new Set<string>([
     ...banBe.map((b) => b.id),
     ...loiMoiDen.map((l) => l.nguoiGui.id),
-    ...loiMoiGui.map((l) => l.nguoiNhan.id),
   ]);
+
+  const dangTimKiem = tuKhoaTimKiem.trim().length > 0;
+  const idDaGuiLoiMoi = new Set(loiMoiGui.map((l) => l.nguoiNhan.id));
+  const ketQuaTimKiem = tatCaNguoiDung
+    .filter((nd) => !idDaLaBanBeHoacDangCho.has(nd.id))
+    .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.trim().toLowerCase()));
 
   return (
     <div className="trang-ban-be-bo-cuc">
       <div className="trang-ban-be">
-      <input
-        type="text"
-        className="trang-ban-be__tim-kiem"
-        placeholder="Tìm bạn bè..."
-        value={tuKhoaTimKiem}
-        onChange={(su) => setTuKhoaTimKiem(su.target.value)}
-      />
-      {loi && (
-        <p className="thong-bao-loi" role="alert">
-          {loi}
-        </p>
-      )}
-      {dangTai && <p>Đang tải...</p>}
+        <input
+          ref={inputTimKiemRef}
+          type="text"
+          className="trang-ban-be__tim-kiem"
+          placeholder="🔎 Tìm bạn bè hoặc tên tài khoản..."
+          value={tuKhoaTimKiem}
+          onChange={(su) => setTuKhoaTimKiem(su.target.value)}
+        />
 
-      <section className="trang-ban-be__phan">
-        <h2>Lời mời kết bạn ({loiMoiDen.length})</h2>
-        {loiMoiDen.length === 0 && <p className="trang-ban-be__trong">Không có lời mời nào.</p>}
-        <ul className="trang-ban-be__danh-sach">
-          {loiMoiDen.map((l) => (
-            <li key={l.id} className="trang-ban-be__muc">
-              <span className="trang-ban-be__hang">
-                <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenTaiKhoan} kichThuoc="nho" />
-                {l.nguoiGui.tenTaiKhoan}
-              </span>
-              <div className="trang-ban-be__hanh-dong">
-                <button onClick={() => chapNhan(l.id)}>Chấp nhận</button>
-                <button className="trang-ban-be__nut-phu" onClick={() => tuChoi(l.id)}>
-                  Từ chối
+        {loi && (
+          <p className="thong-bao-loi" role="alert">
+            {loi}
+          </p>
+        )}
+
+        {!dangTimKiem && (
+          <div className="trang-ban-be__tab-cum">
+            <button
+              className={`trang-ban-be__tab${tabDangChon === 'ban-be' ? ' trang-ban-be__tab--chon' : ''}`}
+              onClick={() => setTabDangChon('ban-be')}
+            >
+              Bạn bè
+            </button>
+            <button
+              className={`trang-ban-be__tab${tabDangChon === 'loi-moi' ? ' trang-ban-be__tab--chon' : ''}`}
+              onClick={() => setTabDangChon('loi-moi')}
+            >
+              Lời mời ({loiMoiDen.length})
+            </button>
+          </div>
+        )}
+
+        {dangTai && <p>Đang tải...</p>}
+
+        {dangTimKiem && (
+          <section className="trang-ban-be__phan">
+            <h2>Kết quả tìm kiếm</h2>
+            {ketQuaTimKiem.length === 0 && <p className="trang-ban-be__trong">Không tìm thấy người dùng nào.</p>}
+            <ul className="trang-ban-be__danh-sach">
+              {ketQuaTimKiem.map((nd) => (
+                <li key={nd.id} className="trang-ban-be__card trang-ban-be__card--tim-kiem">
+                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} />
+                  <div className="trang-ban-be__card-thong-tin">
+                    <span className="trang-ban-be__card-ten">{nd.tenTaiKhoan}</span>
+                    <span className="trang-ban-be__card-email">{nd.email}</span>
+                    {!nd.choPhepTinNhanTuNguoiLa && (
+                      <span className="trang-ban-be__card-khoa">🔒 Chỉ nhận tin nhắn từ bạn bè</span>
+                    )}
+                  </div>
+                  <div className="trang-ban-be__card-hanh-dong">
+                    {nd.choPhepTinNhanTuNguoiLa && (
+                      <button
+                        className="nut-phu"
+                        onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: nd } })}
+                      >
+                        Nhắn tin
+                      </button>
+                    )}
+                    {idDaGuiLoiMoi.has(nd.id) ? (
+                      <button className="nut-chinh" disabled>Đã gửi lời mời</button>
+                    ) : (
+                      <button className="nut-chinh" onClick={() => guiLoiMoi(nd.id)}>Kết bạn</button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {!dangTimKiem && tabDangChon === 'ban-be' && (
+          <section className="trang-ban-be__phan">
+            <h2>Bạn bè của tôi ({banBe.length})</h2>
+            {banBe.length === 0 ? (
+              <div className="trang-ban-be__trong-toan-trang">
+                <p className="trang-ban-be__trong-tieu-de">Bạn chưa có người bạn nào</p>
+                <p>Hãy tìm kiếm và kết bạn với những người bạn biết.</p>
+                <button className="nut-chinh" onClick={() => inputTimKiemRef.current?.focus()}>
+                  Tìm bạn bè
                 </button>
               </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+            ) : (
+              <ul className="trang-ban-be__danh-sach">
+                {banBe.map((b) => (
+                  <li key={b.id} className="trang-ban-be__card">
+                    <Avatar id={b.id} ten={b.tenTaiKhoan} />
+                    <div className="trang-ban-be__card-thong-tin">
+                      <span className="trang-ban-be__card-ten">{b.tenTaiKhoan}</span>
+                      {trangThaiOnline[b.id] && <span className="trang-ban-be__card-trang-thai">Đang hoạt động</span>}
+                    </div>
+                    <button
+                      className="nut-chinh trang-ban-be__nut-nhan-tin"
+                      onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: b } })}
+                    >
+                      Nhắn tin
+                    </button>
+                    <div className="trang-ban-be__menu-cum">
+                      <button
+                        className="trang-ban-be__nut-menu"
+                        aria-label={`Thêm thao tác cho ${b.tenTaiKhoan}`}
+                        onClick={() => setMenuMoChoId((truoc) => (truoc === b.id ? null : b.id))}
+                      >
+                        ⋯
+                      </button>
+                      {menuMoChoId === b.id && (
+                        <div className="trang-ban-be__menu">
+                          <button onClick={() => { setHoSoDangXem(b); setMenuMoChoId(null); }}>Xem thông tin</button>
+                          <button className="trang-ban-be__menu-nguy-hiem" onClick={() => xoaBan(b)}>Xóa bạn</button>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
 
-      <section className="trang-ban-be__phan">
-        <h2>Bạn bè ({banBe.length})</h2>
-        {banBe.length === 0 && <p className="trang-ban-be__trong">Chưa có bạn bè nào.</p>}
-        <ul className="trang-ban-be__danh-sach">
-          {banBe.map((b) => (
-            <li key={b.id} className="trang-ban-be__muc">
-              <button className="trang-ban-be__hang trang-ban-be__hang--bam-duoc" onClick={() => setHoSoDangXem(b)}>
-                <Avatar id={b.id} ten={b.tenTaiKhoan} kichThuoc="nho" />
-                <span>{b.tenTaiKhoan}</span>
-              </button>
-              <button onClick={() => navigate('/nguoi-dung', { state: { moNguoiDung: b } })}>Nhắn tin</button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="trang-ban-be__phan">
-        <h2>Tìm người để kết bạn</h2>
-        <ul className="trang-ban-be__danh-sach">
-          {tatCaNguoiDung
-            .filter((nd) => !idDaLaBanBeHoacDangCho.has(nd.id))
-            .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
-            .map((nd) => (
-              <li key={nd.id} className="trang-ban-be__muc">
-                <span className="trang-ban-be__hang">
-                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} kichThuoc="nho" />
-                  {nd.tenTaiKhoan}
-                </span>
-                <button onClick={() => guiLoiMoi(nd.id)}>Kết bạn</button>
-              </li>
-            ))}
-        </ul>
-      </section>
+        {!dangTimKiem && tabDangChon === 'loi-moi' && (
+          <section className="trang-ban-be__phan">
+            <h2>Lời mời kết bạn ({loiMoiDen.length})</h2>
+            {loiMoiDen.length === 0 ? (
+              <div className="trang-ban-be__trong-toan-trang">
+                <p className="trang-ban-be__trong-tieu-de">Không có lời mời kết bạn</p>
+                <p>Bạn chưa có lời mời kết bạn nào.</p>
+              </div>
+            ) : (
+              <ul className="trang-ban-be__danh-sach">
+                {loiMoiDen.map((l) => (
+                  <li key={l.id} className="trang-ban-be__card">
+                    <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenTaiKhoan} />
+                    <div className="trang-ban-be__card-thong-tin">
+                      <span className="trang-ban-be__card-ten">{l.nguoiGui.tenTaiKhoan}</span>
+                      <span className="trang-ban-be__card-phu">Muốn kết bạn với bạn</span>
+                    </div>
+                    <div className="trang-ban-be__card-hanh-dong">
+                      <button className="nut-chinh" onClick={() => chapNhan(l.id)}>Chấp nhận</button>
+                      <button className="nut-phu" onClick={() => tuChoi(l.id)}>Từ chối</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
 
       {hoSoDangXem && (
