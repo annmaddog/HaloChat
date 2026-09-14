@@ -57,12 +57,18 @@ public class NguoiDungRepository : INguoiDungRepository
         return await _collection.Find(nd => nd.Id == id).FirstOrDefaultAsync();
     }
 
-    public async Task CapNhatCaiDatAsync(string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong)
+    public async Task CapNhatCaiDatAsync(
+        string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong,
+        bool choPhepThemVaoNhom, bool thongBaoTinNhanMoi, bool thongBaoLoiMoiKetBan, bool thongBaoNhom)
     {
         var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
         var capNhat = Builders<NguoiDung>.Update
             .Set(nd => nd.ChoPhepTinNhanTuNguoiLa, choPhepTinNhanTuNguoiLa)
-            .Set(nd => nd.HienThiTrangThaiHoatDong, hienThiTrangThaiHoatDong);
+            .Set(nd => nd.HienThiTrangThaiHoatDong, hienThiTrangThaiHoatDong)
+            .Set(nd => nd.ChoPhepThemVaoNhom, choPhepThemVaoNhom)
+            .Set(nd => nd.ThongBaoTinNhanMoi, thongBaoTinNhanMoi)
+            .Set(nd => nd.ThongBaoLoiMoiKetBan, thongBaoLoiMoiKetBan)
+            .Set(nd => nd.ThongBaoNhom, thongBaoNhom);
         await _collection.UpdateOneAsync(boLoc, capNhat);
     }
 

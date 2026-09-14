@@ -9,7 +9,9 @@ public interface INguoiDungRepository
     Task<NguoiDung?> TimTheoTenTaiKhoanHoacEmailAsync(string tenDangNhap);
     Task<List<NguoiDung>> LayTatCaAsync();
     Task<NguoiDung?> TimTheoIdAsync(string id);
-    Task CapNhatCaiDatAsync(string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong);
+    Task CapNhatCaiDatAsync(
+        string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong,
+        bool choPhepThemVaoNhom, bool thongBaoTinNhanMoi, bool thongBaoLoiMoiKetBan, bool thongBaoNhom);
     Task LuuOtpAsync(string id, string maOtpBam, DateTime hetHan, DateTime guiLucNao);
     Task XoaThoiGianGuiOtpAsync(string id);
     Task TangSoLanThuSaiOtpAsync(string id);

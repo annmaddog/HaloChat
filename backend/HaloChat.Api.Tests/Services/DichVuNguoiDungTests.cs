@@ -146,10 +146,15 @@ public class DichVuNguoiDungTests
         var (dichVu, kho, _) = TaoDichVu();
         kho.DanhSach.Add(new NguoiDung { Id = "1", TenTaiKhoan = "NguoiA" });
 
-        await dichVu.CapNhatCaiDatAsync("1", true, false);
+        await dichVu.CapNhatCaiDatAsync("1", true, false, false, false, true, false);
 
-        Assert.True(kho.DanhSach.Single().ChoPhepTinNhanTuNguoiLa);
-        Assert.False(kho.DanhSach.Single().HienThiTrangThaiHoatDong);
+        var daLuu = kho.DanhSach.Single();
+        Assert.True(daLuu.ChoPhepTinNhanTuNguoiLa);
+        Assert.False(daLuu.HienThiTrangThaiHoatDong);
+        Assert.False(daLuu.ChoPhepThemVaoNhom);
+        Assert.False(daLuu.ThongBaoTinNhanMoi);
+        Assert.True(daLuu.ThongBaoLoiMoiKetBan);
+        Assert.False(daLuu.ThongBaoNhom);
     }
 
     [Fact]

@@ -87,8 +87,12 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             .ToList();
     }
 
-    public Task CapNhatCaiDatAsync(string idHienTai, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong) =>
-        _kho.CapNhatCaiDatAsync(idHienTai, choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong);
+    public Task CapNhatCaiDatAsync(
+        string idHienTai, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong,
+        bool choPhepThemVaoNhom, bool thongBaoTinNhanMoi, bool thongBaoLoiMoiKetBan, bool thongBaoNhom) =>
+        _kho.CapNhatCaiDatAsync(
+            idHienTai, choPhepTinNhanTuNguoiLa, hienThiTrangThaiHoatDong,
+            choPhepThemVaoNhom, thongBaoTinNhanMoi, thongBaoLoiMoiKetBan, thongBaoNhom);
 
     public async Task<HoSoCaNhanDto?> LayThongTinCaNhanAsync(string id)
     {
@@ -97,7 +101,9 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             ? null
             : new HoSoCaNhanDto(
                 nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email,
-                nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong);
+                nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong,
+                nguoiDung.ChoPhepThemVaoNhom, nguoiDung.ThongBaoTinNhanMoi,
+                nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom);
     }
 
     public async Task YeuCauOtpDatLaiMatKhauAsync(string email)

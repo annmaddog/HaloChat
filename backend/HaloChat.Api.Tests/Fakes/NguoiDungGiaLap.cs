@@ -29,13 +29,19 @@ public class NguoiDungGiaLap : INguoiDungRepository
     public Task<NguoiDung?> TimTheoIdAsync(string id) =>
         Task.FromResult(DanhSach.FirstOrDefault(nd => nd.Id == id));
 
-    public Task CapNhatCaiDatAsync(string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong)
+    public Task CapNhatCaiDatAsync(
+        string id, bool choPhepTinNhanTuNguoiLa, bool hienThiTrangThaiHoatDong,
+        bool choPhepThemVaoNhom, bool thongBaoTinNhanMoi, bool thongBaoLoiMoiKetBan, bool thongBaoNhom)
     {
         var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
         if (nguoiDung is not null)
         {
             nguoiDung.ChoPhepTinNhanTuNguoiLa = choPhepTinNhanTuNguoiLa;
             nguoiDung.HienThiTrangThaiHoatDong = hienThiTrangThaiHoatDong;
+            nguoiDung.ChoPhepThemVaoNhom = choPhepThemVaoNhom;
+            nguoiDung.ThongBaoTinNhanMoi = thongBaoTinNhanMoi;
+            nguoiDung.ThongBaoLoiMoiKetBan = thongBaoLoiMoiKetBan;
+            nguoiDung.ThongBaoNhom = thongBaoNhom;
         }
         return Task.CompletedTask;
     }

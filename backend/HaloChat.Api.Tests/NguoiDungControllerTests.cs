@@ -129,7 +129,7 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
-        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/cai-dat", new CapNhatCaiDatRequest(true, false));
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/cai-dat", new CapNhatCaiDatRequest(true, false, true, true, true, true));
 
         Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
         var nguoiDung = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "caidatnguoia");

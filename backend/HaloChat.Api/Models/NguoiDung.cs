@@ -29,6 +29,17 @@ public class NguoiDung
     // theo ý muốn, đúng toggle "Hiển thị trạng thái hoạt động" ở Cài đặt.
     public bool HienThiTrangThaiHoatDong { get; set; } = true;
 
+    // [GĐ5c] Khi false, DichVuNhom.ThemThanhVienAsync/TaoNhomAsync từ chối
+    // thêm người này vào bất kỳ nhóm nào (xem KhongChoPhepThemVaoNhomException).
+    public bool ChoPhepThemVaoNhom { get; set; } = true;
+
+    // [GĐ5c] 3 toggle quyết định badge tương ứng ở sidebar (Tin nhắn/Bạn
+    // bè/Nhóm) có cộng dồn số chưa đọc hay không — không điều khiển bất kỳ
+    // kênh thông báo đẩy thật nào (hệ thống chưa có kênh nào như vậy).
+    public bool ThongBaoTinNhanMoi { get; set; } = true;
+    public bool ThongBaoLoiMoiKetBan { get; set; } = true;
+    public bool ThongBaoNhom { get; set; } = true;
+
     // [Quên mật khẩu] Mã OTP băm bằng Salt sẵn có của chính user (không cần
     // field salt riêng) — xem IDichVuMatKhau.BamMatKhau. Null khi chưa từng
     // yêu cầu OTP hoặc đã đặt lại mật khẩu thành công.
