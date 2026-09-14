@@ -123,4 +123,74 @@ describe('TrangNhom', () => {
 
     await waitFor(() => expect(DichVuApi.TaoNhom).toHaveBeenCalledWith('token-gia-lap', 'Nhóm mới', null, null, ['2']));
   });
+
+  it('bam vao tieu de header mo PanelThongTinNhom', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      ], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+
+    const { container } = renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(container.querySelector('.khung-tin-nhan__tieu-de-bam') as Element);
+
+    expect(container.querySelector('.panel-thong-tin-nhom')).toHaveTextContent('1 thành viên');
+  });
+
+  it('la admin (nguoiTaoId trung idHienTai): thay Chinh sua va Quan ly nhom trong PanelThongTinNhom', async () => {
+    const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
+    localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      ], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+
+    const { container } = renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(container.querySelector('.khung-tin-nhan__tieu-de-bam') as Element);
+
+    expect(await screen.findByRole('button', { name: 'Chỉnh sửa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Quản lý nhóm' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Giải tán nhóm' })).toBeInTheDocument();
+  });
+
+  it('bam Chinh sua chuyen sang PanelQuanLyNhom', async () => {
+    const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
+    localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      ], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+
+    const { container } = renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(container.querySelector('.khung-tin-nhan__tieu-de-bam') as Element);
+    await userEvent.click(await screen.findByRole('button', { name: 'Chỉnh sửa' }));
+
+    expect(await screen.findByText('Quản lý nhóm')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Nhóm CNTT')).toBeInTheDocument();
+  });
+
+  it('doi nhom dang chon thi dong panel dang mo', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+      { id: 'n2', tenNhom: 'Nhóm Toán', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+
+    const { container } = renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(container.querySelector('.khung-tin-nhan__tieu-de-bam') as Element);
+    await waitFor(() => expect(container.querySelector('.panel-thong-tin-nhom')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByText('Nhóm Toán'));
+
+    expect(container.querySelector('.panel-thong-tin-nhom')).not.toBeInTheDocument();
+  });
 });

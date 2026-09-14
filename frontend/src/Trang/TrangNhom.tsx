@@ -7,6 +7,8 @@ import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
+import { PanelThongTinNhom } from './PanelThongTinNhom';
+import { PanelQuanLyNhom } from './PanelQuanLyNhom';
 import type { Nhom, NguoiDungTomTat } from '../KieuDuLieu';
 import './TrangNhom.css';
 
@@ -31,6 +33,7 @@ export function TrangNhom() {
   const [thanhVienDuocChon, setThanhVienDuocChon] = useState<Set<string>>(new Set());
   const [daTaiLichSuIds] = useState<Set<string>>(() => new Set());
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
+  const [panelDangMo, setPanelDangMo] = useState<'khong' | 'thong-tin' | 'quan-ly'>('khong');
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
 
@@ -218,7 +221,11 @@ export function TrangNhom() {
             <li key={n.id}>
               <button
                 className={`trang-nhom__muc${nhomDangChonId === n.id ? ' trang-nhom__muc--dang-chon' : ''}`}
-                onClick={() => setNhomDangChonId(n.id)}
+                onClick={() => {
+                  setNhomDangChonId(n.id);
+                  ketNoi?.invoke('DanhDauDaDoc', null, n.id).catch(() => {});
+                  setPanelDangMo('khong');
+                }}
               >
                 <Avatar id={n.id} ten={n.tenNhom} kichThuoc="nho" />
                 <div className="trang-nhom__ten-cum">
@@ -254,33 +261,27 @@ export function TrangNhom() {
             dangTaiTep={dangTaiTep}
             loi={loi}
             onQuayLai={() => setNhomDangChonId(null)}
+            onBamTieuDe={() => setPanelDangMo('thong-tin')}
           />
-          <aside className="trang-nhom__thong-tin">
-            <h3>Thành viên</h3>
-            <ul className="trang-nhom__ds-thanh-vien">
-              {nhomDangChon.thanhVien.map((tv) => (
-                <li key={tv.id}>
-                  <span>{tv.tenTaiKhoan}{tv.id === nhomDangChon.nguoiTaoId ? ' (Admin)' : ''}</span>
-                  {laAdmin && tv.id !== idHienTai && (
-                    <button onClick={() => xoaThanhVien(tv.id)} aria-label={`Xóa ${tv.tenTaiKhoan}`}>×</button>
-                  )}
-                </li>
-              ))}
-            </ul>
-            {laAdmin && (
-              <select onChange={(su) => { if (su.target.value) themThanhVien(su.target.value); su.target.value = ''; }}>
-                <option value="">+ Thêm thành viên...</option>
-                {tatCaNguoiDung
-                  .filter((nd) => !nhomDangChon.thanhVien.some((tv) => tv.id === nd.id))
-                  .map((nd) => (
-                    <option key={nd.id} value={nd.id}>{nd.tenTaiKhoan}</option>
-                  ))}
-              </select>
-            )}
-            <button className="trang-nhom__nut-roi" onClick={roiNhom}>
-              {laAdmin ? 'Giải tán nhóm' : 'Rời nhóm'}
-            </button>
-          </aside>
+          {panelDangMo === 'thong-tin' && (
+            <PanelThongTinNhom
+              nhom={nhomDangChon}
+              laAdmin={laAdmin}
+              onDong={() => setPanelDangMo('khong')}
+              onMoQuanLy={() => setPanelDangMo('quan-ly')}
+              onRoiNhom={roiNhom}
+            />
+          )}
+          {panelDangMo === 'quan-ly' && laAdmin && (
+            <PanelQuanLyNhom
+              nhom={nhomDangChon}
+              tatCaNguoiDung={tatCaNguoiDung}
+              onDong={() => setPanelDangMo('thong-tin')}
+              onThemThanhVien={themThanhVien}
+              onXoaThanhVien={xoaThanhVien}
+              onCapNhatNhom={(nhomMoi) => setDanhSachNhom((truoc) => truoc.map((n) => (n.id === nhomMoi.id ? nhomMoi : n)))}
+            />
+          )}
         </div>
       )}
 

@@ -130,7 +130,7 @@
   margin-top: 16px;
   width: 100%;
   border: 1px solid var(--mau-loi);
-  background: #fff;
+  background: var(--mau-nen-the);
   color: var(--mau-loi);
   border-radius: var(--ban-kinh-o);
   padding: 8px;
