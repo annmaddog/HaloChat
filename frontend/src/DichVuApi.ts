@@ -305,3 +305,11 @@ export async function XoaBanBe(token: string, idBanBe: string): Promise<KetQuaTh
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function DoiTenHienThi(token: string, tenHienThiMoi: string): Promise<HoSoCaNhan> {
+  return goiApi<HoSoCaNhan>('/nguoidung/ten-hien-thi', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tenHienThi: tenHienThiMoi }),
+  });
+}

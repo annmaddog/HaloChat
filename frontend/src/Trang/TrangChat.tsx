@@ -219,15 +219,15 @@ export function TrangChat() {
         {dangTaiDanhSach && <p>Đang tải...</p>}
         <ul className="trang-chat__danh-sach">
           {danhSachHienThi
-            .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
+            .filter((nd) => nd.tenHienThi.toLowerCase().includes(tuKhoaTimKiem.toLowerCase()))
             .map((nd) => (
               <li key={nd.id}>
                 <button
                   className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
                   onClick={() => setNguoiDangChon(nd)}
                 >
-                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} kichThuoc="nho" />
-                  <span className="trang-chat__ten">{nd.tenTaiKhoan}</span>
+                  <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" />
+                  <span className="trang-chat__ten">{nd.tenHienThi}</span>
                   {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
                 </button>
               </li>
@@ -244,7 +244,7 @@ export function TrangChat() {
       {nguoiDangChon && (
         <KhungTinNhan
           loaiHoiThoai="nguoiDung"
-          tenHienThi={nguoiDangChon.tenTaiKhoan}
+          tenHienThi={nguoiDangChon.tenHienThi}
           phuDe={trangThaiOnline[nguoiDangChon.id] ? 'Đang hoạt động' : undefined}
           danhSachTinNhan={tinNhanDangHien}
           idHienTai={idHienTai}

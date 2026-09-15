@@ -48,7 +48,7 @@ describe('TrangNhom', () => {
     vi.clearAllMocks();
     ketNoiGiaLap.invoke.mockResolvedValue(undefined);
     localStorage.setItem('haloChatToken', 'token-gia-lap');
-    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]);
+    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' }]);
   });
 
   it('hiển thị danh sách nhóm đã tham gia', async () => {
@@ -127,7 +127,7 @@ describe('TrangNhom', () => {
   it('bam vao tieu de header mo PanelThongTinNhom', async () => {
     vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
       { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
-        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'NguyenAn' },
       ], thoiGianTao: '2026-01-01T00:00:00Z' },
     ]);
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
@@ -144,7 +144,7 @@ describe('TrangNhom', () => {
     localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
     vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
       { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
-        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'NguyenAn' },
       ], thoiGianTao: '2026-01-01T00:00:00Z' },
     ]);
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
@@ -163,7 +163,7 @@ describe('TrangNhom', () => {
     localStorage.setItem('haloChatToken', `header.${phanThanToken}.chuky`);
     vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
       { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [
-        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
+        { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'NguyenAn' },
       ], thoiGianTao: '2026-01-01T00:00:00Z' },
     ]);
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);

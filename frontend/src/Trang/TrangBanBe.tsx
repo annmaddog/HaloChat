@@ -95,7 +95,7 @@ export function TrangBanBe() {
   function xoaBan(b: NguoiDungTomTat) {
     if (!token) return;
     setMenuMoChoId(null);
-    if (!window.confirm(`Xóa ${b.tenTaiKhoan} khỏi danh sách bạn bè?`)) return;
+    if (!window.confirm(`Xóa ${b.tenHienThi} khỏi danh sách bạn bè?`)) return;
     XoaBanBe(token, b.id)
       .then(() => setBanBe((truoc) => truoc.filter((x) => x.id !== b.id)))
       .catch((loiBat) => setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Xóa bạn thất bại.'));
@@ -113,7 +113,7 @@ export function TrangBanBe() {
   const idDaGuiLoiMoi = new Set(loiMoiGui.map((l) => l.nguoiNhan.id));
   const ketQuaTimKiem = tatCaNguoiDung
     .filter((nd) => !idDaLaBanBeHoacDangCho.has(nd.id))
-    .filter((nd) => nd.tenTaiKhoan.toLowerCase().includes(tuKhoaTimKiem.trim().toLowerCase()));
+    .filter((nd) => nd.tenHienThi.toLowerCase().includes(tuKhoaTimKiem.trim().toLowerCase()));
 
   return (
     <div className="trang-ban-be-bo-cuc">
@@ -160,9 +160,9 @@ export function TrangBanBe() {
             <ul className="trang-ban-be__danh-sach">
               {ketQuaTimKiem.map((nd) => (
                 <li key={nd.id} className="trang-ban-be__card trang-ban-be__card--tim-kiem">
-                  <Avatar id={nd.id} ten={nd.tenTaiKhoan} />
+                  <Avatar id={nd.id} ten={nd.tenHienThi} />
                   <div className="trang-ban-be__card-thong-tin">
-                    <span className="trang-ban-be__card-ten">{nd.tenTaiKhoan}</span>
+                    <span className="trang-ban-be__card-ten">{nd.tenHienThi}</span>
                     <span className="trang-ban-be__card-email">{nd.email}</span>
                     {!nd.choPhepTinNhanTuNguoiLa && (
                       <span className="trang-ban-be__card-khoa">🔒 Chỉ nhận tin nhắn từ bạn bè</span>
@@ -204,9 +204,9 @@ export function TrangBanBe() {
               <ul className="trang-ban-be__danh-sach">
                 {banBe.map((b) => (
                   <li key={b.id} className="trang-ban-be__card">
-                    <Avatar id={b.id} ten={b.tenTaiKhoan} />
+                    <Avatar id={b.id} ten={b.tenHienThi} />
                     <div className="trang-ban-be__card-thong-tin">
-                      <span className="trang-ban-be__card-ten">{b.tenTaiKhoan}</span>
+                      <span className="trang-ban-be__card-ten">{b.tenHienThi}</span>
                       {trangThaiOnline[b.id] && <span className="trang-ban-be__card-trang-thai">Đang hoạt động</span>}
                     </div>
                     <button
@@ -218,7 +218,7 @@ export function TrangBanBe() {
                     <div className="trang-ban-be__menu-cum">
                       <button
                         className="trang-ban-be__nut-menu"
-                        aria-label={`Thêm thao tác cho ${b.tenTaiKhoan}`}
+                        aria-label={`Thêm thao tác cho ${b.tenHienThi}`}
                         onClick={() => setMenuMoChoId((truoc) => (truoc === b.id ? null : b.id))}
                       >
                         ⋯
@@ -249,9 +249,9 @@ export function TrangBanBe() {
               <ul className="trang-ban-be__danh-sach">
                 {loiMoiDen.map((l) => (
                   <li key={l.id} className="trang-ban-be__card">
-                    <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenTaiKhoan} />
+                    <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenHienThi} />
                     <div className="trang-ban-be__card-thong-tin">
-                      <span className="trang-ban-be__card-ten">{l.nguoiGui.tenTaiKhoan}</span>
+                      <span className="trang-ban-be__card-ten">{l.nguoiGui.tenHienThi}</span>
                       <span className="trang-ban-be__card-phu">Muốn kết bạn với bạn</span>
                     </div>
                     <div className="trang-ban-be__card-hanh-dong">
@@ -270,8 +270,8 @@ export function TrangBanBe() {
       {hoSoDangXem && (
         <aside className="trang-ban-be__ho-so">
           <button className="trang-ban-be__dong-ho-so" onClick={() => setHoSoDangXem(null)} aria-label="Đóng hồ sơ">×</button>
-          <Avatar id={hoSoDangXem.id} ten={hoSoDangXem.tenTaiKhoan} kichThuoc="lon" />
-          <h3>{hoSoDangXem.tenTaiKhoan}</h3>
+          <Avatar id={hoSoDangXem.id} ten={hoSoDangXem.tenHienThi} kichThuoc="lon" />
+          <h3>{hoSoDangXem.tenHienThi}</h3>
           <p className="trang-ban-be__email-ho-so">{hoSoDangXem.email}</p>
           <button
             className="nut-chinh"

@@ -13,16 +13,16 @@ const NHOM_GIA_LAP: Nhom = {
   duongDanAnhDaiDien: null,
   nguoiTaoId: '1',
   thanhVien: [
-    { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
-    { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
+    { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'NguyenAn' },
+    { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
   ],
   thoiGianTao: '2026-01-01T00:00:00Z',
 };
 
 const TAT_CA_NGUOI_DUNG = [
-  { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
-  { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
-  { id: '3', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true },
+  { id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'NguyenAn' },
+  { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+  { id: '3', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeC' },
 ];
 
 function renderPanel(propsGhiDe: Partial<Parameters<typeof PanelQuanLyNhom>[0]> = {}) {

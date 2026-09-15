@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   DangKy, DangNhap, LayDanhSachNguoiDung, LayLichSuTinNhan, TaiLenTep, LoiGoiApi,
   GuiLoiMoiKetBan, ChapNhanLoiMoiKetBan, LayBanBe, LayLoiMoiDen, CapNhatCaiDat, LayDanhSachHoiThoai, TaoNhom,
-  GuiYeuCauQuenMatKhau, DatLaiMatKhau, DoiMatKhau, LaySoTinNhomChuaDoc,
+  GuiYeuCauQuenMatKhau, DatLaiMatKhau, DoiMatKhau, LaySoTinNhomChuaDoc, DoiTenHienThi,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -66,7 +66,7 @@ describe('DichVuApi', () => {
 
   it('LayDanhSachNguoiDung gửi kèm Bearer token và trả về danh sách', async () => {
     const fetchGiaLap = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify([{ id: '1', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]), { status: 200 }),
+      new Response(JSON.stringify([{ id: '1', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' }]), { status: 200 }),
     );
     vi.stubGlobal('fetch', fetchGiaLap);
 
@@ -181,8 +181,8 @@ describe('DichVuApi', () => {
       new Response(
         JSON.stringify({
           id: '1',
-          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
-          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'A' },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'B' },
           trangThai: 'ChoDuyet',
           thoiGianTao: '2026-01-01T00:00:00Z',
         }),
@@ -205,8 +205,8 @@ describe('DichVuApi', () => {
       new Response(
         JSON.stringify({
           id: '1',
-          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true },
-          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
+          nguoiGui: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'A' },
+          nguoiNhan: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'B' },
           trangThai: 'DaChapNhan',
           thoiGianTao: '2026-01-01T00:00:00Z',
         }),
@@ -226,7 +226,7 @@ describe('DichVuApi', () => {
   it('LayBanBe trả về danh sách bạn bè', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }]), { status: 200 })),
+      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'B' }]), { status: 200 })),
     );
 
     const danhSach = await LayBanBe('token-gia-lap');
@@ -347,5 +347,23 @@ describe('DichVuApi', () => {
 
     expect(ketQua.soTinChuaDoc).toBe(5);
     expect(fetchGiaLap.mock.calls[0][0]).toContain('/nhom/so-tin-chua-doc');
+  });
+
+  it('DoiTenHienThi goi dung endpoint PUT va tra ve ho so moi', async () => {
+    const hoSoMoi = {
+      id: '1', tenTaiKhoan: 'nguoia', email: 'a@vi.du', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'Tên Mới',
+    };
+    const fetchGiaLap = vi.fn().mockResolvedValue(new Response(JSON.stringify(hoSoMoi), { status: 200 }));
+    vi.stubGlobal('fetch', fetchGiaLap);
+
+    const ketQua = await DoiTenHienThi('token-gia-lap', 'Tên Mới');
+
+    expect(ketQua).toEqual(hoSoMoi);
+    expect(fetchGiaLap).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/ten-hien-thi'),
+      expect.objectContaining({ method: 'PUT' }),
+    );
   });
 });

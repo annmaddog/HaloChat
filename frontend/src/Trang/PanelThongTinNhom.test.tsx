@@ -13,6 +13,7 @@ function taoNhomGiaLap(soThanhVien: number): Nhom {
     nguoiTaoId: '1',
     thanhVien: Array.from({ length: soThanhVien }, (_, i) => ({
       id: `${i + 1}`, tenTaiKhoan: `NguoiDung${i + 1}`, email: `nd${i + 1}@gmail.com`, choPhepTinNhanTuNguoiLa: true,
+      tenHienThi: `NguoiDung${i + 1}`,
     })),
     thoiGianTao: '2026-01-01T00:00:00Z',
   };

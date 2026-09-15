@@ -92,10 +92,10 @@ export function PanelQuanLyNhom({
         <ul className="panel-quan-ly-nhom__ds-thanh-vien">
           {nhom.thanhVien.map((tv) => (
             <li key={tv.id}>
-              <Avatar id={tv.id} ten={tv.tenTaiKhoan} kichThuoc="nho" />
-              <span>{tv.tenTaiKhoan}{tv.id === nhom.nguoiTaoId ? ' (Admin)' : ''}</span>
+              <Avatar id={tv.id} ten={tv.tenHienThi} kichThuoc="nho" />
+              <span>{tv.tenHienThi}{tv.id === nhom.nguoiTaoId ? ' (Admin)' : ''}</span>
               {tv.id !== nhom.nguoiTaoId && (
-                <button onClick={() => onXoaThanhVien(tv.id)} aria-label={`Xóa ${tv.tenTaiKhoan}`}>×</button>
+                <button onClick={() => onXoaThanhVien(tv.id)} aria-label={`Xóa ${tv.tenHienThi}`}>×</button>
               )}
             </li>
           ))}
@@ -108,7 +108,7 @@ export function PanelQuanLyNhom({
           {tatCaNguoiDung
             .filter((nd) => !nhom.thanhVien.some((tv) => tv.id === nd.id))
             .map((nd) => (
-              <option key={nd.id} value={nd.id}>{nd.tenTaiKhoan}</option>
+              <option key={nd.id} value={nd.id}>{nd.tenHienThi}</option>
             ))}
         </select>
       </div>

@@ -49,10 +49,11 @@ describe('SuDungSoLuongChuaDoc', () => {
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com',
       choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: true,
       choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      tenHienThi: 'A',
     });
     vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai').mockResolvedValue([
-      { nguoiDung: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 2 },
-      { nguoiDung: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 3 },
+      { nguoiDung: { id: 'a', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'A' }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 2 },
+      { nguoiDung: { id: 'b', tenTaiKhoan: 'B', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'B' }, tinNhanCuoi: 'hi', thoiGianTinNhanCuoi: '', soTinChuaDoc: 3 },
     ]);
     vi.spyOn(DichVuApi, 'LayLoiMoiDen').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'LaySoTinNhomChuaDoc').mockResolvedValue({ soTinChuaDoc: 0 });
@@ -67,6 +68,7 @@ describe('SuDungSoLuongChuaDoc', () => {
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com',
       choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: true,
       choPhepThemVaoNhom: true, thongBaoTinNhanMoi: false, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      tenHienThi: 'A',
     });
     const spyHoiThoai = vi.spyOn(DichVuApi, 'LayDanhSachHoiThoai');
     vi.spyOn(DichVuApi, 'LayLoiMoiDen').mockResolvedValue([]);

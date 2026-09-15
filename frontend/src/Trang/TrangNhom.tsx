@@ -321,7 +321,7 @@ export function TrangNhom() {
                         });
                       }}
                     />
-                    {nd.tenTaiKhoan}
+                    {nd.tenHienThi}
                   </label>
                 </li>
               ))}

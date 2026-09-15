@@ -3,6 +3,7 @@ export interface NguoiDungTomTat {
   tenTaiKhoan: string;
   email: string;
   choPhepTinNhanTuNguoiLa: boolean;
+  tenHienThi: string;
 }
 
 export interface KetQuaDangKy {
@@ -63,6 +64,7 @@ export interface HoSoCaNhan {
   thongBaoTinNhanMoi: boolean;
   thongBaoLoiMoiKetBan: boolean;
   thongBaoNhom: boolean;
+  tenHienThi: string;
 }
 
 export interface Nhom {

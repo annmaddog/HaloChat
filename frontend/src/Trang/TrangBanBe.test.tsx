@@ -21,23 +21,23 @@ describe('TrangBanBe', () => {
     vi.restoreAllMocks();
     localStorage.setItem('haloChatToken', 'token-gia-lap');
     vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([
-      { id: 'b', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      { id: 'b', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
     ]);
     vi.spyOn(DichVuApi, 'LayLoiMoiDen').mockResolvedValue([
       {
         id: 'l1',
-        nguoiGui: { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true },
-        nguoiNhan: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true },
+        nguoiGui: { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeC' },
+        nguoiNhan: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'Toi' },
         trangThai: 'ChoDuyet',
         thoiGianTao: new Date().toISOString(),
       },
     ]);
     vi.spyOn(DichVuApi, 'LayLoiMoiGui').mockResolvedValue([]);
     vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([
-      { id: 'b', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true },
-      { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true },
-      { id: 'd', tenTaiKhoan: 'PhamD', email: 'd@gmail.com', choPhepTinNhanTuNguoiLa: true },
-      { id: 'e', tenTaiKhoan: 'HoangE', email: 'e@gmail.com', choPhepTinNhanTuNguoiLa: false },
+      { id: 'b', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+      { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeC' },
+      { id: 'd', tenTaiKhoan: 'PhamD', email: 'd@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'PhamD' },
+      { id: 'e', tenTaiKhoan: 'HoangE', email: 'e@gmail.com', choPhepTinNhanTuNguoiLa: false, tenHienThi: 'HoangE' },
     ]);
     vi.spyOn(DichVuApi, 'LayTrangThaiHoatDong').mockResolvedValue({});
   });
@@ -81,6 +81,26 @@ describe('TrangBanBe', () => {
     expect(screen.queryByRole('button', { name: /Lời mời/ })).not.toBeInTheDocument();
   });
 
+  it('the ket qua tim kiem hien thi tenHienThi thay vi tenTaiKhoan', async () => {
+    const nguoiDung = {
+      id: '9', tenTaiKhoan: 'tentaikhoan9', email: 'x@vi.du',
+      choPhepTinNhanTuNguoiLa: true, tenHienThi: 'Tên Hiển Thị Chín',
+    };
+    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([nguoiDung]);
+    renderTrangBanBe();
+    await screen.findByText('TranBinh');
+
+    await userEvent.type(screen.getByPlaceholderText(/Tìm bạn bè/), 'Hiển Thị');
+
+    expect(await screen.findByText('Tên Hiển Thị Chín')).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByPlaceholderText(/Tìm bạn bè/));
+    await userEvent.type(screen.getByPlaceholderText(/Tìm bạn bè/), 'tentaikhoan9');
+
+    expect(screen.queryByText('Tên Hiển Thị Chín')).not.toBeInTheDocument();
+    expect(await screen.findByText('Không tìm thấy người dùng nào.')).toBeInTheDocument();
+  });
+
   it('nguoi khong cho phep nguoi la nhan tin: chi hien nut Ket ban, khong hien Nhan tin', async () => {
     renderTrangBanBe();
     await screen.findByText('TranBinh');
@@ -107,8 +127,8 @@ describe('TrangBanBe', () => {
   it('sau khi gui loi moi, nut doi thanh Da gui loi moi', async () => {
     const loiMoiMoi = {
       id: 'l2',
-      nguoiGui: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true },
-      nguoiNhan: { id: 'd', tenTaiKhoan: 'PhamD', email: 'd@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      nguoiGui: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'Toi' },
+      nguoiNhan: { id: 'd', tenTaiKhoan: 'PhamD', email: 'd@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'PhamD' },
       trangThai: 'ChoDuyet' as const,
       thoiGianTao: new Date().toISOString(),
     };
@@ -130,8 +150,8 @@ describe('TrangBanBe', () => {
   it('bam Chap nhan goi ChapNhanLoiMoiKetBan', async () => {
     const chapNhanSpy = vi.spyOn(DichVuApi, 'ChapNhanLoiMoiKetBan').mockResolvedValue({
       id: 'l1',
-      nguoiGui: { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true },
-      nguoiNhan: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true },
+      nguoiGui: { id: 'c', tenTaiKhoan: 'LeC', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeC' },
+      nguoiNhan: { id: 'toi', tenTaiKhoan: 'Toi', email: 't@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'Toi' },
       trangThai: 'DaChapNhan',
       thoiGianTao: new Date().toISOString(),
     });
