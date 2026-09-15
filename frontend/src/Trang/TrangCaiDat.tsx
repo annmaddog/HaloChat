@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LayThongTinCaNhan, CapNhatCaiDat, DoiMatKhau, LoiGoiApi } from '../DichVuApi';
+import { LayThongTinCaNhan, CapNhatCaiDat, DoiMatKhau, DoiTenHienThi, LoiGoiApi } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { CongTac } from '../ThanhPhan/CongTac';
 import { apDungGiaoDien, layGiaoDienDaLuu, type GiaoDien } from '../NguCanh/GiaoDien';
@@ -8,7 +8,7 @@ import './TrangCaiDat.css';
 type MucCaiDat = 'tai-khoan' | 'quyen-rieng-tu' | 'thong-bao' | 'bao-mat' | 'giao-dien';
 
 export function TrangCaiDat() {
-  const { token, nguoiDungHienTai, dangXuat } = useXacThuc();
+  const { token, nguoiDungHienTai } = useXacThuc();
   const [mucDangChon, setMucDangChon] = useState<MucCaiDat>('tai-khoan');
 
   const [choPhepTinNhanTuNguoiLa, setChoPhepTinNhanTuNguoiLa] = useState(false);
@@ -17,6 +17,12 @@ export function TrangCaiDat() {
   const [thongBaoTinNhanMoi, setThongBaoTinNhanMoi] = useState(true);
   const [thongBaoLoiMoiKetBan, setThongBaoLoiMoiKetBan] = useState(true);
   const [thongBaoNhom, setThongBaoNhom] = useState(true);
+
+  const [tenHienThi, setTenHienThi] = useState('');
+  const [tenHienThiGoc, setTenHienThiGoc] = useState('');
+  const [dangLuuTen, setDangLuuTen] = useState(false);
+  const [daLuuTen, setDaLuuTen] = useState(false);
+  const [loiDoiTen, setLoiDoiTen] = useState<string | null>(null);
 
   const [dangTai, setDangTai] = useState(true);
   const [dangLuu, setDangLuu] = useState(false);
@@ -42,6 +48,8 @@ export function TrangCaiDat() {
         setThongBaoTinNhanMoi(hoSo.thongBaoTinNhanMoi);
         setThongBaoLoiMoiKetBan(hoSo.thongBaoLoiMoiKetBan);
         setThongBaoNhom(hoSo.thongBaoNhom);
+        setTenHienThi(hoSo.tenHienThi);
+        setTenHienThiGoc(hoSo.tenHienThi);
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được cài đặt.'))
       .finally(() => setDangTai(false));
@@ -119,6 +127,23 @@ export function TrangCaiDat() {
     }
   }
 
+  async function xuLyDoiTenHienThi() {
+    if (!token || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc) return;
+    setLoiDoiTen(null);
+    setDaLuuTen(false);
+    setDangLuuTen(true);
+    try {
+      const hoSoMoi = await DoiTenHienThi(token, tenHienThi.trim());
+      setTenHienThi(hoSoMoi.tenHienThi);
+      setTenHienThiGoc(hoSoMoi.tenHienThi);
+      setDaLuuTen(true);
+    } catch (loiBat) {
+      setLoiDoiTen(loiBat instanceof LoiGoiApi ? loiBat.message : 'Đổi tên hiển thị thất bại.');
+    } finally {
+      setDangLuuTen(false);
+    }
+  }
+
   return (
     <div className="trang-cai-dat">
       <nav className="trang-cai-dat__menu">
@@ -151,6 +176,32 @@ export function TrangCaiDat() {
             <h2>Tài khoản</h2>
             <p><strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan}</p>
             <p><strong>Email:</strong> {nguoiDungHienTai?.email}</p>
+
+            <div className="trang-cai-dat__form-ten-hien-thi">
+              <h3>Tên hiển thị</h3>
+              {loiDoiTen && (
+                <p className="thong-bao-loi" role="alert">
+                  {loiDoiTen}
+                </p>
+              )}
+              {daLuuTen && <p className="trang-cai-dat__da-luu">Đã lưu tên hiển thị.</p>}
+              <div className="panel-quan-ly-nhom__hang-ten">
+                <input
+                  type="text"
+                  value={tenHienThi}
+                  onChange={(su) => { setTenHienThi(su.target.value); setDaLuuTen(false); }}
+                  disabled={dangLuuTen}
+                  maxLength={50}
+                />
+                <button
+                  className="nut-chinh"
+                  onClick={xuLyDoiTenHienThi}
+                  disabled={dangLuuTen || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc}
+                >
+                  {dangLuuTen ? 'Đang lưu...' : 'Lưu tên hiển thị'}
+                </button>
+              </div>
+            </div>
 
             <form className="trang-cai-dat__form-mat-khau" onSubmit={xuLyDoiMatKhau}>
               <h3>Đổi mật khẩu</h3>
@@ -187,8 +238,6 @@ export function TrangCaiDat() {
                 {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
               </button>
             </form>
-
-            <button className="trang-cai-dat__nut-dang-xuat" onClick={dangXuat}>Đăng xuất</button>
           </>
         )}
 

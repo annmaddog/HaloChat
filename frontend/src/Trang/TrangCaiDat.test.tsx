@@ -26,7 +26,7 @@ describe('TrangCaiDat', () => {
   it('tải và hiển thị đúng trạng thái cài đặt ban đầu (mục Quyền riêng tư)', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: true, hienThiTrangThaiHoatDong: false,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
 
     renderTrangCaiDat();
@@ -40,7 +40,7 @@ describe('TrangCaiDat', () => {
   it('bật toggle "cho phép người lạ" gọi CapNhatCaiDat với 6 tham số đúng', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
     const capNhatSpy = vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockResolvedValue(undefined);
 
@@ -58,7 +58,7 @@ describe('TrangCaiDat', () => {
   it('lưu thất bại thì hoàn tác trạng thái công tắc và hiển thị lỗi', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
     vi.spyOn(DichVuApi, 'CapNhatCaiDat').mockRejectedValue(new DichVuApi.LoiGoiApi(500, 'Lưu thất bại.'));
 
@@ -73,21 +73,22 @@ describe('TrangCaiDat', () => {
     await waitFor(() => expect(choPhep).toHaveAttribute('aria-checked', 'false'));
   });
 
-  it('mục Tài khoản hiển thị tên tài khoản/email và nút Đăng xuất (mục mặc định)', async () => {
+  it('mục Tài khoản hiển thị tên tài khoản/email (mục mặc định)', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
 
     renderTrangCaiDat();
 
-    expect(await screen.findByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
+    expect(await screen.findByText('Tên tài khoản:')).toBeInTheDocument();
+    expect(screen.getByText('Email:')).toBeInTheDocument();
   });
 
   it('chuyển sang mục Bảo mật hiển thị nội dung "sắp ra mắt"', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
 
     renderTrangCaiDat();
@@ -99,7 +100,7 @@ describe('TrangCaiDat', () => {
   it('chuyển sang mục Thông báo hiển thị 3 công tắc thông báo', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
 
     renderTrangCaiDat();
@@ -112,7 +113,7 @@ describe('TrangCaiDat', () => {
   it('chuyển sang mục Giao diện và chọn Tối gọi apDungGiaoDien', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
 
     renderTrangCaiDat();
@@ -127,12 +128,12 @@ describe('TrangCaiDat', () => {
   it('doi mat khau thanh cong hien thong bao', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
     vi.spyOn(DichVuApi, 'DoiMatKhau').mockResolvedValue({ thongBao: 'Đã đổi mật khẩu thành công.' });
 
     renderTrangCaiDat();
-    await screen.findByRole('button', { name: 'Đăng xuất' });
+    await screen.findByPlaceholderText('Mật khẩu cũ');
 
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu cũ'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
@@ -145,12 +146,12 @@ describe('TrangCaiDat', () => {
   it('xac nhan mat khau moi khong khop hien loi, khong goi API', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
-      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true,
+      choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
     });
     const doiMatKhauSpy = vi.spyOn(DichVuApi, 'DoiMatKhau');
 
     renderTrangCaiDat();
-    await screen.findByRole('button', { name: 'Đăng xuất' });
+    await screen.findByPlaceholderText('Mật khẩu cũ');
 
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu cũ'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
@@ -159,5 +160,58 @@ describe('TrangCaiDat', () => {
 
     expect(screen.getByText('Xác nhận mật khẩu mới không khớp.')).toBeInTheDocument();
     expect(doiMatKhauSpy).not.toHaveBeenCalled();
+  });
+
+  it('doi ten hien thi thanh cong cap nhat lai input va thong bao', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'nguoia', email: 'a@vi.du', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'Tên Cũ',
+    });
+    const doiTenSpy = vi.spyOn(DichVuApi, 'DoiTenHienThi').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'nguoia', email: 'a@vi.du', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'Tên Mới',
+    });
+
+    renderTrangCaiDat();
+    const oNhap = await screen.findByDisplayValue('Tên Cũ');
+    fireEvent.change(oNhap, { target: { value: 'Tên Mới' } });
+    fireEvent.click(screen.getByRole('button', { name: /lưu tên hiển thị/i }));
+
+    expect(await screen.findByText(/đã lưu tên hiển thị/i)).toBeInTheDocument();
+    expect(doiTenSpy).toHaveBeenCalledWith('token-gia-lap', 'Tên Mới');
+  });
+
+  it('nut luu ten hien thi bi disable khi rong hoac khong doi', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'nguoia', email: 'a@vi.du', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'Tên Cũ',
+    });
+
+    renderTrangCaiDat();
+    const oNhap = await screen.findByDisplayValue('Tên Cũ');
+    const nutLuu = screen.getByRole('button', { name: /lưu tên hiển thị/i });
+    expect(nutLuu).toBeDisabled();
+
+    fireEvent.change(oNhap, { target: { value: '   ' } });
+    expect(nutLuu).toBeDisabled();
+
+    fireEvent.change(oNhap, { target: { value: 'Tên Cũ' } });
+    expect(nutLuu).toBeDisabled();
+  });
+
+  it('khong con nut Dang xuat trong muc Tai khoan', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'nguoia', email: 'a@vi.du', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'Tên Cũ',
+    });
+
+    renderTrangCaiDat();
+    await screen.findByDisplayValue('Tên Cũ');
+
+    expect(screen.queryByRole('button', { name: /đăng xuất/i })).not.toBeInTheDocument();
   });
 });

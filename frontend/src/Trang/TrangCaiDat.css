@@ -49,18 +49,6 @@
   margin-top: 8px;
 }
 
-.trang-cai-dat__nut-dang-xuat {
-  display: block;
-  border: 1px solid var(--mau-loi);
-  background: #fff;
-  color: var(--mau-loi);
-  border-radius: var(--ban-kinh-o);
-  padding: 8px 16px;
-  font-family: inherit;
-  cursor: pointer;
-  font-weight: 600;
-}
-
 .trang-cai-dat__sap-ra-mat {
   color: var(--mau-chu-phu);
   font-size: 13px;
@@ -88,6 +76,28 @@
   border-radius: var(--ban-kinh-o);
   border: 1px solid var(--mau-vien);
   margin-bottom: 12px;
+}
+
+.trang-cai-dat__form-ten-hien-thi {
+  margin-bottom: 28px;
+}
+
+.trang-cai-dat__form-ten-hien-thi .panel-quan-ly-nhom__hang-ten {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.trang-cai-dat__form-ten-hien-thi input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--mau-vien);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  box-sizing: border-box;
 }
 
 .trang-cai-dat__form-mat-khau {
