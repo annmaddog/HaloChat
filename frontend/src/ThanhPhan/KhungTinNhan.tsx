@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
 import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
@@ -114,6 +114,24 @@ export function KhungTinNhan({
     const tep = su.target.files?.[0];
     if (!tep) return;
     onGuiTep(tep, dangTraLoiId);
+    setDangTraLoiId(null);
+  }
+
+  // [Ctrl+V dán ảnh] Chỉ hỗ trợ dán ẢNH từ clipboard (chụp màn hình, copy
+  // ảnh...) — KHÔNG hỗ trợ dán file khác (clipboard trình duyệt hầu như
+  // không mang được file thường dạng "kind: file" trừ ảnh, và người dùng
+  // yêu cầu rõ chỉ cần ảnh). Dán văn bản thường vẫn hoạt động bình thường
+  // (không preventDefault) vì clipboardData.items không có mục "file" ảnh.
+  function xuLyDanClipboard(su: ClipboardEvent<HTMLInputElement>) {
+    const cacMuc = Array.from(su.clipboardData?.items ?? []);
+    const mucAnh = cacMuc.find((muc) => muc.kind === 'file' && muc.type.startsWith('image/'));
+    if (!mucAnh) return;
+
+    const anh = mucAnh.getAsFile();
+    if (!anh) return;
+
+    su.preventDefault();
+    onGuiTep(anh, dangTraLoiId);
     setDangTraLoiId(null);
   }
 
@@ -293,7 +311,7 @@ export function KhungTinNhan({
             su.target.value = '';
           }}
         />
-        <input ref={noiDungRef} type="text" placeholder="Nhập tin nhắn..." disabled={!dangKetNoi} />
+        <input ref={noiDungRef} type="text" placeholder="Nhập tin nhắn..." disabled={!dangKetNoi} onPaste={xuLyDanClipboard} />
         <button type="submit" disabled={!dangKetNoi}>
           Gửi
         </button>

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { KhungTinNhan } from './KhungTinNhan';
@@ -303,5 +303,43 @@ describe('KhungTinNhan', () => {
     rerender(<KhungTinNhan {...PROPS_MAC_DINH} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[tinGhim]} />);
 
     expect(screen.getByText(/Nhớ nộp báo cáo/)).toBeInTheDocument();
+  });
+
+  it('dan anh tu clipboard (Ctrl+V) vao o nhap goi onGuiTep voi file anh', () => {
+    const onGuiTep = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} onGuiTep={onGuiTep} />);
+    const oNhap = screen.getByPlaceholderText('Nhập tin nhắn...');
+    const anhGia = new File(['anh'], 'clipboard.png', { type: 'image/png' });
+
+    fireEvent.paste(oNhap, {
+      clipboardData: { items: [{ type: 'image/png', kind: 'file', getAsFile: () => anhGia }] },
+    });
+
+    expect(onGuiTep).toHaveBeenCalledWith(anhGia, null);
+  });
+
+  it('dan file khong phai anh tu clipboard khong goi onGuiTep', () => {
+    const onGuiTep = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} onGuiTep={onGuiTep} />);
+    const oNhap = screen.getByPlaceholderText('Nhập tin nhắn...');
+    const fileGia = new File(['x'], 'tep.pdf', { type: 'application/pdf' });
+
+    fireEvent.paste(oNhap, {
+      clipboardData: { items: [{ type: 'application/pdf', kind: 'file', getAsFile: () => fileGia }] },
+    });
+
+    expect(onGuiTep).not.toHaveBeenCalled();
+  });
+
+  it('dan van ban thuong tu clipboard khong goi onGuiTep', () => {
+    const onGuiTep = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} onGuiTep={onGuiTep} />);
+    const oNhap = screen.getByPlaceholderText('Nhập tin nhắn...');
+
+    fireEvent.paste(oNhap, {
+      clipboardData: { items: [{ type: 'text/plain', kind: 'string', getAsFile: () => null }] },
+    });
+
+    expect(onGuiTep).not.toHaveBeenCalled();
   });
 });
