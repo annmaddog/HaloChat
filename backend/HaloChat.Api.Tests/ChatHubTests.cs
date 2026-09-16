@@ -74,7 +74,7 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
         await ketNoiB.StartAsync();
 
         var tinNhanGui = await ketNoiA.InvokeAsync<TinNhanDto>(
-            "GuiTinNhan", idNguoiB, null, "Text", "Chào bạn", null, null, null, null);
+            "GuiTinNhan", idNguoiB, null, "Text", "Chào bạn", null, null, null, null, null);
 
         await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -92,7 +92,7 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
 
         await Assert.ThrowsAsync<HubException>(() =>
             ketNoi.InvokeAsync<TinNhanDto>(
-                "GuiTinNhan", "000000000000000000000000", null, "Text", "Xin chào", null, null, null, null));
+                "GuiTinNhan", "000000000000000000000000", null, "Text", "Xin chào", null, null, null, null, null));
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
 
         await using var ketNoiChu = TaoKetNoiHub(tokenChu);
         await ketNoiChu.StartAsync();
-        await ketNoiChu.InvokeAsync<TinNhanDto>("GuiTinNhan", null, nhom!.Id, "Text", "Chào nhóm", null, null, null, null);
+        await ketNoiChu.InvokeAsync<TinNhanDto>("GuiTinNhan", null, nhom!.Id, "Text", "Chào nhóm", null, null, null, null, null);
 
         await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -163,7 +163,7 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
             "/api/nhom", new { TenNhom = "Nhóm Hub 3", MoTa = (string?)null, DuongDanAnhDaiDien = (string?)null, ThanhVienIds = new[] { idThanhVien } }))
             .Content.ReadFromJsonAsync<HaloChat.Api.Dto.NhomDto>();
 
-        await ketNoiChu.InvokeAsync<TinNhanDto>("GuiTinNhan", null, nhom!.Id, "Text", "Chào nhóm mới", null, null, null, null);
+        await ketNoiChu.InvokeAsync<TinNhanDto>("GuiTinNhan", null, nhom!.Id, "Text", "Chào nhóm mới", null, null, null, null, null);
 
         await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
 

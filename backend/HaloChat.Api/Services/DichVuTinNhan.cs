@@ -39,7 +39,7 @@ public class DichVuTinNhan : IDichVuTinNhan
 
     public async Task<TinNhanDto> GuiTinNhanAsync(
         string nguoiGuiId, string? nguoiNhanId, string? nhomId, string loaiTinNhan, string noiDungTinNhan,
-        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile)
+        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile, string? traLoiId)
     {
         // Chuẩn hóa chuỗi rỗng thành null trước khi kiểm tra, để bảo đảm điều
         // kiện XOR ở đây và nhánh rẽ "nhomId is not null" bên dưới luôn đồng
@@ -128,6 +128,47 @@ public class DichVuTinNhan : IDichVuTinNhan
             tinNhan.DaNhan = _quanLyKetNoi.DangOnline(nguoiNhanId!);
         }
 
+        traLoiId = string.IsNullOrEmpty(traLoiId) ? null : traLoiId;
+        if (traLoiId is not null)
+        {
+            if (!ObjectId.TryParse(traLoiId, out _))
+            {
+                throw new TinNhanKhongHopLeException("Tin nhắn được trả lời không hợp lệ.");
+            }
+
+            var tinGoc = await _khoTinNhan.TimTheoIdAsync(traLoiId)
+                ?? throw new TinNhanKhongHopLeException("Tin nhắn được trả lời không tồn tại.");
+
+            var cungHoiThoai = nhomId is not null
+                ? tinGoc.NhomId == nhomId
+                : tinGoc.NhomId is null
+                    && new[] { tinGoc.NguoiGuiId, tinGoc.NguoiNhanId }.Contains(nguoiGuiId)
+                    && new[] { tinGoc.NguoiGuiId, tinGoc.NguoiNhanId }.Contains(nguoiNhanId);
+            if (!cungHoiThoai)
+            {
+                throw new TinNhanKhongHopLeException("Tin nhắn được trả lời không thuộc cuộc trò chuyện này.");
+            }
+
+            var nguoiGuiGoc = await _khoNguoiDung.TimTheoIdAsync(tinGoc.NguoiGuiId);
+            var tenNguoiGuiGoc = nguoiGuiGoc?.TenHienThiThucTe() ?? "Người dùng đã xoá";
+            var noiDungTomTat = tinGoc.LoaiTinNhan switch
+            {
+                LoaiTinNhan.Text => tinGoc.NoiDungTinNhan.Length > 80
+                    ? tinGoc.NoiDungTinNhan[..80] + "…"
+                    : tinGoc.NoiDungTinNhan,
+                LoaiTinNhan.Anh => "[Ảnh]",
+                _ => $"[File] {tinGoc.TenFileGoc}",
+            };
+
+            tinNhan.TraLoi = new TraLoiThongTin
+            {
+                Id = tinGoc.Id,
+                TenNguoiGui = tenNguoiGuiGoc,
+                NoiDungTomTat = noiDungTomTat,
+                LoaiTinNhan = tinGoc.LoaiTinNhan,
+            };
+        }
+
         await _khoTinNhan.ThemMoiAsync(tinNhan);
         return AnhXaDto(tinNhan);
     }
@@ -207,5 +248,6 @@ public class DichVuTinNhan : IDichVuTinNhan
 
     private static TinNhanDto AnhXaDto(TinNhan t) => new(
         t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
-        t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao);
+        t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao,
+        t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString()));
 }

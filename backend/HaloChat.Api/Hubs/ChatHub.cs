@@ -80,13 +80,13 @@ public class ChatHub : Hub
 
     public async Task<TinNhanDto> GuiTinNhan(
         string? nguoiNhanId, string? nhomId, string loaiTinNhan, string noiDungTinNhan,
-        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile)
+        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile, string? traLoiId)
     {
         try
         {
             var tinNhan = await _dichVuTinNhan.GuiTinNhanAsync(
                 NguoiDungHienTaiId, nguoiNhanId, nhomId, loaiTinNhan, noiDungTinNhan,
-                duongDanFile, tenFileGoc, kichThuocFile, loaiFile);
+                duongDanFile, tenFileGoc, kichThuocFile, loaiFile, traLoiId);
 
             if (nhomId is not null)
             {

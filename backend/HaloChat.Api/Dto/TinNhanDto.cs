@@ -13,4 +13,5 @@ public record TinNhanDto(
     string? LoaiFile,
     bool DaDoc,
     bool DaNhan,
-    DateTime ThoiGianTao);
+    DateTime ThoiGianTao,
+    TraLoiThongTinDto? TraLoi);

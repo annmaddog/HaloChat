@@ -6,7 +6,7 @@ public interface IDichVuTinNhan
 {
     Task<TinNhanDto> GuiTinNhanAsync(
         string nguoiGuiId, string? nguoiNhanId, string? nhomId, string loaiTinNhan, string noiDungTinNhan,
-        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile);
+        string? duongDanFile, string? tenFileGoc, long? kichThuocFile, string? loaiFile, string? traLoiId);
 
     Task<List<TinNhanDto>> LayLichSuAsync(string nguoiHienTaiId, string nguoiKiaId, string? truocId, int soLuong);
 
