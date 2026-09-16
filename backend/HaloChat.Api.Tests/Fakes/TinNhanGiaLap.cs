@@ -74,4 +74,40 @@ public class TinNhanGiaLap : ITinNhanRepository
     {
         return Task.FromResult(DanhSach.FirstOrDefault(t => t.Id == id));
     }
+
+    public Task DanhDauThuHoiAsync(string id)
+    {
+        var tinNhan = DanhSach.FirstOrDefault(t => t.Id == id);
+        if (tinNhan is not null) tinNhan.DaThuHoi = true;
+        return Task.CompletedTask;
+    }
+
+    public Task DatGhimAsync(string id, bool daGhim, DateTime? thoiGianGhim)
+    {
+        var tinNhan = DanhSach.FirstOrDefault(t => t.Id == id);
+        if (tinNhan is not null)
+        {
+            tinNhan.DaGhim = daGhim;
+            tinNhan.ThoiGianGhim = thoiGianGhim;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task<List<TinNhan>> LayTinDaGhimTheoNguoiDungAsync(string nguoiA, string nguoiB)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.DaGhim && ((t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA)))
+            .OrderByDescending(t => t.ThoiGianGhim)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
+    public Task<List<TinNhan>> LayTinDaGhimTheoNhomAsync(string nhomId)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId && t.DaGhim)
+            .OrderByDescending(t => t.ThoiGianGhim)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
 }

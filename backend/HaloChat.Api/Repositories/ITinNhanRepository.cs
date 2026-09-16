@@ -32,4 +32,16 @@ public interface ITinNhanRepository
 
     /// <summary>Lấy 1 tin nhắn theo id, null nếu không tồn tại. Dùng để validate trả lời (GĐ6a) và các hành động trên tin nhắn (GĐ6b).</summary>
     Task<TinNhan?> TimTheoIdAsync(string id);
+
+    /// <summary>[GĐ6b] Đánh dấu tin nhắn đã thu hồi.</summary>
+    Task DanhDauThuHoiAsync(string id);
+
+    /// <summary>[GĐ6b] Đặt/bỏ trạng thái ghim. thoiGianGhim = null khi bỏ ghim.</summary>
+    Task DatGhimAsync(string id, bool daGhim, DateTime? thoiGianGhim);
+
+    /// <summary>[GĐ6b] Toàn bộ tin đã ghim giữa 2 người dùng (2 chiều), mới ghim nhất trước.</summary>
+    Task<List<TinNhan>> LayTinDaGhimTheoNguoiDungAsync(string nguoiA, string nguoiB);
+
+    /// <summary>[GĐ6b] Toàn bộ tin đã ghim của 1 nhóm, mới ghim nhất trước.</summary>
+    Task<List<TinNhan>> LayTinDaGhimTheoNhomAsync(string nhomId);
 }

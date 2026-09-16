@@ -89,4 +89,42 @@ public class TinNhanRepository : ITinNhanRepository
     {
         return await _collection.Find(t => t.Id == id).FirstOrDefaultAsync();
     }
+
+    public async Task DanhDauThuHoiAsync(string id)
+    {
+        var boLoc = Builders<TinNhan>.Filter.Eq(t => t.Id, id);
+        var capNhat = Builders<TinNhan>.Update.Set(t => t.DaThuHoi, true);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task DatGhimAsync(string id, bool daGhim, DateTime? thoiGianGhim)
+    {
+        var boLoc = Builders<TinNhan>.Filter.Eq(t => t.Id, id);
+        var capNhat = Builders<TinNhan>.Update
+            .Set(t => t.DaGhim, daGhim)
+            .Set(t => t.ThoiGianGhim, thoiGianGhim);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task<List<TinNhan>> LayTinDaGhimTheoNguoiDungAsync(string nguoiA, string nguoiB)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.DaGhim, true),
+            Builders<TinNhan>.Filter.Or(
+                Builders<TinNhan>.Filter.And(
+                    Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiA),
+                    Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiB)),
+                Builders<TinNhan>.Filter.And(
+                    Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiB),
+                    Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiA))));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianGhim).ToListAsync();
+    }
+
+    public async Task<List<TinNhan>> LayTinDaGhimTheoNhomAsync(string nhomId)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
+            Builders<TinNhan>.Filter.Eq(t => t.DaGhim, true));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianGhim).ToListAsync();
+    }
 }

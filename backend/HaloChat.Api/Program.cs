@@ -27,6 +27,7 @@ builder.Services.AddScoped<IDichVuMatKhau, DichVuMatKhau>();
 builder.Services.AddScoped<IDichVuJwt, DichVuJwt>();
 builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
 builder.Services.AddScoped<ITinNhanRepository, TinNhanRepository>();
+builder.Services.AddScoped<ITinNhanAnRepository, TinNhanAnRepository>();
 builder.Services.AddScoped<ILoiMoiKetBanRepository, LoiMoiKetBanRepository>();
 builder.Services.AddScoped<INhomRepository, NhomRepository>();
 builder.Services.AddScoped<IDichVuNhom, DichVuNhom>();

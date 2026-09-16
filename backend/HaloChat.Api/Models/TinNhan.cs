@@ -49,4 +49,12 @@ public class TinNhan
     // [GĐ6a] Snapshot thông tin tin gốc tại thời điểm trả lời — KHÔNG
     // tham chiếu sống. Null nếu tin này không phải trả lời tin nào.
     public TraLoiThongTin? TraLoi { get; set; }
+
+    // [GĐ6b] Thu hồi: chỉ người gửi, không giới hạn thời gian. Khi true,
+    // tầng DTO (AnhXaDto) LUÔN trả nội dung/file bằng placeholder.
+    public bool DaThuHoi { get; set; } = false;
+
+    // [GĐ6b] Ghim: ai trong hội thoại/nhóm cũng ghim/bỏ ghim được.
+    public bool DaGhim { get; set; } = false;
+    public DateTime? ThoiGianGhim { get; set; }
 }
