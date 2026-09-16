@@ -297,4 +297,75 @@ public class NguoiDungControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
     }
+
+    [Fact]
+    public async Task DoiAnhDaiDien_DangNhap_CapNhatVaTraVeHoSoMoi()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky",
+            new { tenTaiKhoan = "doianh1", email = "doianh1@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap",
+            new { tenDangNhap = "doianh1", matKhau = "MatKhau123!" });
+        var ketQuaDangNhap = await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/anh-dai-dien",
+            new { duongDanAnhDaiDien = "/api/tinnhan/file/abc123" });
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
+        Assert.Equal("/api/tinnhan/file/abc123", hoSo!.DuongDanAnhDaiDien);
+    }
+
+    [Fact]
+    public async Task DoiAnhDaiDien_ChuaDangNhap_TraVe401()
+    {
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/anh-dai-dien",
+            new { duongDanAnhDaiDien = "/api/tinnhan/file/abc123" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task DoiAnhDaiDien_ChuoiRong_TraVe400()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky",
+            new { tenTaiKhoan = "doianh2", email = "doianh2@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap",
+            new { tenDangNhap = "doianh2", matKhau = "MatKhau123!" });
+        var ketQuaDangNhap = await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+
+        var phanHoi = await _client.PutAsJsonAsync("/api/nguoidung/anh-dai-dien",
+            new { duongDanAnhDaiDien = "" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task DanhDauHoanTatHoSo_DangNhap_SetDungCoVaTraVeHoSoMoi()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky",
+            new { tenTaiKhoan = "hoantat2", email = "hoantat2@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap",
+            new { tenDangNhap = "hoantat2", matKhau = "MatKhau123!" });
+        var ketQuaDangNhap = await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>();
+        _client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ketQuaDangNhap!.Token);
+
+        var phanHoi = await _client.PostAsync("/api/nguoidung/danh-dau-hoan-tat-ho-so", null);
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var hoSo = await phanHoi.Content.ReadFromJsonAsync<HoSoCaNhanDto>();
+        Assert.True(hoSo!.DaXemHoanTatHoSo);
+    }
+
+    [Fact]
+    public async Task DanhDauHoanTatHoSo_ChuaDangNhap_TraVe401()
+    {
+        var phanHoi = await _client.PostAsync("/api/nguoidung/danh-dau-hoan-tat-ho-so", null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, phanHoi.StatusCode);
+    }
 }

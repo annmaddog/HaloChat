@@ -101,7 +101,7 @@ public class DichVuKetBan : IDichVuKetBan
             var ban = await _khoNguoiDung.TimTheoIdAsync(idBan);
             if (ban is not null)
             {
-                ketQua.Add(new NguoiDungTomTatDto(ban.Id, ban.TenTaiKhoan, ban.Email, ban.ChoPhepTinNhanTuNguoiLa, ban.TenHienThiThucTe()));
+                ketQua.Add(new NguoiDungTomTatDto(ban.Id, ban.TenTaiKhoan, ban.Email, ban.ChoPhepTinNhanTuNguoiLa, ban.TenHienThiThucTe(), ban.DuongDanAnhDaiDien));
             }
         }
         return ketQua;
@@ -130,8 +130,8 @@ public class DichVuKetBan : IDichVuKetBan
 
     private static LoiMoiKetBanDto AnhXaDto(LoiMoiKetBan l, NguoiDung nguoiGui, NguoiDung nguoiNhan) => new(
         l.Id,
-        new NguoiDungTomTatDto(nguoiGui.Id, nguoiGui.TenTaiKhoan, nguoiGui.Email, nguoiGui.ChoPhepTinNhanTuNguoiLa, nguoiGui.TenHienThiThucTe()),
-        new NguoiDungTomTatDto(nguoiNhan.Id, nguoiNhan.TenTaiKhoan, nguoiNhan.Email, nguoiNhan.ChoPhepTinNhanTuNguoiLa, nguoiNhan.TenHienThiThucTe()),
+        new NguoiDungTomTatDto(nguoiGui.Id, nguoiGui.TenTaiKhoan, nguoiGui.Email, nguoiGui.ChoPhepTinNhanTuNguoiLa, nguoiGui.TenHienThiThucTe(), nguoiGui.DuongDanAnhDaiDien),
+        new NguoiDungTomTatDto(nguoiNhan.Id, nguoiNhan.TenTaiKhoan, nguoiNhan.Email, nguoiNhan.ChoPhepTinNhanTuNguoiLa, nguoiNhan.TenHienThiThucTe(), nguoiNhan.DuongDanAnhDaiDien),
         l.TrangThai.ToString(),
         l.ThoiGianTao);
 

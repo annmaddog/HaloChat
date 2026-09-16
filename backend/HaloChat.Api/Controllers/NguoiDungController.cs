@@ -108,6 +108,39 @@ public class NguoiDungController : ControllerBase
         return hoSo is null ? NotFound() : Ok(hoSo);
     }
 
+    [HttpPut("anh-dai-dien")]
+    [Authorize]
+    public async Task<IActionResult> DoiAnhDaiDien([FromBody] DoiAnhDaiDienRequest yeuCau)
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(yeuCau.DuongDanAnhDaiDien))
+        {
+            return BadRequest(new { thongBao = "Đường dẫn ảnh không hợp lệ." });
+        }
+
+        var hoSo = await _dichVu.DoiAnhDaiDienAsync(idHienTai, yeuCau.DuongDanAnhDaiDien);
+        return hoSo is null ? NotFound() : Ok(hoSo);
+    }
+
+    [HttpPost("danh-dau-hoan-tat-ho-so")]
+    [Authorize]
+    public async Task<IActionResult> DanhDauHoanTatHoSo()
+    {
+        var idHienTai = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (idHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        var hoSo = await _dichVu.DanhDauHoanTatHoSoAsync(idHienTai);
+        return hoSo is null ? NotFound() : Ok(hoSo);
+    }
+
     [HttpGet("trang-thai")]
     [Authorize]
     public async Task<IActionResult> LayTrangThaiHoatDong([FromQuery] string ids)

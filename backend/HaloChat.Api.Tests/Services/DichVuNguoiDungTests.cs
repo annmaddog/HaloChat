@@ -349,4 +349,49 @@ public class DichVuNguoiDungTests
 
         Assert.False(ketQua.ThanhCong);
     }
+
+    [Fact]
+    public async Task DoiAnhDaiDienAsync_ThanhCong_CapNhatDungField()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "AnhDaiDien1", Email = "anhdaidien1@gmail.com" };
+        kho.DanhSach.Add(nguoiDung);
+
+        var hoSo = await dichVu.DoiAnhDaiDienAsync(nguoiDung.Id, "/api/tinnhan/file/abc123");
+
+        Assert.Equal("/api/tinnhan/file/abc123", hoSo!.DuongDanAnhDaiDien);
+    }
+
+    [Fact]
+    public async Task DoiAnhDaiDienAsync_IdKhongTonTai_TraVeNull()
+    {
+        var (dichVu, _, _) = TaoDichVu();
+
+        var hoSo = await dichVu.DoiAnhDaiDienAsync("507f1f77bcf86cd799439099", "/api/tinnhan/file/abc123");
+
+        Assert.Null(hoSo);
+    }
+
+    [Fact]
+    public async Task DanhDauHoanTatHoSoAsync_ThanhCong_SetDungCoGiuNguyenFieldKhac()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        var nguoiDung = new NguoiDung { TenTaiKhoan = "HoanTat1", Email = "hoantat1@gmail.com", TenHienThi = "Tên Riêng" };
+        kho.DanhSach.Add(nguoiDung);
+
+        var hoSo = await dichVu.DanhDauHoanTatHoSoAsync(nguoiDung.Id);
+
+        Assert.True(hoSo!.DaXemHoanTatHoSo);
+        Assert.Equal("Tên Riêng", hoSo.TenHienThi);
+    }
+
+    [Fact]
+    public async Task DanhDauHoanTatHoSoAsync_IdKhongTonTai_TraVeNull()
+    {
+        var (dichVu, _, _) = TaoDichVu();
+
+        var hoSo = await dichVu.DanhDauHoanTatHoSoAsync("507f1f77bcf86cd799439099");
+
+        Assert.Null(hoSo);
+    }
 }

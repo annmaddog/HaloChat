@@ -83,7 +83,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         var tatCa = await _kho.LayTatCaAsync();
         return tatCa
             .Where(nd => nd.Id != idHienTai)
-            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa, nd.TenHienThiThucTe()))
+            .Select(nd => new NguoiDungTomTatDto(nd.Id, nd.TenTaiKhoan, nd.Email, nd.ChoPhepTinNhanTuNguoiLa, nd.TenHienThiThucTe(), nd.DuongDanAnhDaiDien))
             .ToList();
     }
 
@@ -103,12 +103,25 @@ public class DichVuNguoiDung : IDichVuNguoiDung
                 nguoiDung.Id, nguoiDung.TenTaiKhoan, nguoiDung.Email,
                 nguoiDung.ChoPhepTinNhanTuNguoiLa, nguoiDung.HienThiTrangThaiHoatDong,
                 nguoiDung.ChoPhepThemVaoNhom, nguoiDung.ThongBaoTinNhanMoi,
-                nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom, nguoiDung.TenHienThiThucTe());
+                nguoiDung.ThongBaoLoiMoiKetBan, nguoiDung.ThongBaoNhom, nguoiDung.TenHienThiThucTe(),
+                nguoiDung.DuongDanAnhDaiDien, nguoiDung.DaXemHoanTatHoSo);
     }
 
     public async Task<HoSoCaNhanDto?> DoiTenHienThiAsync(string idHienTai, string tenHienThiMoi)
     {
         await _kho.CapNhatTenHienThiAsync(idHienTai, tenHienThiMoi.Trim());
+        return await LayThongTinCaNhanAsync(idHienTai);
+    }
+
+    public async Task<HoSoCaNhanDto?> DoiAnhDaiDienAsync(string idHienTai, string duongDanAnhDaiDien)
+    {
+        await _kho.CapNhatAnhDaiDienAsync(idHienTai, duongDanAnhDaiDien);
+        return await LayThongTinCaNhanAsync(idHienTai);
+    }
+
+    public async Task<HoSoCaNhanDto?> DanhDauHoanTatHoSoAsync(string idHienTai)
+    {
+        await _kho.DanhDauHoanTatHoSoAsync(idHienTai);
         return await LayThongTinCaNhanAsync(idHienTai);
     }
 

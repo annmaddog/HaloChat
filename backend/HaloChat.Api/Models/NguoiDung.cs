@@ -59,4 +59,15 @@ public class NguoiDung
 
     /// <summary>Tên thực sự dùng để hiển thị — TenHienThi nếu đã đặt, không thì TenTaiKhoan.</summary>
     public string TenHienThiThucTe() => string.IsNullOrWhiteSpace(TenHienThi) ? TenTaiKhoan : TenHienThi;
+
+    // [GĐ8] Null = chưa từng đặt ảnh đại diện — Avatar.tsx tự fallback
+    // về chữ cái đầu của TenHienThiThucTe(). Cùng kiểu dữ liệu (đường
+    // dẫn tới GridFS qua endpoint upload chung) với Nhom.DuongDanAnhDaiDien.
+    public string? DuongDanAnhDaiDien { get; set; }
+
+    // [GĐ8] Cờ đã-xem, KHÔNG phải cờ đã-hoàn-tất — set true ngay khi
+    // đóng modal "Hoàn tất hồ sơ" theo BẤT KỲ cách nào (bấm Hoàn tất
+    // hay bấm X), để modal không bao giờ tự hiện lại sau lần đầu, kể
+    // cả khi người dùng bỏ qua không nhập gì.
+    public bool DaXemHoanTatHoSo { get; set; } = false;
 }

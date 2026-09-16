@@ -116,4 +116,18 @@ public class NguoiDungRepository : INguoiDungRepository
         var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.TenHienThi, tenHienThi);
         await _collection.UpdateOneAsync(boLoc, capNhat);
     }
+
+    public async Task CapNhatAnhDaiDienAsync(string id, string duongDanAnhDaiDien)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.DuongDanAnhDaiDien, duongDanAnhDaiDien);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
+
+    public async Task DanhDauHoanTatHoSoAsync(string id)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.DaXemHoanTatHoSo, true);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
 }

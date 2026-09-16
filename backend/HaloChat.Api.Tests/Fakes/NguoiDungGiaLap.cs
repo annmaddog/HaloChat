@@ -103,4 +103,24 @@ public class NguoiDungGiaLap : INguoiDungRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task CapNhatAnhDaiDienAsync(string id, string duongDanAnhDaiDien)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.DuongDanAnhDaiDien = duongDanAnhDaiDien;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task DanhDauHoanTatHoSoAsync(string id)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.DaXemHoanTatHoSo = true;
+        }
+        return Task.CompletedTask;
+    }
 }

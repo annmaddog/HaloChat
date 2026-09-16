@@ -15,4 +15,6 @@ public interface IDichVuNguoiDung
     Task<KetQuaDatLaiMatKhauDto> DatLaiMatKhauAsync(string email, string maOtp, string matKhauMoi);
     Task<KetQuaDoiMatKhauDto> DoiMatKhauAsync(string idHienTai, string matKhauCu, string matKhauMoi);
     Task<HoSoCaNhanDto?> DoiTenHienThiAsync(string idHienTai, string tenHienThiMoi);
+    Task<HoSoCaNhanDto?> DoiAnhDaiDienAsync(string idHienTai, string duongDanAnhDaiDien);
+    Task<HoSoCaNhanDto?> DanhDauHoanTatHoSoAsync(string idHienTai);
 }
