@@ -316,18 +316,18 @@ export function TrangCaiDat() {
                   required
                   minLength={6}
                 />
-                <TruongNhap
-                  nhan="Xác nhận mật khẩu mới"
-                  anNhan
-                  bieuTuong={<BieuTuongKhoa />}
-                  coTheAn
-                  placeholder="Xác nhận mật khẩu mới"
-                  value={xacNhanMatKhauMoi}
-                  onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
-                  required
-                  minLength={6}
-                />
-                <div className="trang-cai-dat__hang-nut">
+                <div className="trang-cai-dat__hang-mk-cuoi">
+                  <TruongNhap
+                    nhan="Xác nhận mật khẩu mới"
+                    anNhan
+                    bieuTuong={<BieuTuongKhoa />}
+                    coTheAn
+                    placeholder="Xác nhận mật khẩu mới"
+                    value={xacNhanMatKhauMoi}
+                    onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
+                    required
+                    minLength={6}
+                  />
                   <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
                     <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Cập nhật mật khẩu'}
                   </button>
