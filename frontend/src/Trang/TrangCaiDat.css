@@ -109,46 +109,8 @@
   box-sizing: border-box;
 }
 
-.trang-cai-dat__the-tk {
-  padding: 0;
-  overflow: hidden;
-}
-
-.trang-cai-dat__ngan {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
-  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
-  color: #fff;
-}
-
-.trang-cai-dat__ngan-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.trang-cai-dat__ngan-icon svg {
-  width: 15px;
-  height: 15px;
-}
-
-.trang-cai-dat__ngan-tieu-de {
-  margin: 0;
-  font-size: 16px;
-  color: #fff;
-}
-
 .trang-cai-dat__than {
-  padding: 14px 20px;
-  box-sizing: border-box;
+  margin-top: 10px;
 }
 
 .trang-cai-dat__khoi-hep {

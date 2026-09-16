@@ -202,10 +202,10 @@ export function TrangCaiDat() {
 
         {mucDangChon === 'tai-khoan' && (
           <>
-            <div className="trang-cai-dat__the trang-cai-dat__the-tk">
-              <div className="trang-cai-dat__ngan">
-                <span className="trang-cai-dat__ngan-icon"><BieuTuongNguoiDung /></span>
-                <h2 className="trang-cai-dat__ngan-tieu-de">Thông tin tài khoản</h2>
+            <div className="trang-cai-dat__the">
+              <div className="trang-cai-dat__the-dau">
+                <span className="trang-cai-dat__the-icon"><BieuTuongNguoiDung /></span>
+                <h2 className="trang-cai-dat__the-tieu-de">Thông tin tài khoản</h2>
               </div>
 
               <div className="trang-cai-dat__than">
