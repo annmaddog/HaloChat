@@ -18,6 +18,11 @@ const PROPS_MAC_DINH = {
   onGuiTep: () => {},
   dangTaiTep: false,
   loi: null,
+  onThuHoi: () => {},
+  onGhim: () => {},
+  onBoGhim: () => {},
+  onAn: () => {},
+  danhSachTinNhanGhim: [],
 };
 
 const TIN_NHAN_MAU = {
@@ -35,6 +40,9 @@ const TIN_NHAN_MAU = {
   daNhan: false,
   thoiGianTao: '2026-01-01T10:30:00.000Z',
   traLoi: null,
+  daThuHoi: false,
+  daGhim: false,
+  thoiGianGhim: null,
 };
 
 describe('KhungTinNhan', () => {
@@ -80,6 +88,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
@@ -96,6 +105,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
     await userEvent.click(screen.getByRole('button', { name: 'Trả lời tin nhắn này' }));
@@ -111,6 +121,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     const onGuiVanBan = vi.fn();
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" onGuiVanBan={onGuiVanBan} />);
@@ -128,6 +139,7 @@ describe('KhungTinNhan', () => {
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
       thoiGianTao: '2026-01-01T00:01:00Z',
       traLoi: { id: 'm1', tenNguoiGui: 'Nguoi Kia', noiDungTomTat: 'Xin chào bạn', loaiTinNhan: 'Text' },
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinTraLoi]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
@@ -143,12 +155,14 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai A', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     const tinB: TinNhan = {
       id: 'b1', nguoiGuiId: 'nguoi-b', nguoiNhanId: 'toi', nhomId: null,
       loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai B', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     const onGuiVanBan = vi.fn();
     const { rerender } = render(
@@ -173,10 +187,89 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'File', noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439099',
       tenFileGoc: 'bao-cao.docx', kichThuocFile: 15360, loaiFile: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinFile]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
     expect(screen.getByText('bao-cao.docx')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Tải xuống bao-cao.docx' })).toBeInTheDocument();
+  });
+
+  it('bam ... hien menu voi dung cac muc theo trang thai tin nhan', async () => {
+    const tinCuaMinh = { ...TIN_NHAN_MAU, id: 'm1', nguoiGuiId: '1', loaiTinNhan: 'Text' as const };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinCuaMinh]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+
+    expect(screen.getByRole('button', { name: 'Ghim' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thu hồi tin nhắn' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+  });
+
+  it('tin da thu hoi an placeholder thay vi noi dung goc', () => {
+    const tinDaThuHoi = { ...TIN_NHAN_MAU, id: 'm2', daThuHoi: true, noiDungTinNhan: 'noi dung cu' };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinDaThuHoi]} idHienTai="1" danhSachTinNhanGhim={[]} onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} />);
+
+    expect(screen.getByText('Tin nhắn đã được thu hồi.')).toBeInTheDocument();
+    expect(screen.queryByText('noi dung cu')).not.toBeInTheDocument();
+  });
+
+  it('tin da thu hoi khong con muc Thu hoi/Ghim/Luu trong menu', async () => {
+    const tinDaThuHoi = { ...TIN_NHAN_MAU, id: 'm2', nguoiGuiId: '1', daThuHoi: true };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinDaThuHoi]} idHienTai="1" danhSachTinNhanGhim={[]} onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+
+    expect(screen.queryByRole('button', { name: 'Ghim' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thu hồi tin nhắn' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+  });
+
+  it('bam Thu hoi goi onThuHoi dung id', async () => {
+    const tinCuaMinh = { ...TIN_NHAN_MAU, id: 'm1', nguoiGuiId: '1' };
+    const onThuHoi = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinCuaMinh]} idHienTai="1" onThuHoi={onThuHoi} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Thu hồi tin nhắn' }));
+
+    expect(onThuHoi).toHaveBeenCalledWith('m1');
+  });
+
+  it('bam Ghim goi onGhim, bam lai (da ghim) goi onBoGhim', async () => {
+    const tinChuaGhim = { ...TIN_NHAN_MAU, id: 'm1', daGhim: false };
+    const onGhim = vi.fn();
+    const { rerender } = render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinChuaGhim]} idHienTai="1" onThuHoi={() => {}} onGhim={onGhim} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ghim' }));
+    expect(onGhim).toHaveBeenCalledWith('m1');
+
+    const onBoGhim = vi.fn();
+    const tinDaGhim = { ...TIN_NHAN_MAU, id: 'm1', daGhim: true };
+    rerender(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinDaGhim]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={onBoGhim} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Bỏ ghim' }));
+    expect(onBoGhim).toHaveBeenCalledWith('m1');
+  });
+
+  it('bam Xoa goi onAn dung id', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm1' };
+    const onAn = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={onAn} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Xóa' }));
+
+    expect(onAn).toHaveBeenCalledWith('m1');
+  });
+
+  it('banner ghim hien dung danh sach tin da ghim, an khi rong', () => {
+    const { rerender } = render(<KhungTinNhan {...PROPS_MAC_DINH} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    expect(screen.queryByText(/^\[File\]|^\[Ảnh\]/)).not.toBeInTheDocument();
+
+    const tinGhim = { ...TIN_NHAN_MAU, id: 'm1', nguoiGuiId: 'nguoi-kia', noiDungTinNhan: 'Nhớ nộp báo cáo' };
+    rerender(<KhungTinNhan {...PROPS_MAC_DINH} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[tinGhim]} />);
+
+    expect(screen.getByText(/Nhớ nộp báo cáo/)).toBeInTheDocument();
   });
 });

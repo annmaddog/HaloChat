@@ -313,3 +313,22 @@ export async function DoiTenHienThi(token: string, tenHienThiMoi: string): Promi
     body: JSON.stringify({ tenHienThi: tenHienThiMoi }),
   });
 }
+
+export async function AnTinNhan(token: string, id: string): Promise<void> {
+  await goiApi<{ thongBao: string }>(`/tinnhan/${id}/an`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayTinDaGhimTheoNguoiDung(token: string, doiTacId: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nguoi-dung/${doiTacId}/ghim`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayTinDaGhimTheoNhom(token: string, nhomId: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}/ghim`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

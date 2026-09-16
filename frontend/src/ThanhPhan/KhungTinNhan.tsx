@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -42,17 +42,24 @@ interface PropsKhungTinNhan {
   onQuayLai?: () => void;
   onBamTieuDe?: () => void;
   layTenNguoiGui?: (nguoiGuiId: string) => string;
+  onThuHoi: (id: string) => void;
+  onGhim: (id: string) => void;
+  onBoGhim: (id: string) => void;
+  onAn: (id: string) => void;
+  danhSachTinNhanGhim: TinNhan[];
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
+  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
   const noiDungRef = useRef<HTMLInputElement | null>(null);
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
+  const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
 
   useEffect(() => {
     setDangTraLoiId(null);
@@ -117,6 +124,20 @@ export function KhungTinNhan({
         {!dangKetNoi && <span className="khung-tin-nhan__mat-ket-noi">Mất kết nối realtime...</span>}
       </header>
 
+      {danhSachTinNhanGhim.length > 0 && (
+        <div className="khung-tin-nhan__banner-ghim">
+          {danhSachTinNhanGhim.map((tn) => (
+            <div key={tn.id} className="khung-tin-nhan__dong-ghim">
+              <BieuTuongGhim />
+              <span className="khung-tin-nhan__dong-ghim-noi-dung">
+                {layTenNguoiGui ? layTenNguoiGui(tn.nguoiGuiId) : 'một người dùng'}: {trichNoiDungTinNhan(tn)}
+              </span>
+              <button onClick={() => onBoGhim(tn.id)} aria-label="Bỏ ghim">×</button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="khung-tin-nhan__danh-sach-tin-nhan">
         {coTheTaiThem && (
           <button className="khung-tin-nhan__nut-tai-them" onClick={onTaiThemLichSuCu} disabled={dangTaiLichSu}>
@@ -136,6 +157,33 @@ export function KhungTinNhan({
                 >
                   <BieuTuongTraLoi />
                 </button>
+                <button
+                  type="button"
+                  className="khung-tin-nhan__nut-them"
+                  onClick={(su) => { su.stopPropagation(); setMenuMoChoTinNhanId((truoc) => (truoc === tn.id ? null : tn.id)); }}
+                  aria-label="Thêm tùy chọn"
+                >
+                  <BieuTuongBaCham />
+                </button>
+                {menuMoChoTinNhanId === tn.id && (
+                  <div className="khung-tin-nhan__menu" onClick={(su) => su.stopPropagation()}>
+                    {!tn.daThuHoi && tn.loaiTinNhan !== 'Text' && (
+                      <a href={`${DIA_CHI_GOC}${tn.duongDanFile}`} download target="_blank" rel="noreferrer" onClick={() => setMenuMoChoTinNhanId(null)}>
+                        Lưu về thiết bị
+                      </a>
+                    )}
+                    {!tn.daThuHoi && !tn.daGhim && (
+                      <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
+                    )}
+                    {!tn.daThuHoi && tn.daGhim && (
+                      <button onClick={() => { onBoGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Bỏ ghim</button>
+                    )}
+                    {laCuaMinh && !tn.daThuHoi && (
+                      <button onClick={() => { onThuHoi(tn.id); setMenuMoChoTinNhanId(null); }}>Thu hồi tin nhắn</button>
+                    )}
+                    <button className="khung-tin-nhan__menu-nguy-hiem" onClick={() => { onAn(tn.id); setMenuMoChoTinNhanId(null); }}>Xóa</button>
+                  </div>
+                )}
               </div>
               <div
                 className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
@@ -149,29 +197,35 @@ export function KhungTinNhan({
                     <span className="khung-tin-nhan__trich-dan-noi-dung">{tn.traLoi.noiDungTomTat}</span>
                   </div>
                 )}
-                {tn.loaiTinNhan === 'Anh' && (
-                  <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
+                {tn.daThuHoi ? (
+                  <span className="khung-tin-nhan__da-thu-hoi">Tin nhắn đã được thu hồi.</span>
+                ) : (
+                  <>
+                    {tn.loaiTinNhan === 'Anh' && (
+                      <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
+                    )}
+                    {tn.loaiTinNhan === 'File' && (
+                      <div className="khung-tin-nhan__file">
+                        <span className="khung-tin-nhan__file-icon"><BieuTuongTaiLieu /></span>
+                        <div className="khung-tin-nhan__file-thong-tin">
+                          <span className="khung-tin-nhan__file-ten">{tn.tenFileGoc}</span>
+                          <span className="khung-tin-nhan__file-size">{dinhDangKichThuoc(tn.kichThuocFile ?? 0)}</span>
+                        </div>
+                        <a
+                          className="khung-tin-nhan__file-nut-tai"
+                          href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(su) => su.stopPropagation()}
+                          aria-label={`Tải xuống ${tn.tenFileGoc}`}
+                        >
+                          <BieuTuongTai />
+                        </a>
+                      </div>
+                    )}
+                    {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
+                  </>
                 )}
-                {tn.loaiTinNhan === 'File' && (
-                  <div className="khung-tin-nhan__file">
-                    <span className="khung-tin-nhan__file-icon"><BieuTuongTaiLieu /></span>
-                    <div className="khung-tin-nhan__file-thong-tin">
-                      <span className="khung-tin-nhan__file-ten">{tn.tenFileGoc}</span>
-                      <span className="khung-tin-nhan__file-size">{dinhDangKichThuoc(tn.kichThuocFile ?? 0)}</span>
-                    </div>
-                    <a
-                      className="khung-tin-nhan__file-nut-tai"
-                      href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(su) => su.stopPropagation()}
-                      aria-label={`Tải xuống ${tn.tenFileGoc}`}
-                    >
-                      <BieuTuongTai />
-                    </a>
-                  </div>
-                )}
-                {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
                 {tinDangMoId === tn.id && (
                   <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>
                 )}

@@ -31,6 +31,9 @@ export interface TinNhan {
   daNhan: boolean;
   thoiGianTao: string;
   traLoi: { id: string; tenNguoiGui: string; noiDungTomTat: string; loaiTinNhan: LoaiTinNhan } | null;
+  daThuHoi: boolean;
+  daGhim: boolean;
+  thoiGianGhim: string | null;
 }
 
 export interface TepTinDaTaiLen {
