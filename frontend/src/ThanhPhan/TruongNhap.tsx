@@ -6,9 +6,10 @@ interface TruongNhapProps extends InputHTMLAttributes<HTMLInputElement> {
   nhan: string;
   bieuTuong: ReactNode;
   coTheAn?: boolean;
+  anNhan?: boolean;
 }
 
-export function TruongNhap({ nhan, bieuTuong, coTheAn, type, id, ...conLai }: TruongNhapProps) {
+export function TruongNhap({ nhan, bieuTuong, coTheAn, anNhan, type, id, ...conLai }: TruongNhapProps) {
   const idTuSinh = useId();
   const [hienMatKhau, setHienMatKhau] = useState(false);
   const maId = id ?? idTuSinh;
@@ -16,7 +17,7 @@ export function TruongNhap({ nhan, bieuTuong, coTheAn, type, id, ...conLai }: Tr
 
   return (
     <label className="truong-nhap" htmlFor={maId}>
-      <span className="truong-nhap__nhan">{nhan}</span>
+      <span className={`truong-nhap__nhan${anNhan ? ' truong-nhap__nhan--an' : ''}`}>{nhan}</span>
       <span className="truong-nhap__o">
         <span className="truong-nhap__bieu-tuong">{bieuTuong}</span>
         <input id={maId} type={loaiThucTe} className="truong-nhap__input" {...conLai} />

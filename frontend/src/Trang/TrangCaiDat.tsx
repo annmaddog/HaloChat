@@ -3,6 +3,8 @@ import { LayThongTinCaNhan, CapNhatCaiDat, DoiMatKhau, DoiTenHienThi, DoiAnhDaiD
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { CongTac } from '../ThanhPhan/CongTac';
 import { Avatar } from '../ThanhPhan/Avatar';
+import { TruongNhap } from '../ThanhPhan/TruongNhap';
+import { BieuTuongNguoiDung, BieuTuongKhoa, BieuTuongMayAnh, BieuTuongLuu } from '../ThanhPhan/BieuTuong';
 import { apDungGiaoDien, layGiaoDienDaLuu, type GiaoDien } from '../NguCanh/GiaoDien';
 import './TrangCaiDat.css';
 
@@ -200,89 +202,120 @@ export function TrangCaiDat() {
 
         {mucDangChon === 'tai-khoan' && (
           <>
-            <h2>Tài khoản</h2>
-            <p><strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan}</p>
-            <p><strong>Email:</strong> {nguoiDungHienTai?.email}</p>
+            <div className="trang-cai-dat__the">
+              <div className="trang-cai-dat__the-dau">
+                <span className="trang-cai-dat__the-icon"><BieuTuongNguoiDung /></span>
+                <h2 className="trang-cai-dat__the-tieu-de">Thông tin tài khoản</h2>
+              </div>
+              <p className="trang-cai-dat__the-phu-de">
+                <strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan} · <strong>Email:</strong> {nguoiDungHienTai?.email}
+              </p>
 
-            <div className="trang-cai-dat__doi-anh">
-              <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
-              {loiAnh && <p className="thong-bao-loi" role="alert">{loiAnh}</p>}
-              <label className="nut-phu trang-cai-dat__nut-doi-anh">
-                {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  hidden
-                  disabled={dangTaiAnh}
-                  onChange={(su) => {
-                    const tep = su.target.files?.[0];
-                    if (tep) doiAnhDaiDien(tep);
-                    su.target.value = '';
-                  }}
-                />
-              </label>
-            </div>
+              <div className="trang-cai-dat__hang-tk">
+                <div className="trang-cai-dat__cot-anh">
+                  <div className="trang-cai-dat__anh-vong">
+                    <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
+                    <span className="trang-cai-dat__nut-camera-nho" aria-hidden="true"><BieuTuongMayAnh /></span>
+                  </div>
+                  <label className="trang-cai-dat__nut-doi-anh">
+                    <BieuTuongMayAnh />
+                    {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      hidden
+                      disabled={dangTaiAnh}
+                      onChange={(su) => {
+                        const tep = su.target.files?.[0];
+                        if (tep) doiAnhDaiDien(tep);
+                        su.target.value = '';
+                      }}
+                    />
+                  </label>
+                  <p className="trang-cai-dat__anh-goi-y">JPG, PNG, WEBP • Tối đa 5MB</p>
+                  {loiAnh && <p className="thong-bao-loi" role="alert">{loiAnh}</p>}
+                </div>
 
-            <div className="trang-cai-dat__form-ten-hien-thi">
-              <h3>Tên hiển thị</h3>
-              {loiDoiTen && (
-                <p className="thong-bao-loi" role="alert">
-                  {loiDoiTen}
-                </p>
-              )}
-              {daLuuTen && <p className="trang-cai-dat__da-luu">Đã lưu tên hiển thị.</p>}
-              <div className="panel-quan-ly-nhom__hang-ten">
-                <input
-                  type="text"
-                  value={tenHienThi}
-                  onChange={(su) => { setTenHienThi(su.target.value); setDaLuuTen(false); }}
-                  disabled={dangLuuTen}
-                  maxLength={50}
-                />
-                <button
-                  className="nut-chinh"
-                  onClick={xuLyDoiTenHienThi}
-                  disabled={dangLuuTen || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc}
-                >
-                  {dangLuuTen ? 'Đang lưu...' : 'Lưu tên hiển thị'}
-                </button>
+                <div className="trang-cai-dat__cot-ten">
+                  <label className="trang-cai-dat__nhan-ten" htmlFor="trang-cai-dat-ten-hien-thi">Tên hiển thị</label>
+                  {loiDoiTen && (
+                    <p className="thong-bao-loi" role="alert">
+                      {loiDoiTen}
+                    </p>
+                  )}
+                  {daLuuTen && <p className="trang-cai-dat__da-luu">Đã lưu tên hiển thị.</p>}
+                  <input
+                    id="trang-cai-dat-ten-hien-thi"
+                    type="text"
+                    className="trang-cai-dat__o-ten"
+                    value={tenHienThi}
+                    onChange={(su) => { setTenHienThi(su.target.value); setDaLuuTen(false); }}
+                    disabled={dangLuuTen}
+                    maxLength={50}
+                  />
+                  <span className="trang-cai-dat__dem-ky-tu">{tenHienThi.length}/50</span>
+                  <div className="trang-cai-dat__hang-nut">
+                    <button
+                      className="nut-chinh trang-cai-dat__nut-nho"
+                      onClick={xuLyDoiTenHienThi}
+                      disabled={dangLuuTen || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc}
+                    >
+                      <BieuTuongLuu /> {dangLuuTen ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <form className="trang-cai-dat__form-mat-khau" onSubmit={xuLyDoiMatKhau}>
-              <h3>Đổi mật khẩu</h3>
+            <form className="trang-cai-dat__the" onSubmit={xuLyDoiMatKhau}>
+              <div className="trang-cai-dat__the-dau">
+                <span className="trang-cai-dat__the-icon"><BieuTuongKhoa /></span>
+                <h2 className="trang-cai-dat__the-tieu-de">Đổi mật khẩu</h2>
+              </div>
+              <p className="trang-cai-dat__the-phu-de">Để đảm bảo an toàn cho tài khoản, vui lòng đặt mật khẩu mạnh.</p>
               {loiDoiMatKhau && (
                 <p className="thong-bao-loi" role="alert">
                   {loiDoiMatKhau}
                 </p>
               )}
               {thanhCongDoiMatKhau && <p className="trang-cai-dat__da-luu">Đã đổi mật khẩu thành công.</p>}
-              <input
-                type="password"
-                placeholder="Mật khẩu cũ"
+              <TruongNhap
+                nhan="Mật khẩu hiện tại"
+                anNhan
+                bieuTuong={<BieuTuongKhoa />}
+                coTheAn
+                placeholder="Mật khẩu hiện tại"
                 value={matKhauCu}
                 onChange={(su) => setMatKhauCu(su.target.value)}
                 required
               />
-              <input
-                type="password"
+              <TruongNhap
+                nhan="Mật khẩu mới"
+                anNhan
+                bieuTuong={<BieuTuongKhoa />}
+                coTheAn
                 placeholder="Mật khẩu mới"
                 value={matKhauMoi}
                 onChange={(su) => setMatKhauMoi(su.target.value)}
                 required
                 minLength={6}
               />
-              <input
-                type="password"
+              <TruongNhap
+                nhan="Xác nhận mật khẩu mới"
+                anNhan
+                bieuTuong={<BieuTuongKhoa />}
+                coTheAn
                 placeholder="Xác nhận mật khẩu mới"
                 value={xacNhanMatKhauMoi}
                 onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
                 required
                 minLength={6}
               />
-              <button type="submit" className="nut-chinh" disabled={dangDoiMatKhau}>
-                {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
-              </button>
+              <div className="trang-cai-dat__hang-nut">
+                <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
+                  <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
+                </button>
+              </div>
             </form>
           </>
         )}

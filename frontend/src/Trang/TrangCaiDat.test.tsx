@@ -133,9 +133,9 @@ describe('TrangCaiDat', () => {
     vi.spyOn(DichVuApi, 'DoiMatKhau').mockResolvedValue({ thongBao: 'Đã đổi mật khẩu thành công.' });
 
     renderTrangCaiDat();
-    await screen.findByPlaceholderText('Mật khẩu cũ');
+    await screen.findByPlaceholderText('Mật khẩu hiện tại');
 
-    fireEvent.change(screen.getByPlaceholderText('Mật khẩu cũ'), { target: { value: 'Cu123456' } });
+    fireEvent.change(screen.getByPlaceholderText('Mật khẩu hiện tại'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
     fireEvent.change(screen.getByPlaceholderText('Xác nhận mật khẩu mới'), { target: { value: 'Moi123456' } });
     fireEvent.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
@@ -151,9 +151,9 @@ describe('TrangCaiDat', () => {
     const doiMatKhauSpy = vi.spyOn(DichVuApi, 'DoiMatKhau');
 
     renderTrangCaiDat();
-    await screen.findByPlaceholderText('Mật khẩu cũ');
+    await screen.findByPlaceholderText('Mật khẩu hiện tại');
 
-    fireEvent.change(screen.getByPlaceholderText('Mật khẩu cũ'), { target: { value: 'Cu123456' } });
+    fireEvent.change(screen.getByPlaceholderText('Mật khẩu hiện tại'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
     fireEvent.change(screen.getByPlaceholderText('Xác nhận mật khẩu mới'), { target: { value: 'Khac123456' } });
     fireEvent.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
@@ -177,7 +177,7 @@ describe('TrangCaiDat', () => {
     renderTrangCaiDat();
     const oNhap = await screen.findByDisplayValue('Tên Cũ');
     fireEvent.change(oNhap, { target: { value: 'Tên Mới' } });
-    fireEvent.click(screen.getByRole('button', { name: /lưu tên hiển thị/i }));
+    fireEvent.click(screen.getByRole('button', { name: /lưu thay đổi/i }));
 
     expect(await screen.findByText(/đã lưu tên hiển thị/i)).toBeInTheDocument();
     expect(doiTenSpy).toHaveBeenCalledWith('token-gia-lap', 'Tên Mới');
@@ -192,7 +192,7 @@ describe('TrangCaiDat', () => {
 
     renderTrangCaiDat();
     const oNhap = await screen.findByDisplayValue('Tên Cũ');
-    const nutLuu = screen.getByRole('button', { name: /lưu tên hiển thị/i });
+    const nutLuu = screen.getByRole('button', { name: /lưu thay đổi/i });
     expect(nutLuu).toBeDisabled();
 
     fireEvent.change(oNhap, { target: { value: '   ' } });
