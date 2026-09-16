@@ -193,9 +193,16 @@
 .khung-tin-nhan__icon-noi {
   position: absolute;
   top: -14px;
-  right: 8px;
+  /* Mặc định (tin của người khác, bong bóng căn trái): icon nổi bám sát
+     mép trái của bong bóng. Tin của mình override sang phải ngay dưới. */
+  left: 8px;
   display: none;
   gap: 4px;
+}
+
+.khung-tin-nhan__hang--minh .khung-tin-nhan__icon-noi {
+  left: auto;
+  right: 8px;
 }
 
 .khung-tin-nhan__hang:hover .khung-tin-nhan__icon-noi,
