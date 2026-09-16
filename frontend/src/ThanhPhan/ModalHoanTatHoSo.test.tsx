@@ -37,7 +37,7 @@ describe('ModalHoanTatHoSo', () => {
     expect(screen.getByText('7/50')).toBeInTheDocument();
   });
 
-  it('chon anh hien preview ngay, chua goi API', async () => {
+  it('chon anh hien preview ngay bang blob url, chua goi API', async () => {
     const taiLenTep = vi.spyOn(DichVuApi, 'TaiLenTep');
     renderModal();
     const tep = new File(['noi-dung'], 'avatar.png', { type: 'image/png' });
@@ -45,6 +45,17 @@ describe('ModalHoanTatHoSo', () => {
     await userEvent.upload(screen.getByLabelText('Chọn ảnh'), tep);
 
     expect(taiLenTep).not.toHaveBeenCalled();
+    expect(screen.getByAltText('NguyenAn')).toHaveAttribute('src', expect.stringMatching(/^blob:/));
+  });
+
+  it('chon file khong phai anh thi bao loi, khong tao preview', async () => {
+    renderModal();
+    const tep = new File(['noi-dung'], 'a.pdf', { type: 'application/pdf' });
+
+    await userEvent.setup({ applyAccept: false }).upload(screen.getByLabelText('Chọn ảnh'), tep);
+
+    expect(await screen.findByText('Chỉ chấp nhận file ảnh.')).toBeInTheDocument();
+    expect(screen.queryByAltText('NguyenAn')).not.toBeInTheDocument();
   });
 
   it('bam Hoan tat khi co doi anh va ten thi goi du chuoi API roi dong', async () => {

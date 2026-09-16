@@ -32,4 +32,18 @@ describe('Avatar', () => {
     render(<Avatar id="n1" ten="Nhóm CNTT" duongDanAnh={null} />);
     expect(screen.getByText('N')).toBeInTheDocument();
   });
+
+  it('duongDanAnh la blob url: giu nguyen, khong noi them dia chi goc', () => {
+    render(<Avatar id="n1" ten="Nhóm CNTT" duongDanAnh="blob:http://localhost:5231/uuid-gia-lap" />);
+    expect(screen.getByAltText('Nhóm CNTT')).toHaveAttribute('src', 'blob:http://localhost:5231/uuid-gia-lap');
+  });
+
+  it('duongDanAnh la url tuyet doi http(s): van noi dia chi goc, KHONG tin tuong nguyen van', () => {
+    render(<Avatar id="n1" ten="Nhóm CNTT" duongDanAnh="https://evil.example/tracker.png" />);
+    expect(screen.getByAltText('Nhóm CNTT')).toHaveAttribute(
+      'src',
+      expect.stringContaining('https://evil.example/tracker.png'),
+    );
+    expect(screen.getByAltText('Nhóm CNTT').getAttribute('src')).not.toBe('https://evil.example/tracker.png');
+  });
 });

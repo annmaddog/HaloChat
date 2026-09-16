@@ -7,6 +7,7 @@ import type { HoSoCaNhan } from '../KieuDuLieu';
 import './ModalHoanTatHoSo.css';
 
 const GIOI_HAN_TEN = 50;
+const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
 
 interface PropsModalHoanTatHoSo {
   tenHienThiBanDau: string;
@@ -29,6 +30,15 @@ export function ModalHoanTatHoSo({ tenHienThiBanDau, onDong }: PropsModalHoanTat
   }, [duongDanPreview]);
 
   function chonAnh(tep: File) {
+    if (!tep.type.startsWith('image/')) {
+      setLoi('Chỉ chấp nhận file ảnh.');
+      return;
+    }
+    if (tep.size > GIOI_HAN_ANH_BYTES) {
+      setLoi(`Ảnh vượt quá giới hạn ${GIOI_HAN_ANH_BYTES / 1024 / 1024}MB.`);
+      return;
+    }
+    setLoi(null);
     if (duongDanPreview) URL.revokeObjectURL(duongDanPreview);
     setTepAnhDaChon(tep);
     setDuongDanPreview(URL.createObjectURL(tep));
