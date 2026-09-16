@@ -3,7 +3,11 @@
   margin: 0 auto;
   padding: 32px 24px;
   display: flex;
+  align-items: flex-start;
   gap: 32px;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .trang-cai-dat__menu {
@@ -12,6 +16,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: sticky;
+  top: 0;
 }
 
 .trang-cai-dat__muc-menu,
