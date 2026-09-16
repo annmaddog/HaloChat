@@ -56,4 +56,10 @@ public interface ITinNhanRepository
 
     /// <summary>Tin Text của 1 nhóm chứa tuKhoa, chưa thu hồi, tối đa 50 kết quả, mới nhất trước.</summary>
     Task<List<TinNhan>> TimKiemTheoNhomAsync(string nhomId, string tuKhoa);
+
+    /// <summary>Thả/thay thế cảm xúc của nguoiDungId trên tin nhắn id (xóa cảm xúc cũ của cùng người nếu có, trước khi thêm mới).</summary>
+    Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc);
+
+    /// <summary>Xóa cảm xúc của nguoiDungId trên tin nhắn id (nếu có).</summary>
+    Task BoCamXucAsync(string id, string nguoiDungId);
 }

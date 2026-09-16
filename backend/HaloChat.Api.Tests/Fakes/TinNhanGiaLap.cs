@@ -152,4 +152,22 @@ public class TinNhanGiaLap : ITinNhanRepository
             .ToList();
         return Task.FromResult(ketQua);
     }
+
+    public Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc)
+    {
+        var tinNhan = DanhSach.FirstOrDefault(t => t.Id == id);
+        if (tinNhan is not null)
+        {
+            tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == nguoiDungId);
+            tinNhan.DanhSachCamXuc.Add(new CamXucTinNhan { NguoiDungId = nguoiDungId, LoaiCamXuc = loaiCamXuc });
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task BoCamXucAsync(string id, string nguoiDungId)
+    {
+        var tinNhan = DanhSach.FirstOrDefault(t => t.Id == id);
+        tinNhan?.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == nguoiDungId);
+        return Task.CompletedTask;
+    }
 }

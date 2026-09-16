@@ -157,6 +157,35 @@ public class ChatHub : Hub
         catch (KhongPhaiThanhVienNhomException loi) { throw new HubException(loi.Message); }
     }
 
+    public async Task<TinNhanDto> ThaCamXucTinNhan(string tinNhanId, string loaiCamXuc)
+    {
+        try
+        {
+            var tinNhan = await _dichVuTinNhan.ThaCamXucAsync(NguoiDungHienTaiId, tinNhanId, loaiCamXuc);
+            await GuiBroadcastCapNhatAsync(tinNhan, "TinNhanDaCamXuc");
+            return tinNhan;
+        }
+        catch (TinNhanKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (TinNhanKhongHopLeException loi) { throw new HubException(loi.Message); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { throw new HubException(loi.Message); }
+        catch (NhomKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongPhaiThanhVienNhomException loi) { throw new HubException(loi.Message); }
+    }
+
+    public async Task<TinNhanDto> BoCamXucTinNhan(string tinNhanId)
+    {
+        try
+        {
+            var tinNhan = await _dichVuTinNhan.BoCamXucAsync(NguoiDungHienTaiId, tinNhanId);
+            await GuiBroadcastCapNhatAsync(tinNhan, "TinNhanDaCamXuc");
+            return tinNhan;
+        }
+        catch (TinNhanKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { throw new HubException(loi.Message); }
+        catch (NhomKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongPhaiThanhVienNhomException loi) { throw new HubException(loi.Message); }
+    }
+
     private async Task GuiBroadcastCapNhatAsync(TinNhanDto tinNhan, string tenSuKien)
     {
         if (tinNhan.NhomId is not null)

@@ -272,4 +272,48 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
         Assert.NotNull(nhanDuoc);
         Assert.True(nhanDuoc!.DaGhim);
     }
+
+    [Fact]
+    public async Task ThaCamXucTinNhan_HopLe_PhiaKiaNhanDuocSuKienRealtime()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubcamxuca");
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubcamxucb");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubcamxucb").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubcamxucb").ChoPhepTinNhanTuNguoiLa = true;
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await using var ketNoiB = TaoKetNoiHub(tokenB);
+        TinNhanDto? nhanDuoc = null;
+        var daNhan = new TaskCompletionSource();
+        ketNoiB.On<TinNhanDto>("TinNhanDaCamXuc", tn => { nhanDuoc = tn; daNhan.SetResult(); });
+
+        await ketNoiA.StartAsync();
+        await ketNoiB.StartAsync();
+        var tinGui = await ketNoiA.InvokeAsync<TinNhanDto>("GuiTinNhan", idB, null, "Text", "Vui qua", null, null, null, null, null);
+
+        await ketNoiA.InvokeAsync<TinNhanDto>("ThaCamXucTinNhan", tinGui.Id, "Haha");
+
+        await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.NotNull(nhanDuoc);
+        Assert.Single(nhanDuoc!.DanhSachCamXuc);
+        Assert.Equal("Haha", nhanDuoc.DanhSachCamXuc[0].LoaiCamXuc);
+    }
+
+    [Fact]
+    public async Task BoCamXucTinNhan_HopLe_XoaVaBroadcast()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubcamxucc");
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubcamxucd");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubcamxucd").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubcamxucd").ChoPhepTinNhanTuNguoiLa = true;
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await ketNoiA.StartAsync();
+        var tinGui = await ketNoiA.InvokeAsync<TinNhanDto>("GuiTinNhan", idB, null, "Text", "Vui qua", null, null, null, null, null);
+        await ketNoiA.InvokeAsync<TinNhanDto>("ThaCamXucTinNhan", tinGui.Id, "Thich");
+
+        var ketQua = await ketNoiA.InvokeAsync<TinNhanDto>("BoCamXucTinNhan", tinGui.Id);
+
+        Assert.Empty(ketQua.DanhSachCamXuc);
+    }
 }

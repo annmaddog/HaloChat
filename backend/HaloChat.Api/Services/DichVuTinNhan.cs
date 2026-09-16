@@ -382,21 +382,50 @@ public class DichVuTinNhan : IDichVuTinNhan
         return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
     }
 
+    public async Task<TinNhanDto> ThaCamXucAsync(string idHienTai, string tinNhanId, string loaiCamXuc)
+    {
+        if (!Enum.TryParse<LoaiCamXuc>(loaiCamXuc, ignoreCase: true, out var loai))
+        {
+            throw new TinNhanKhongHopLeException($"Loại cảm xúc không hợp lệ: {loaiCamXuc}.");
+        }
+
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+
+        await _khoTinNhan.ThaCamXucAsync(tinNhanId, idHienTai, loai);
+        tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == idHienTai);
+        tinNhan.DanhSachCamXuc.Add(new CamXucTinNhan { NguoiDungId = idHienTai, LoaiCamXuc = loai });
+        return AnhXaDto(tinNhan);
+    }
+
+    public async Task<TinNhanDto> BoCamXucAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+
+        await _khoTinNhan.BoCamXucAsync(tinNhanId, idHienTai);
+        tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == idHienTai);
+        return AnhXaDto(tinNhan);
+    }
+
     private static TinNhanDto AnhXaDto(TinNhan t)
     {
         var traLoi = t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString());
+        var danhSachCamXuc = t.DaThuHoi
+            ? new List<CamXucDto>()
+            : t.DanhSachCamXuc.Select(cx => new CamXucDto(cx.NguoiDungId, cx.LoaiCamXuc.ToString())).ToList();
 
         if (t.DaThuHoi)
         {
             return new(
                 t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(),
                 "Tin nhắn đã được thu hồi.", null, null, null, null,
-                t.DaDoc, t.DaNhan, t.ThoiGianTao, traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim);
+                t.DaDoc, t.DaNhan, t.ThoiGianTao, traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc);
         }
 
         return new(
             t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
             t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao,
-            traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim);
+            traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc);
     }
 }

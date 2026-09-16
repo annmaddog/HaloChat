@@ -17,4 +17,5 @@ public record TinNhanDto(
     TraLoiThongTinDto? TraLoi,
     bool DaThuHoi,
     bool DaGhim,
-    DateTime? ThoiGianGhim);
+    DateTime? ThoiGianGhim,
+    List<CamXucDto> DanhSachCamXuc);

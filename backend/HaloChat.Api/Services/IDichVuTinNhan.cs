@@ -28,4 +28,7 @@ public interface IDichVuTinNhan
     Task<List<TinNhanDto>> LayMediaTheoNhomAsync(string idHienTai, string nhomId);
     Task<List<TinNhanDto>> TimKiemTheoNguoiDungAsync(string idHienTai, string doiTacId, string tuKhoa);
     Task<List<TinNhanDto>> TimKiemTheoNhomAsync(string idHienTai, string nhomId, string tuKhoa);
+
+    Task<TinNhanDto> ThaCamXucAsync(string idHienTai, string tinNhanId, string loaiCamXuc);
+    Task<TinNhanDto> BoCamXucAsync(string idHienTai, string tinNhanId);
 }

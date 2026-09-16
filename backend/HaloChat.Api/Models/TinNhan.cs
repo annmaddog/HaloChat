@@ -57,4 +57,8 @@ public class TinNhan
     // [GĐ6b] Ghim: ai trong hội thoại/nhóm cũng ghim/bỏ ghim được.
     public bool DaGhim { get; set; } = false;
     public DateTime? ThoiGianGhim { get; set; }
+
+    // [GĐ7c] Mỗi người dùng chỉ có tối đa 1 phần tử (thả cảm xúc khác =
+    // thay thế, không cộng dồn).
+    public List<CamXucTinNhan> DanhSachCamXuc { get; set; } = new();
 }

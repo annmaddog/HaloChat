@@ -181,4 +181,24 @@ public class TinNhanRepository : ITinNhanRepository
             Builders<TinNhan>.Filter.Regex(t => t.NoiDungTinNhan, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(tuKhoa), "i")));
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
     }
+
+    public async Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc)
+    {
+        var boLoc = Builders<TinNhan>.Filter.Eq(t => t.Id, id);
+        var xoaCu = Builders<TinNhan>.Update.PullFilter(
+            t => t.DanhSachCamXuc, cx => cx.NguoiDungId == nguoiDungId);
+        await _collection.UpdateOneAsync(boLoc, xoaCu);
+
+        var themMoi = Builders<TinNhan>.Update.Push(
+            t => t.DanhSachCamXuc, new CamXucTinNhan { NguoiDungId = nguoiDungId, LoaiCamXuc = loaiCamXuc });
+        await _collection.UpdateOneAsync(boLoc, themMoi);
+    }
+
+    public async Task BoCamXucAsync(string id, string nguoiDungId)
+    {
+        var boLoc = Builders<TinNhan>.Filter.Eq(t => t.Id, id);
+        var xoa = Builders<TinNhan>.Update.PullFilter(
+            t => t.DanhSachCamXuc, cx => cx.NguoiDungId == nguoiDungId);
+        await _collection.UpdateOneAsync(boLoc, xoa);
+    }
 }
