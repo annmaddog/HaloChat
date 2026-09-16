@@ -42,14 +42,12 @@
 }
 
 .khung-tin-nhan__mat-ket-noi {
-  margin-left: auto;
   font-size: 12px;
   font-weight: 500;
   color: var(--mau-loi);
 }
 
 .khung-tin-nhan__nut-kho-media {
-  margin-left: auto;
   flex-shrink: 0;
   border: none;
   background: none;
