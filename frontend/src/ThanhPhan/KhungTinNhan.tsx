@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from 'react';
-import { BieuTuongGhim } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -19,6 +19,12 @@ function dinhDangGio(thoiGianTao: string): string {
   return ngay.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
+function trichNoiDungTinNhan(tn: TinNhan): string {
+  if (tn.loaiTinNhan === 'Text') return tn.noiDungTinNhan;
+  if (tn.loaiTinNhan === 'Anh') return '[Ảnh]';
+  return `[File] ${tn.tenFileGoc}`;
+}
+
 interface PropsKhungTinNhan {
   loaiHoiThoai: 'nguoiDung' | 'nhom';
   tenHienThi: string;
@@ -29,22 +35,26 @@ interface PropsKhungTinNhan {
   dangTaiLichSu: boolean;
   coTheTaiThem: boolean;
   onTaiThemLichSuCu: () => void;
-  onGuiVanBan: (noiDung: string) => void;
-  onGuiTep: (tep: File) => void;
+  onGuiVanBan: (noiDung: string, traLoiId: string | null) => void;
+  onGuiTep: (tep: File, traLoiId: string | null) => void;
   dangTaiTep: boolean;
   loi: string | null;
   onQuayLai?: () => void;
   onBamTieuDe?: () => void;
+  layTenNguoiGui?: (nguoiGuiId: string) => string;
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
-  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe,
+  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
   const noiDungRef = useRef<HTMLInputElement | null>(null);
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
+  const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
+
+  const tinDangTraLoi = danhSachTinNhan.find((tn) => tn.id === dangTraLoiId) ?? null;
 
   useEffect(() => {
     cuoiDanhSachRef.current?.scrollIntoView?.({ block: 'end' });
@@ -54,8 +64,9 @@ export function KhungTinNhan({
     su.preventDefault();
     const gtHienTai = noiDungRef.current?.value.trim();
     if (!gtHienTai) return;
-    onGuiVanBan(gtHienTai);
+    onGuiVanBan(gtHienTai, dangTraLoiId);
     if (noiDungRef.current) noiDungRef.current.value = '';
+    setDangTraLoiId(null);
   }
 
   // Không kiểm tra kích thước file ở đây — component cha (TrangChat/TrangNhom)
@@ -65,7 +76,8 @@ export function KhungTinNhan({
   function xuLyChonTep(su: ChangeEvent<HTMLInputElement>) {
     const tep = su.target.files?.[0];
     if (!tep) return;
-    onGuiTep(tep);
+    onGuiTep(tep, dangTraLoiId);
+    setDangTraLoiId(null);
   }
 
   return (
@@ -110,31 +122,73 @@ export function KhungTinNhan({
         {danhSachTinNhan.map((tn) => {
           const laCuaMinh = tn.nguoiGuiId === idHienTai;
           return (
-            <div
-              key={tn.id}
-              className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
-              onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}
-              role="button"
-              tabIndex={0}
-            >
-              {tn.loaiTinNhan === 'Anh' && (
-                <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
-              )}
-              {tn.loaiTinNhan === 'File' && (
-                <a className="khung-tin-nhan__file" href={`${DIA_CHI_GOC}${tn.duongDanFile}`} target="_blank" rel="noreferrer" onClick={(su) => su.stopPropagation()}>
-                  📎 {tn.tenFileGoc} ({dinhDangKichThuoc(tn.kichThuocFile ?? 0)})
-                </a>
-              )}
-              {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
-              {tinDangMoId === tn.id && (
-                <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>
-              )}
+            <div key={tn.id} className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}`}>
+              <div className="khung-tin-nhan__icon-noi">
+                <button
+                  type="button"
+                  className="khung-tin-nhan__nut-tra-loi"
+                  onClick={(su) => { su.stopPropagation(); setDangTraLoiId(tn.id); noiDungRef.current?.focus(); }}
+                  aria-label="Trả lời tin nhắn này"
+                >
+                  <BieuTuongTraLoi />
+                </button>
+              </div>
+              <div
+                className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
+                onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}
+                role="button"
+                tabIndex={0}
+              >
+                {tn.traLoi && (
+                  <div className="khung-tin-nhan__trich-dan">
+                    <span className="khung-tin-nhan__trich-dan-ten">{tn.traLoi.tenNguoiGui}</span>
+                    <span className="khung-tin-nhan__trich-dan-noi-dung">{tn.traLoi.noiDungTomTat}</span>
+                  </div>
+                )}
+                {tn.loaiTinNhan === 'Anh' && (
+                  <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
+                )}
+                {tn.loaiTinNhan === 'File' && (
+                  <div className="khung-tin-nhan__file">
+                    <span className="khung-tin-nhan__file-icon"><BieuTuongTaiLieu /></span>
+                    <div className="khung-tin-nhan__file-thong-tin">
+                      <span className="khung-tin-nhan__file-ten">{tn.tenFileGoc}</span>
+                      <span className="khung-tin-nhan__file-size">{dinhDangKichThuoc(tn.kichThuocFile ?? 0)}</span>
+                    </div>
+                    <a
+                      className="khung-tin-nhan__file-nut-tai"
+                      href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(su) => su.stopPropagation()}
+                      aria-label={`Tải xuống ${tn.tenFileGoc}`}
+                    >
+                      <BieuTuongTai />
+                    </a>
+                  </div>
+                )}
+                {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
+                {tinDangMoId === tn.id && (
+                  <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>
+                )}
+              </div>
             </div>
           );
         })}
         <div ref={cuoiDanhSachRef} />
       </div>
 
+      {tinDangTraLoi && (
+        <div className="khung-tin-nhan__dang-tra-loi">
+          <div className="khung-tin-nhan__dang-tra-loi-noi-dung">
+            <span className="khung-tin-nhan__dang-tra-loi-tieu-de">
+              ↩ Trả lời {layTenNguoiGui ? layTenNguoiGui(tinDangTraLoi.nguoiGuiId) : 'một người dùng'}
+            </span>
+            <span className="khung-tin-nhan__dang-tra-loi-trich">{trichNoiDungTinNhan(tinDangTraLoi)}</span>
+          </div>
+          <button type="button" className="khung-tin-nhan__dang-tra-loi-huy" onClick={() => setDangTraLoiId(null)} aria-label="Hủy trả lời">×</button>
+        </div>
+      )}
       <form className="khung-tin-nhan__form-gui" onSubmit={xuLySubmit}>
         <button
           type="button"

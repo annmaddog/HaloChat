@@ -30,6 +30,7 @@ export interface TinNhan {
   daDoc: boolean;
   daNhan: boolean;
   thoiGianTao: string;
+  traLoi: { id: string; tenNguoiGui: string; noiDungTomTat: string; loaiTinNhan: LoaiTinNhan } | null;
 }
 
 export interface TepTinDaTaiLen {

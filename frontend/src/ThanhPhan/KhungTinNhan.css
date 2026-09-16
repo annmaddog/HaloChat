@@ -74,7 +74,6 @@
   padding: 10px 14px;
   border-radius: var(--ban-kinh-o);
   background: var(--mau-nen-tren);
-  align-self: flex-start;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -82,7 +81,6 @@
 }
 
 .khung-tin-nhan__bong--minh {
-  align-self: flex-end;
   background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
   color: #fff;
 }
@@ -186,4 +184,143 @@
   font-family: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.khung-tin-nhan__hang {
+  position: relative;
+  display: flex;
+}
+
+.khung-tin-nhan__hang--minh {
+  justify-content: flex-end;
+}
+
+.khung-tin-nhan__icon-noi {
+  position: absolute;
+  top: -14px;
+  right: 8px;
+  display: none;
+  gap: 4px;
+}
+
+.khung-tin-nhan__hang:hover .khung-tin-nhan__icon-noi,
+.khung-tin-nhan__hang--mo .khung-tin-nhan__icon-noi {
+  display: flex;
+}
+
+.khung-tin-nhan__nut-tra-loi {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--mau-vien);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.khung-tin-nhan__trich-dan {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 8px;
+  border-left: 3px solid currentColor;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.khung-tin-nhan__trich-dan-ten {
+  font-weight: 700;
+}
+
+.khung-tin-nhan__file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.khung-tin-nhan__file-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--mau-chinh-dam);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.khung-tin-nhan__file-thong-tin {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.khung-tin-nhan__file-ten {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.khung-tin-nhan__file-size {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.khung-tin-nhan__file-nut-tai {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.khung-tin-nhan__dang-tra-loi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 24px;
+  border-top: 1px solid var(--mau-vien);
+  background: var(--mau-nen-tren);
+  font-size: 13px;
+}
+
+.khung-tin-nhan__dang-tra-loi-noi-dung {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.khung-tin-nhan__dang-tra-loi-tieu-de {
+  font-weight: 700;
+  color: var(--mau-chinh-dam);
+}
+
+.khung-tin-nhan__dang-tra-loi-trich {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mau-chu-phu);
+}
+
+.khung-tin-nhan__dang-tra-loi-huy {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--mau-chu-phu);
 }
