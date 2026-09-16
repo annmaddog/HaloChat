@@ -84,4 +84,9 @@ public class TinNhanRepository : ITinNhanRepository
     {
         await _collection.DeleteManyAsync(t => t.NhomId == nhomId);
     }
+
+    public async Task<TinNhan?> TimTheoIdAsync(string id)
+    {
+        return await _collection.Find(t => t.Id == id).FirstOrDefaultAsync();
+    }
 }

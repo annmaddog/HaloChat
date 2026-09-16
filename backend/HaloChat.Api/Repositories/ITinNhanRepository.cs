@@ -29,4 +29,7 @@ public interface ITinNhanRepository
 
     /// <summary>Xóa toàn bộ tin nhắn của 1 nhóm (dùng khi giải tán nhóm).</summary>
     Task XoaTheoNhomAsync(string nhomId);
+
+    /// <summary>Lấy 1 tin nhắn theo id, null nếu không tồn tại. Dùng để validate trả lời (GĐ6a) và các hành động trên tin nhắn (GĐ6b).</summary>
+    Task<TinNhan?> TimTheoIdAsync(string id);
 }

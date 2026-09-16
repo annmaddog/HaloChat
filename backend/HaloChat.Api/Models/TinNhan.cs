@@ -45,4 +45,8 @@ public class TinNhan
     public bool DaNhan { get; set; } = false;
 
     public DateTime ThoiGianTao { get; set; } = DateTime.UtcNow;
+
+    // [GĐ6a] Snapshot thông tin tin gốc tại thời điểm trả lời — KHÔNG
+    // tham chiếu sống. Null nếu tin này không phải trả lời tin nào.
+    public TraLoiThongTin? TraLoi { get; set; }
 }

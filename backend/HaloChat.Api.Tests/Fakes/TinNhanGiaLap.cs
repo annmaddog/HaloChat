@@ -69,4 +69,9 @@ public class TinNhanGiaLap : ITinNhanRepository
         DanhSach.RemoveAll(t => t.NhomId == nhomId);
         return Task.CompletedTask;
     }
+
+    public Task<TinNhan?> TimTheoIdAsync(string id)
+    {
+        return Task.FromResult(DanhSach.FirstOrDefault(t => t.Id == id));
+    }
 }
