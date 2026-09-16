@@ -208,15 +208,14 @@ export function TrangCaiDat() {
                 <h2 className="trang-cai-dat__the-tieu-de">Thông tin tài khoản</h2>
               </div>
               <p className="trang-cai-dat__the-phu-de">
-                <strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan} · <strong>Email:</strong> {nguoiDungHienTai?.email}
+                <strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan}
+                <br />
+                <strong>Email:</strong> {nguoiDungHienTai?.email}
               </p>
 
               <div className="trang-cai-dat__hang-tk">
                 <div className="trang-cai-dat__cot-anh">
-                  <div className="trang-cai-dat__anh-vong">
-                    <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
-                    <span className="trang-cai-dat__nut-camera-nho" aria-hidden="true"><BieuTuongMayAnh /></span>
-                  </div>
+                  <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
                   <label className="trang-cai-dat__nut-doi-anh">
                     <BieuTuongMayAnh />
                     {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}

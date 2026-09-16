@@ -1,12 +1,10 @@
 .trang-cai-dat {
   max-width: 900px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 28px 24px;
   display: flex;
   align-items: flex-start;
   gap: 32px;
-  height: 100vh;
-  overflow-y: auto;
   box-sizing: border-box;
 }
 
@@ -16,8 +14,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  position: sticky;
-  top: 0;
 }
 
 .trang-cai-dat__muc-menu,
@@ -134,25 +130,6 @@
   align-items: flex-start;
   gap: 8px;
   flex-shrink: 0;
-}
-
-.trang-cai-dat__anh-vong {
-  position: relative;
-}
-
-.trang-cai-dat__nut-camera-nho {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid var(--mau-nen-the);
-  background: var(--mau-chinh-dam);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .trang-cai-dat__anh-goi-y {
