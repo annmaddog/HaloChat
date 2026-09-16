@@ -433,4 +433,45 @@ public class DichVuTinNhanTests
         Assert.Empty(ghimTheoNguoiAn);
         Assert.Single(ghimTheoNguoiKia);
     }
+
+    // --- Kho Media & Tệp (GĐ7a) ---
+
+    [Fact]
+    public async Task LayMediaTheoNguoiDungAsync_LocTinDaThuHoiVaDaAn()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, khoTinNhanAn) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinAnh1 = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439001", "a.png", 1024, "image/png", null);
+        var tinAnh2 = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439002", "b.png", 1024, "image/png", null);
+        await dichVu.ThuHoiAsync(IdNguoiGui, tinAnh1.Id);
+        await khoTinNhanAn.AnAsync(IdNguoiNhan, tinAnh2.Id);
+
+        var ketQua = await dichVu.LayMediaTheoNguoiDungAsync(IdNguoiNhan, IdNguoiGui);
+
+        Assert.Empty(ketQua);
+    }
+
+    [Fact]
+    public async Task LayMediaTheoNguoiDungAsync_TinHopLe_TraVeDung()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439003", "a.png", 1024, "image/png", null);
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var ketQua = await dichVu.LayMediaTheoNguoiDungAsync(IdNguoiGui, IdNguoiNhan);
+
+        Assert.Single(ketQua);
+    }
+
+    [Fact]
+    public async Task LayMediaTheoNhomAsync_KhongPhaiThanhVien_NemNgoaiLe()
+    {
+        var (dichVu, _, khoNguoiDung, _, khoNhom, _) = TaoDichVu();
+        khoNhom.DanhSach.Add(new Nhom { Id = "n1", ThanhVienIds = new List<string> { "thanh-vien-khac" } });
+
+        await Assert.ThrowsAsync<KhongPhaiThanhVienNhomException>(() => dichVu.LayMediaTheoNhomAsync(IdNguoiGui, "n1"));
+    }
 }

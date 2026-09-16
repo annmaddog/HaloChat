@@ -239,4 +239,30 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoiAn.StatusCode);
     }
+
+    [Fact]
+    public async Task LayMediaTheoNguoiDung_IdKhongPhaiObjectId_TraVe400()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "mediaA", email = "mediaA@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "mediaA", matKhau = "MatKhau123!" });
+        var token = (await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nguoi-dung/khong-hop-le/media");
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayMediaTheoNhom_KhongTonTai_TraVe404()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "mediaB", email = "mediaB@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "mediaB", matKhau = "MatKhau123!" });
+        var token = (await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nhom/507f1f77bcf86cd799439099/media");
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
 }

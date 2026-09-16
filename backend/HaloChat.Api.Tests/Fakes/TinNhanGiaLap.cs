@@ -110,4 +110,23 @@ public class TinNhanGiaLap : ITinNhanRepository
             .ToList();
         return Task.FromResult(ketQua);
     }
+
+    public Task<List<TinNhan>> LayMediaTheoNguoiDungAsync(string nguoiA, string nguoiB)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.LoaiTinNhan == LoaiTinNhan.Anh || t.LoaiTinNhan == LoaiTinNhan.File)
+            .Where(t => (t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA))
+            .OrderByDescending(t => t.ThoiGianTao)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
+    public Task<List<TinNhan>> LayMediaTheoNhomAsync(string nhomId)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId && (t.LoaiTinNhan == LoaiTinNhan.Anh || t.LoaiTinNhan == LoaiTinNhan.File))
+            .OrderByDescending(t => t.ThoiGianTao)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
 }

@@ -44,4 +44,10 @@ public interface ITinNhanRepository
 
     /// <summary>[GĐ6b] Toàn bộ tin đã ghim của 1 nhóm, mới ghim nhất trước.</summary>
     Task<List<TinNhan>> LayTinDaGhimTheoNhomAsync(string nhomId);
+
+    /// <summary>Toàn bộ tin Anh/File (2 chiều) giữa 2 người dùng, mới nhất trước.</summary>
+    Task<List<TinNhan>> LayMediaTheoNguoiDungAsync(string nguoiA, string nguoiB);
+
+    /// <summary>Toàn bộ tin Anh/File của 1 nhóm, mới nhất trước.</summary>
+    Task<List<TinNhan>> LayMediaTheoNhomAsync(string nhomId);
 }

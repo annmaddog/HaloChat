@@ -219,4 +219,41 @@ public class TinNhanController : ControllerBase
         catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
         catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
     }
+
+    [HttpGet("nguoi-dung/{id}/media")]
+    public async Task<IActionResult> LayMediaTheoNguoiDung(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id người dùng không hợp lệ." });
+        }
+
+        return Ok(await _dichVuTinNhan.LayMediaTheoNguoiDungAsync(IdHienTai, id));
+    }
+
+    [HttpGet("nhom/{id}/media")]
+    public async Task<IActionResult> LayMediaTheoNhom(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id nhóm không hợp lệ." });
+        }
+
+        try
+        {
+            return Ok(await _dichVuTinNhan.LayMediaTheoNhomAsync(IdHienTai, id));
+        }
+        catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+    }
 }

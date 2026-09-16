@@ -332,6 +332,26 @@ public class DichVuTinNhan : IDichVuTinNhan
         return ketQua;
     }
 
+    public async Task<List<TinNhanDto>> LayMediaTheoNguoiDungAsync(string idHienTai, string doiTacId)
+    {
+        var media = await _khoTinNhan.LayMediaTheoNguoiDungAsync(idHienTai, doiTacId);
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, media.Select(t => t.Id));
+        return media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
+    public async Task<List<TinNhanDto>> LayMediaTheoNhomAsync(string idHienTai, string nhomId)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(idHienTai))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+
+        var media = await _khoTinNhan.LayMediaTheoNhomAsync(nhomId);
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, media.Select(t => t.Id));
+        return media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
     private static TinNhanDto AnhXaDto(TinNhan t)
     {
         var traLoi = t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString());
