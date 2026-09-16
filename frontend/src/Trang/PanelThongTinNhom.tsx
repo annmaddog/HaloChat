@@ -83,7 +83,7 @@ export function PanelThongTinNhom({ nhom, laAdmin, onDong, onMoQuanLy, onRoiNhom
         <h4>Thành viên</h4>
         <div className="panel-thong-tin-nhom__avatar-hang">
           {thanhVienHien.map((tv) => (
-            <Avatar key={tv.id} id={tv.id} ten={tv.tenHienThi} kichThuoc="nho" />
+            <Avatar key={tv.id} id={tv.id} ten={tv.tenHienThi} kichThuoc="nho" duongDanAnh={tv.duongDanAnhDaiDien} />
           ))}
           {!hienHetThanhVien && conAnDi > 0 && (
             <button className="panel-thong-tin-nhom__nut-them" onClick={() => setHienHetThanhVien(true)} aria-label="Xem tất cả thành viên">

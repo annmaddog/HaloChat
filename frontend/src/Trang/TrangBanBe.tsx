@@ -160,7 +160,7 @@ export function TrangBanBe() {
             <ul className="trang-ban-be__danh-sach">
               {ketQuaTimKiem.map((nd) => (
                 <li key={nd.id} className="trang-ban-be__card trang-ban-be__card--tim-kiem">
-                  <Avatar id={nd.id} ten={nd.tenHienThi} />
+                  <Avatar id={nd.id} ten={nd.tenHienThi} duongDanAnh={nd.duongDanAnhDaiDien} />
                   <div className="trang-ban-be__card-thong-tin">
                     <span className="trang-ban-be__card-ten">{nd.tenHienThi}</span>
                     <span className="trang-ban-be__card-email">{nd.email}</span>
@@ -204,7 +204,7 @@ export function TrangBanBe() {
               <ul className="trang-ban-be__danh-sach">
                 {banBe.map((b) => (
                   <li key={b.id} className="trang-ban-be__card">
-                    <Avatar id={b.id} ten={b.tenHienThi} />
+                    <Avatar id={b.id} ten={b.tenHienThi} duongDanAnh={b.duongDanAnhDaiDien} />
                     <div className="trang-ban-be__card-thong-tin">
                       <span className="trang-ban-be__card-ten">{b.tenHienThi}</span>
                       {trangThaiOnline[b.id] && <span className="trang-ban-be__card-trang-thai">Đang hoạt động</span>}
@@ -249,7 +249,7 @@ export function TrangBanBe() {
               <ul className="trang-ban-be__danh-sach">
                 {loiMoiDen.map((l) => (
                   <li key={l.id} className="trang-ban-be__card">
-                    <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenHienThi} />
+                    <Avatar id={l.nguoiGui.id} ten={l.nguoiGui.tenHienThi} duongDanAnh={l.nguoiGui.duongDanAnhDaiDien} />
                     <div className="trang-ban-be__card-thong-tin">
                       <span className="trang-ban-be__card-ten">{l.nguoiGui.tenHienThi}</span>
                       <span className="trang-ban-be__card-phu">Muốn kết bạn với bạn</span>
@@ -270,7 +270,7 @@ export function TrangBanBe() {
       {hoSoDangXem && (
         <aside className="trang-ban-be__ho-so">
           <button className="trang-ban-be__dong-ho-so" onClick={() => setHoSoDangXem(null)} aria-label="Đóng hồ sơ">×</button>
-          <Avatar id={hoSoDangXem.id} ten={hoSoDangXem.tenHienThi} kichThuoc="lon" />
+          <Avatar id={hoSoDangXem.id} ten={hoSoDangXem.tenHienThi} kichThuoc="lon" duongDanAnh={hoSoDangXem.duongDanAnhDaiDien} />
           <h3>{hoSoDangXem.tenHienThi}</h3>
           <p className="trang-ban-be__email-ho-so">{hoSoDangXem.email}</p>
           <button

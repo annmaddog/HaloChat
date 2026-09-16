@@ -92,7 +92,7 @@ export function PanelQuanLyNhom({
         <ul className="panel-quan-ly-nhom__ds-thanh-vien">
           {nhom.thanhVien.map((tv) => (
             <li key={tv.id}>
-              <Avatar id={tv.id} ten={tv.tenHienThi} kichThuoc="nho" />
+              <Avatar id={tv.id} ten={tv.tenHienThi} kichThuoc="nho" duongDanAnh={tv.duongDanAnhDaiDien} />
               <span>{tv.tenHienThi}{tv.id === nhom.nguoiTaoId ? ' (Admin)' : ''}</span>
               {tv.id !== nhom.nguoiTaoId && (
                 <button onClick={() => onXoaThanhVien(tv.id)} aria-label={`Xóa ${tv.tenHienThi}`}>×</button>

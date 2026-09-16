@@ -432,7 +432,7 @@ export function TrangChat() {
                   className={`trang-chat__muc${nguoiDangChon?.id === nd.id ? ' trang-chat__muc--dang-chon' : ''}`}
                   onClick={() => setNguoiDangChon(nd)}
                 >
-                  <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" />
+                  <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" duongDanAnh={nd.duongDanAnhDaiDien} />
                   <span className="trang-chat__ten">{nd.tenHienThi}</span>
                   {trangThaiOnline[nd.id] && <span className="trang-chat__cham-online" title="Đang hoạt động" />}
                 </button>
@@ -452,6 +452,7 @@ export function TrangChat() {
           <KhungTinNhan
             loaiHoiThoai="nguoiDung"
             tenHienThi={nguoiDangChon.tenHienThi}
+            duongDanAnh={nguoiDangChon.duongDanAnhDaiDien}
             phuDe={trangThaiOnline[nguoiDangChon.id] ? 'Đang hoạt động' : undefined}
             danhSachTinNhan={tinNhanDangHien}
             idHienTai={idHienTai}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
 import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
+import { Avatar } from './Avatar';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -70,13 +71,14 @@ interface PropsKhungTinNhan {
   onNhayToiTinNhan: (id: string) => Promise<boolean>;
   onThaCamXuc: (id: string, loaiCamXuc: LoaiCamXuc) => void;
   onBoCamXuc: (id: string) => void;
+  duongDanAnh?: string | null;
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
   onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
-  onThaCamXuc, onBoCamXuc,
+  onThaCamXuc, onBoCamXuc, duongDanAnh,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
@@ -323,7 +325,7 @@ export function KhungTinNhan({
         ) : (
           onBamTieuDe ? (
             <button className="khung-tin-nhan__tieu-de-bam" onClick={onBamTieuDe}>
-              <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
+              <Avatar id={tenHienThi} ten={tenHienThi} duongDanAnh={duongDanAnh} />
               <div className="khung-tin-nhan__ten-cum">
                 <span className="khung-tin-nhan__ten">{tenHienThi}</span>
                 {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}
@@ -331,7 +333,7 @@ export function KhungTinNhan({
             </button>
           ) : (
             <>
-              <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
+              <Avatar id={tenHienThi} ten={tenHienThi} duongDanAnh={duongDanAnh} />
               <div className="khung-tin-nhan__ten-cum">
                 <span className="khung-tin-nhan__ten">{tenHienThi}</span>
                 {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}

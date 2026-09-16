@@ -471,6 +471,7 @@ export function TrangNhom() {
           <KhungTinNhan
             loaiHoiThoai="nhom"
             tenHienThi={nhomDangChon.tenNhom}
+            duongDanAnh={nhomDangChon.duongDanAnhDaiDien}
             phuDe={`${nhomDangChon.thanhVien.length} thành viên`}
             danhSachTinNhan={tinNhanTheoNhom[nhomDangChon.id] ?? []}
             idHienTai={idHienTai}

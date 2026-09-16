@@ -28,6 +28,7 @@ const PROPS_MAC_DINH = {
   onNhayToiTinNhan: () => Promise.resolve(true),
   onThaCamXuc: () => {},
   onBoCamXuc: () => {},
+  duongDanAnh: null,
 };
 
 const TIN_NHAN_MAU = {
@@ -494,5 +495,18 @@ describe('KhungTinNhan', () => {
 
     expect(screen.queryByText(/👍/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Thích tin nhắn này' })).not.toBeInTheDocument();
+  });
+
+  it('co duongDanAnh thi hien anh that trong avatar dau de, khong hien chu cai dau', () => {
+    render(<KhungTinNhan {...PROPS_MAC_DINH} duongDanAnh="/api/tinnhan/file/abc" />);
+
+    const anh = screen.getByAltText('Nhóm CNTT');
+    expect(anh).toHaveAttribute('src', expect.stringContaining('/api/tinnhan/file/abc'));
+  });
+
+  it('khong co duongDanAnh thi hien chu cai dau nhu cu', () => {
+    render(<KhungTinNhan {...PROPS_MAC_DINH} duongDanAnh={null} />);
+
+    expect(screen.queryByAltText('Nhóm CNTT')).not.toBeInTheDocument();
   });
 });
