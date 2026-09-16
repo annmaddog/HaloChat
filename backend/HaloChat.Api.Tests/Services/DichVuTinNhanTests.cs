@@ -293,4 +293,16 @@ public class DichVuTinNhanTests
 
         Assert.Equal(new string('a', 80) + "…", tinB.TraLoi!.NoiDungTomTat);
     }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_TraLoiTinCuaCuocTroChuyenKhacTrongCuocTuNhanTin_NemTinNhanKhongHopLe()
+    {
+        var (dichVu, _, khoNguoiDung, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinAB = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Tin A gửi B", null, null, null, null, null);
+
+        await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() =>
+            dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiGui, null, "Text", "Trả lời trong cuộc tự nhắn tin", null, null, null, null, tinAB.Id));
+    }
 }

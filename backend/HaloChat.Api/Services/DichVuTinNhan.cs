@@ -139,11 +139,11 @@ public class DichVuTinNhan : IDichVuTinNhan
             var tinGoc = await _khoTinNhan.TimTheoIdAsync(traLoiId)
                 ?? throw new TinNhanKhongHopLeException("Tin nhắn được trả lời không tồn tại.");
 
+            var thamGiaTinGoc = new HashSet<string?> { tinGoc.NguoiGuiId, tinGoc.NguoiNhanId };
+            var thamGiaTinMoi = new HashSet<string?> { nguoiGuiId, nguoiNhanId };
             var cungHoiThoai = nhomId is not null
                 ? tinGoc.NhomId == nhomId
-                : tinGoc.NhomId is null
-                    && new[] { tinGoc.NguoiGuiId, tinGoc.NguoiNhanId }.Contains(nguoiGuiId)
-                    && new[] { tinGoc.NguoiGuiId, tinGoc.NguoiNhanId }.Contains(nguoiNhanId);
+                : tinGoc.NhomId is null && thamGiaTinGoc.SetEquals(thamGiaTinMoi);
             if (!cungHoiThoai)
             {
                 throw new TinNhanKhongHopLeException("Tin nhắn được trả lời không thuộc cuộc trò chuyện này.");
