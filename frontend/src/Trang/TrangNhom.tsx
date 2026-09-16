@@ -134,12 +134,21 @@ export function TrangNhom() {
       }));
     }
 
+    function xuLyTinNhanThuHoi(tinNhan: TinNhanHienThi) {
+      capNhatTinNhanTrongState(tinNhan);
+      if (!tinNhan.nhomId) return;
+      setTinNhanGhimTheoNhom((truoc) => ({
+        ...truoc,
+        [tinNhan.nhomId as string]: (truoc[tinNhan.nhomId as string] ?? []).map((tn) => (tn.id === tinNhan.id ? tinNhan : tn)),
+      }));
+    }
+
     ketNoi.on('NhanTinNhan', xuLyTinNhanMoi);
     ketNoi.on('DuocThemVaoNhom', xuLyDuocThem);
     ketNoi.on('BiXoaKhoiNhom', xuLyBiXoa);
     ketNoi.on('NhomDaGiaiTan', xuLyBiXoa);
     ketNoi.on('NhomDaCapNhat', xuLyCapNhat);
-    ketNoi.on('TinNhanDaThuHoi', capNhatTinNhanTrongState);
+    ketNoi.on('TinNhanDaThuHoi', xuLyTinNhanThuHoi);
     ketNoi.on('TinNhanDaGhim', xuLyTinNhanGhim);
     ketNoi.on('TinNhanBoGhim', xuLyTinNhanBoGhim);
     return () => {
@@ -148,7 +157,7 @@ export function TrangNhom() {
       ketNoi.off('BiXoaKhoiNhom', xuLyBiXoa);
       ketNoi.off('NhomDaGiaiTan', xuLyBiXoa);
       ketNoi.off('NhomDaCapNhat', xuLyCapNhat);
-      ketNoi.off('TinNhanDaThuHoi', capNhatTinNhanTrongState);
+      ketNoi.off('TinNhanDaThuHoi', xuLyTinNhanThuHoi);
       ketNoi.off('TinNhanDaGhim', xuLyTinNhanGhim);
       ketNoi.off('TinNhanBoGhim', xuLyTinNhanBoGhim);
     };
@@ -234,9 +243,15 @@ export function TrangNhom() {
   }
 
   function thuHoiTinNhan(id: string) {
-    if (!ketNoi) return;
+    if (!ketNoi || !nhomDangChon) return;
     ketNoi.invoke<TinNhanHienThi>('ThuHoiTinNhan', id)
-      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoNhom((truoc) => ({
+          ...truoc,
+          [nhomDangChon.id]: (truoc[nhomDangChon.id] ?? []).map((tn) => (tn.id === tinCapNhat.id ? tinCapNhat : tn)),
+        }));
+      })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thu hồi tin nhắn thất bại.'));
   }
 
@@ -271,6 +286,10 @@ export function TrangNhom() {
     AnTinNhan(token, id)
       .then(() => {
         setTinNhanTheoNhom((truoc) => ({
+          ...truoc,
+          [nhomDangChon.id]: (truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+        setTinNhanGhimTheoNhom((truoc) => ({
           ...truoc,
           [nhomDangChon.id]: (truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== id),
         }));

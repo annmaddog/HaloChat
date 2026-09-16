@@ -20,6 +20,7 @@ function dinhDangGio(thoiGianTao: string): string {
 }
 
 function trichNoiDungTinNhan(tn: TinNhan): string {
+  if (tn.daThuHoi) return 'Tin nhắn đã được thu hồi.';
   if (tn.loaiTinNhan === 'Text') return tn.noiDungTinNhan;
   if (tn.loaiTinNhan === 'Anh') return '[Ảnh]';
   return `[File] ${tn.tenFileGoc}`;

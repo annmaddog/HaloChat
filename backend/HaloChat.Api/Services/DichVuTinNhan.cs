@@ -316,9 +316,11 @@ public class DichVuTinNhan : IDichVuTinNhan
             }
 
             var soChuaDoc = tatCaTinNhan.Count(t => t.NguoiGuiId == idKia && t.NguoiNhanId == nguoiDungId && !t.DaDoc);
-            var xemTruoc = tn.LoaiTinNhan == LoaiTinNhan.Text
-                ? tn.NoiDungTinNhan
-                : tn.LoaiTinNhan == LoaiTinNhan.Anh ? "[Ảnh]" : "[File]";
+            var xemTruoc = tn.DaThuHoi
+                ? "Tin nhắn đã được thu hồi."
+                : tn.LoaiTinNhan == LoaiTinNhan.Text
+                    ? tn.NoiDungTinNhan
+                    : tn.LoaiTinNhan == LoaiTinNhan.Anh ? "[Ảnh]" : "[File]";
 
             ketQua.Add(new HoiThoaiTomTatDto(
                 new NguoiDungTomTatDto(nguoiKia.Id, nguoiKia.TenTaiKhoan, nguoiKia.Email, nguoiKia.ChoPhepTinNhanTuNguoiLa, nguoiKia.TenHienThiThucTe()),

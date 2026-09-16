@@ -133,6 +133,10 @@ export function TrangChat() {
         ...truoc,
         [idKia]: (truoc[idKia] ?? []).map((tn) => (tn.id === tinNhan.id ? tinNhan : tn)),
       }));
+      setTinNhanGhimTheoDoiTac((truoc) => ({
+        ...truoc,
+        [idKia]: (truoc[idKia] ?? []).map((tn) => (tn.id === tinNhan.id ? tinNhan : tn)),
+      }));
     }
 
     function xuLyTinNhanGhim(tinNhan: TinNhanHienThi) {
@@ -242,9 +246,15 @@ export function TrangChat() {
   }
 
   function thuHoiTinNhan(id: string) {
-    if (!ketNoi) return;
+    if (!ketNoi || !nguoiDangChon) return;
     ketNoi.invoke<TinNhanHienThi>('ThuHoiTinNhan', id)
-      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoDoiTac((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).map((tn) => (tn.id === tinCapNhat.id ? tinCapNhat : tn)),
+        }));
+      })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thu hồi tin nhắn thất bại.'));
   }
 
@@ -279,6 +289,10 @@ export function TrangChat() {
     AnTinNhan(token, id)
       .then(() => {
         setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+        setTinNhanGhimTheoDoiTac((truoc) => ({
           ...truoc,
           [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== id),
         }));

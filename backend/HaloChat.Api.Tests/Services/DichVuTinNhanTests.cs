@@ -213,6 +213,20 @@ public class DichVuTinNhanTests
     }
 
     [Fact]
+    public async Task LayDanhSachHoiThoaiAsync_TinCuoiDaThuHoi_XemTruocHienPlaceholder()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tin = await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "Bi mat", null, null, null, null, null);
+        await dichVu.ThuHoiAsync(IdNguoiNhan, tin.Id);
+
+        var hoiThoai = await dichVu.LayDanhSachHoiThoaiAsync(IdNguoiGui);
+
+        Assert.Equal("Tin nhắn đã được thu hồi.", Assert.Single(hoiThoai).TinNhanCuoi);
+    }
+
+    [Fact]
     public async Task LayDanhSachHoiThoaiAsync_KhongCoTinNhan_TraVeDanhSachRong()
     {
         var (dichVu, _, _, _, _, _) = TaoDichVu();

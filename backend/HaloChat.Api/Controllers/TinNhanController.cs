@@ -167,6 +167,11 @@ public class TinNhanController : ControllerBase
             return Unauthorized();
         }
 
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id tin nhắn không hợp lệ." });
+        }
+
         try
         {
             await _dichVuTinNhan.AnAsync(IdHienTai, id);
@@ -186,6 +191,11 @@ public class TinNhanController : ControllerBase
             return Unauthorized();
         }
 
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id người dùng không hợp lệ." });
+        }
+
         return Ok(await _dichVuTinNhan.LayTinDaGhimTheoNguoiDungAsync(IdHienTai, id));
     }
 
@@ -195,6 +205,11 @@ public class TinNhanController : ControllerBase
         if (IdHienTai is null)
         {
             return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id nhóm không hợp lệ." });
         }
 
         try

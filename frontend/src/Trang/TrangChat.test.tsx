@@ -283,4 +283,23 @@ describe('TrangChat', () => {
 
     expect(await screen.findByText('Người này chỉ nhận tin nhắn từ bạn bè.')).toBeInTheDocument();
   });
+
+  it('banner ghim cập nhật thành placeholder khi tin đang ghim bị thu hồi qua realtime', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayTinDaGhimTheoNguoiDung').mockResolvedValue([
+      taoTinNhanGiaLap({ id: 'm5', noiDungTinNhan: 'Nội dung đang ghim' }),
+    ]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+
+    expect(await screen.findByText(/Nội dung đang ghim/)).toBeInTheDocument();
+
+    await waitFor(() => expect(ketNoiGiaLap.on).toHaveBeenCalledWith('TinNhanDaThuHoi', expect.any(Function)));
+    const handler = ketNoiGiaLap.on.mock.calls.find((cuocGoi) => cuocGoi[0] === 'TinNhanDaThuHoi')![1];
+    handler(taoTinNhanGiaLap({ id: 'm5', daThuHoi: true, noiDungTinNhan: '' }));
+
+    expect(await screen.findByText(/Tin nhắn đã được thu hồi\./)).toBeInTheDocument();
+    expect(screen.queryByText(/Nội dung đang ghim/)).not.toBeInTheDocument();
+  });
 });
