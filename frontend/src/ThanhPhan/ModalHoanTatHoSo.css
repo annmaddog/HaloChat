@@ -1,0 +1,113 @@
+.modal-hoan-tat-ho-so-nen {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 27, 51, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.modal-hoan-tat-ho-so {
+  position: relative;
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-the);
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.modal-hoan-tat-ho-so__dong {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--mau-chu-phu);
+}
+
+.modal-hoan-tat-ho-so h3 {
+  margin: 0;
+}
+
+.modal-hoan-tat-ho-so__phu-de {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mau-chu-phu);
+}
+
+.modal-hoan-tat-ho-so__anh-cum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.modal-hoan-tat-ho-so__anh-vong {
+  position: relative;
+}
+
+.modal-hoan-tat-ho-so__nut-camera {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--mau-nen-the);
+  background: var(--mau-chinh-dam);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-hoan-tat-ho-so__nut-chon-anh {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.modal-hoan-tat-ho-so__nhan {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+  color: var(--mau-chu-phu);
+  position: relative;
+  margin-top: 4px;
+}
+
+.modal-hoan-tat-ho-so__nhan input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+  box-sizing: border-box;
+}
+
+.modal-hoan-tat-ho-so__dem-ky-tu {
+  position: absolute;
+  right: 0;
+  bottom: -18px;
+  font-size: 11px;
+}
+
+.modal-hoan-tat-ho-so__nut-hoan-tat {
+  width: 100%;
+  margin-top: 20px;
+}

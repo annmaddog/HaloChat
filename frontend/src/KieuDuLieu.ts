@@ -4,6 +4,7 @@ export interface NguoiDungTomTat {
   email: string;
   choPhepTinNhanTuNguoiLa: boolean;
   tenHienThi: string;
+  duongDanAnhDaiDien?: string | null;
 }
 
 export interface KetQuaDangKy {
@@ -77,6 +78,8 @@ export interface HoSoCaNhan {
   thongBaoLoiMoiKetBan: boolean;
   thongBaoNhom: boolean;
   tenHienThi: string;
+  duongDanAnhDaiDien?: string | null;
+  daXemHoanTatHoSo?: boolean;
 }
 
 export interface Nhom {

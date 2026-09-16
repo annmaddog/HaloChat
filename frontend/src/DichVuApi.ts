@@ -314,6 +314,21 @@ export async function DoiTenHienThi(token: string, tenHienThiMoi: string): Promi
   });
 }
 
+export async function DoiAnhDaiDien(token: string, duongDanAnhDaiDien: string): Promise<HoSoCaNhan> {
+  return goiApi<HoSoCaNhan>('/nguoidung/anh-dai-dien', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ duongDanAnhDaiDien }),
+  });
+}
+
+export async function DanhDauHoanTatHoSo(token: string): Promise<HoSoCaNhan> {
+  return goiApi<HoSoCaNhan>('/nguoidung/danh-dau-hoan-tat-ho-so', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export async function AnTinNhan(token: string, id: string): Promise<void> {
   await goiApi<{ thongBao: string }>(`/tinnhan/${id}/an`, {
     method: 'POST',

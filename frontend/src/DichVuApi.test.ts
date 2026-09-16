@@ -6,6 +6,7 @@ import {
   AnTinNhan, LayTinDaGhimTheoNguoiDung, LayTinDaGhimTheoNhom,
   LayMediaTheoNguoiDung, LayMediaTheoNhom,
   TimKiemTinNhanTheoNguoiDung, TimKiemTinNhanTheoNhom,
+  DoiAnhDaiDien, DanhDauHoanTatHoSo,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -433,5 +434,27 @@ describe('DichVuApi', () => {
     await TimKiemTinNhanTheoNhom('token-gia-lap', 'nhom-1', 'xin chao');
 
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/tinnhan/nhom/nhom-1/tim-kiem?tuKhoa=xin+chao'), expect.anything());
+  });
+
+  it('DoiAnhDaiDien goi dung endpoint kem duong dan anh', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({}), { status: 200 })));
+
+    await DoiAnhDaiDien('token-gia-lap', '/api/tinnhan/file/abc123');
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/anh-dai-dien'),
+      expect.objectContaining({ method: 'PUT', body: JSON.stringify({ duongDanAnhDaiDien: '/api/tinnhan/file/abc123' }) }),
+    );
+  });
+
+  it('DanhDauHoanTatHoSo goi dung endpoint bang POST', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({}), { status: 200 })));
+
+    await DanhDauHoanTatHoSo('token-gia-lap');
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/nguoidung/danh-dau-hoan-tat-ho-so'),
+      expect.objectContaining({ method: 'POST' }),
+    );
   });
 });
