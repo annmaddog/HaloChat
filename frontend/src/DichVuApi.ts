@@ -332,3 +332,15 @@ export async function LayTinDaGhimTheoNhom(token: string, nhomId: string): Promi
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function LayMediaTheoNguoiDung(token: string, doiTacId: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nguoi-dung/${doiTacId}/media`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayMediaTheoNhom(token: string, nhomId: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}/media`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
