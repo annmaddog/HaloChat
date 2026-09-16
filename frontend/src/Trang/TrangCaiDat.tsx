@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { LayThongTinCaNhan, CapNhatCaiDat, DoiMatKhau, DoiTenHienThi, LoiGoiApi } from '../DichVuApi';
+import { LayThongTinCaNhan, CapNhatCaiDat, DoiMatKhau, DoiTenHienThi, DoiAnhDaiDien, TaiLenTep, LoiGoiApi } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { CongTac } from '../ThanhPhan/CongTac';
+import { Avatar } from '../ThanhPhan/Avatar';
 import { apDungGiaoDien, layGiaoDienDaLuu, type GiaoDien } from '../NguCanh/GiaoDien';
 import './TrangCaiDat.css';
+
+const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
 
 type MucCaiDat = 'tai-khoan' | 'quyen-rieng-tu' | 'thong-bao' | 'bao-mat' | 'giao-dien';
 
@@ -23,6 +26,10 @@ export function TrangCaiDat() {
   const [dangLuuTen, setDangLuuTen] = useState(false);
   const [daLuuTen, setDaLuuTen] = useState(false);
   const [loiDoiTen, setLoiDoiTen] = useState<string | null>(null);
+
+  const [duongDanAnhDaiDien, setDuongDanAnhDaiDien] = useState<string | null>(null);
+  const [dangTaiAnh, setDangTaiAnh] = useState(false);
+  const [loiAnh, setLoiAnh] = useState<string | null>(null);
 
   const [dangTai, setDangTai] = useState(true);
   const [dangLuu, setDangLuu] = useState(false);
@@ -50,6 +57,7 @@ export function TrangCaiDat() {
         setThongBaoNhom(hoSo.thongBaoNhom);
         setTenHienThi(hoSo.tenHienThi);
         setTenHienThiGoc(hoSo.tenHienThi);
+        setDuongDanAnhDaiDien(hoSo.duongDanAnhDaiDien ?? null);
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được cài đặt.'))
       .finally(() => setDangTai(false));
@@ -144,6 +152,25 @@ export function TrangCaiDat() {
     }
   }
 
+  function doiAnhDaiDien(tep: File) {
+    if (!token) return;
+    if (!tep.type.startsWith('image/')) {
+      setLoiAnh('Chỉ chấp nhận file ảnh.');
+      return;
+    }
+    if (tep.size > GIOI_HAN_ANH_BYTES) {
+      setLoiAnh(`Ảnh vượt quá giới hạn ${GIOI_HAN_ANH_BYTES / 1024 / 1024}MB.`);
+      return;
+    }
+    setLoiAnh(null);
+    setDangTaiAnh(true);
+    TaiLenTep(token, tep)
+      .then((daTaiLen) => DoiAnhDaiDien(token, daTaiLen.duongDanFile))
+      .then((hoSoMoi) => setDuongDanAnhDaiDien(hoSoMoi.duongDanAnhDaiDien ?? null))
+      .catch(() => setLoiAnh('Đổi ảnh đại diện thất bại.'))
+      .finally(() => setDangTaiAnh(false));
+  }
+
   return (
     <div className="trang-cai-dat">
       <nav className="trang-cai-dat__menu">
@@ -176,6 +203,25 @@ export function TrangCaiDat() {
             <h2>Tài khoản</h2>
             <p><strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan}</p>
             <p><strong>Email:</strong> {nguoiDungHienTai?.email}</p>
+
+            <div className="trang-cai-dat__doi-anh">
+              <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
+              {loiAnh && <p className="thong-bao-loi" role="alert">{loiAnh}</p>}
+              <label className="nut-phu trang-cai-dat__nut-doi-anh">
+                {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  hidden
+                  disabled={dangTaiAnh}
+                  onChange={(su) => {
+                    const tep = su.target.files?.[0];
+                    if (tep) doiAnhDaiDien(tep);
+                    su.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
 
             <div className="trang-cai-dat__form-ten-hien-thi">
               <h3>Tên hiển thị</h3>

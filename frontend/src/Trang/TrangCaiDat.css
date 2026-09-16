@@ -148,3 +148,17 @@
   color: #fff;
   font-weight: 700;
 }
+
+.trang-cai-dat__doi-anh {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.trang-cai-dat__nut-doi-anh {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 13px;
+}

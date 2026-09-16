@@ -214,4 +214,43 @@ describe('TrangCaiDat', () => {
 
     expect(screen.queryByRole('button', { name: /đăng xuất/i })).not.toBeInTheDocument();
   });
+
+  it('doi anh dai dien ca nhan luu ngay khi chon file', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', duongDanAnhDaiDien: null,
+    });
+    vi.spyOn(DichVuApi, 'TaiLenTep').mockResolvedValue({ duongDanFile: '/api/tinnhan/file/xyz789', tenFileGoc: 'a.png', kichThuocFile: 100, loaiFile: 'image/png' });
+    vi.spyOn(DichVuApi, 'DoiAnhDaiDien').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', duongDanAnhDaiDien: '/api/tinnhan/file/xyz789',
+    });
+    renderTrangCaiDat();
+    await screen.findByText('Tên hiển thị');
+    const tep = new File(['noi-dung'], 'a.png', { type: 'image/png' });
+
+    await userEvent.upload(screen.getByLabelText('Đổi ảnh đại diện'), tep);
+
+    await waitFor(() => expect(DichVuApi.DoiAnhDaiDien).toHaveBeenCalledWith('token-gia-lap', '/api/tinnhan/file/xyz789'));
+  });
+
+  it('chon file khong phai anh thi bao loi, khong goi TaiLenTep', async () => {
+    renderTrangCaiDat();
+    await screen.findByText('Tên hiển thị');
+    const taiLenTep = vi.spyOn(DichVuApi, 'TaiLenTep');
+    const tep = new File(['noi-dung'], 'a.pdf', { type: 'application/pdf' });
+    // Input có `accept="image/*..."` nên userEvent mặc định tự lọc bỏ file
+    // không khớp trước khi bắn sự kiện change (giống hành vi trình duyệt
+    // thật). Ở đây ta chủ động tắt `applyAccept` để mô phỏng trường hợp
+    // người dùng vẫn chọn được file sai định dạng (vd: kéo-thả, hoặc trình
+    // duyệt/OS không lọc accept), qua đó kiểm tra được lớp validate JS.
+    const nguoiDung = userEvent.setup({ applyAccept: false });
+
+    await nguoiDung.upload(screen.getByLabelText('Đổi ảnh đại diện'), tep);
+
+    expect(await screen.findByText('Chỉ chấp nhận file ảnh.')).toBeInTheDocument();
+    expect(taiLenTep).not.toHaveBeenCalled();
+  });
 });
