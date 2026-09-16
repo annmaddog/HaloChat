@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -18,6 +18,18 @@ function dinhDangGio(thoiGianTao: string): string {
   const ngay = new Date(thoiGianTao);
   return ngay.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
+
+// [Bộ emoji ô nhập] Danh sách phẳng, không chia danh mục/tab — theo đúng
+// yêu cầu "đơn giản, 1 nhóm" đã chốt.
+const DANH_SACH_EMOJI = [
+  '😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😗', '😉', '😜',
+  '🤔', '😐', '😑', '😶', '🙄', '😏', '😥', '😮', '😯', '😪',
+  '😫', '😴', '😌', '😛', '😝', '🤤', '😒', '😓', '😔', '😕',
+  '🙁', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨',
+  '😩', '🤯', '😬', '😰', '😱', '😳', '😡', '😠', '🤬', '😷',
+  '🥳', '🥰', '🤗', '🤩', '😇', '🤪', '😎', '🤠', '👍', '👎',
+  '👏', '🙏', '❤️', '💔', '🔥', '🎉',
+];
 
 function trichNoiDungTinNhan(tn: TinNhan): string {
   if (tn.daThuHoi) return 'Tin nhắn đã được thu hồi.';
@@ -61,6 +73,7 @@ export function KhungTinNhan({
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
+  const [hienBangEmoji, setHienBangEmoji] = useState(false);
 
   useEffect(() => {
     setDangTraLoiId(null);
@@ -90,6 +103,43 @@ export function KhungTinNhan({
       document.removeEventListener('keydown', xuLyPhimEscape);
     };
   }, [menuMoChoTinNhanId]);
+
+  // Đóng bảng emoji khi bấm ra ngoài hoặc bấm Escape — cùng cơ chế với menu "...".
+  useEffect(() => {
+    if (!hienBangEmoji) return;
+
+    function xuLyBamNgoai(su: MouseEvent) {
+      const dich = su.target as HTMLElement;
+      if (!dich.closest('.khung-tin-nhan__emoji-cum')) {
+        setHienBangEmoji(false);
+      }
+    }
+
+    function xuLyPhimEscape(su: KeyboardEvent) {
+      if (su.key === 'Escape') setHienBangEmoji(false);
+    }
+
+    document.addEventListener('mousedown', xuLyBamNgoai);
+    document.addEventListener('keydown', xuLyPhimEscape);
+    return () => {
+      document.removeEventListener('mousedown', xuLyBamNgoai);
+      document.removeEventListener('keydown', xuLyPhimEscape);
+    };
+  }, [hienBangEmoji]);
+
+  // Chèn emoji vào đúng vị trí con trỏ trong ô nhập (uncontrolled input —
+  // thao tác trực tiếp qua ref) rồi focus lại và đóng bảng.
+  function chenEmoji(emoji: string) {
+    const oNhap = noiDungRef.current;
+    if (!oNhap) return;
+    const batDau = oNhap.selectionStart ?? oNhap.value.length;
+    const ketThuc = oNhap.selectionEnd ?? oNhap.value.length;
+    oNhap.value = oNhap.value.slice(0, batDau) + emoji + oNhap.value.slice(ketThuc);
+    const viTriMoi = batDau + emoji.length;
+    oNhap.focus();
+    oNhap.setSelectionRange(viTriMoi, viTriMoi);
+    setHienBangEmoji(false);
+  }
 
   const tinDangTraLoi = danhSachTinNhan.find((tn) => tn.id === dangTraLoiId) ?? null;
 
@@ -312,6 +362,26 @@ export function KhungTinNhan({
           }}
         />
         <input ref={noiDungRef} type="text" placeholder="Nhập tin nhắn..." disabled={!dangKetNoi} onPaste={xuLyDanClipboard} />
+        <div className="khung-tin-nhan__emoji-cum">
+          <button
+            type="button"
+            className="khung-tin-nhan__nut-emoji"
+            onClick={() => setHienBangEmoji((truoc) => !truoc)}
+            disabled={!dangKetNoi}
+            aria-label="Chọn emoji"
+          >
+            <BieuTuongMatCuoi />
+          </button>
+          {hienBangEmoji && (
+            <div className="khung-tin-nhan__bang-emoji" data-testid="bang-emoji">
+              {DANH_SACH_EMOJI.map((emoji) => (
+                <button key={emoji} type="button" onClick={() => chenEmoji(emoji)} aria-label={`Emoji ${emoji}`}>
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button type="submit" disabled={!dangKetNoi}>
           Gửi
         </button>

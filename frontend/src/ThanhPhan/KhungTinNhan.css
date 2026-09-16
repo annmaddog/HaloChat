@@ -139,6 +139,56 @@
   flex-shrink: 0;
 }
 
+.khung-tin-nhan__emoji-cum {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.khung-tin-nhan__nut-emoji {
+  border: 1px solid var(--mau-vien);
+  background: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--mau-chu-dam);
+}
+
+.khung-tin-nhan__bang-emoji {
+  position: absolute;
+  bottom: 48px;
+  right: 0;
+  z-index: 6;
+  width: 260px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  background: var(--mau-nen-the);
+  border: 1px solid var(--mau-vien);
+  border-radius: 10px;
+  box-shadow: var(--bong-the);
+  padding: 8px;
+}
+
+.khung-tin-nhan__bang-emoji button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.khung-tin-nhan__bang-emoji button:hover {
+  background: var(--mau-nen-tren);
+}
+
 .khung-tin-nhan__anh {
   max-width: 220px;
   border-radius: 12px;

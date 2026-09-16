@@ -342,4 +342,26 @@ describe('KhungTinNhan', () => {
 
     expect(onGuiTep).not.toHaveBeenCalled();
   });
+
+  it('bam icon mat cuoi hien bang emoji, bam 1 emoji chen vao o nhap', async () => {
+    render(<KhungTinNhan {...PROPS_MAC_DINH} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Chọn emoji' }));
+    const oNhap = screen.getByPlaceholderText('Nhập tin nhắn...') as HTMLInputElement;
+    const nutEmojiDauTien = screen.getByTestId('bang-emoji').querySelector('button') as HTMLButtonElement;
+
+    await userEvent.click(nutEmojiDauTien);
+
+    expect(oNhap.value.length).toBeGreaterThan(0);
+  });
+
+  it('bam ra ngoai bang emoji dang mo se dong bang lai', async () => {
+    render(<KhungTinNhan {...PROPS_MAC_DINH} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Chọn emoji' }));
+    expect(screen.getByTestId('bang-emoji')).toBeInTheDocument();
+
+    await userEvent.click(document.body);
+
+    expect(screen.queryByTestId('bang-emoji')).not.toBeInTheDocument();
+  });
 });
