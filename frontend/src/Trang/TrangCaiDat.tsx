@@ -205,10 +205,7 @@ export function TrangCaiDat() {
             <div className="trang-cai-dat__the trang-cai-dat__the-tk">
               <div className="trang-cai-dat__ngan">
                 <span className="trang-cai-dat__ngan-icon"><BieuTuongNguoiDung /></span>
-                <div>
-                  <h2 className="trang-cai-dat__ngan-tieu-de">Thông tin tài khoản</h2>
-                  <p className="trang-cai-dat__ngan-phu-de">Quản lý và cập nhật thông tin tài khoản của bạn</p>
-                </div>
+                <h2 className="trang-cai-dat__ngan-tieu-de">Thông tin tài khoản</h2>
               </div>
 
               <div className="trang-cai-dat__than">
@@ -316,18 +313,18 @@ export function TrangCaiDat() {
                   required
                   minLength={6}
                 />
-                <div className="trang-cai-dat__hang-mk-cuoi">
-                  <TruongNhap
-                    nhan="Xác nhận mật khẩu mới"
-                    anNhan
-                    bieuTuong={<BieuTuongKhoa />}
-                    coTheAn
-                    placeholder="Xác nhận mật khẩu mới"
-                    value={xacNhanMatKhauMoi}
-                    onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
-                    required
-                    minLength={6}
-                  />
+                <TruongNhap
+                  nhan="Xác nhận mật khẩu mới"
+                  anNhan
+                  bieuTuong={<BieuTuongKhoa />}
+                  coTheAn
+                  placeholder="Xác nhận mật khẩu mới"
+                  value={xacNhanMatKhauMoi}
+                  onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
+                  required
+                  minLength={6}
+                />
+                <div className="trang-cai-dat__hang-nut">
                   <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
                     <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Cập nhật mật khẩu'}
                   </button>
