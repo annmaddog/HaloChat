@@ -266,7 +266,7 @@ export function TrangCaiDat() {
               </div>
             </div>
 
-            <form className="trang-cai-dat__the" onSubmit={xuLyDoiMatKhau}>
+            <form className="trang-cai-dat__the trang-cai-dat__the--hep" onSubmit={xuLyDoiMatKhau}>
               <div className="trang-cai-dat__the-dau">
                 <span className="trang-cai-dat__the-icon"><BieuTuongKhoa /></span>
                 <h2 className="trang-cai-dat__the-tieu-de">Đổi mật khẩu</h2>

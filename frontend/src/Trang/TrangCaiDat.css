@@ -88,6 +88,10 @@
   margin-bottom: 20px;
 }
 
+.trang-cai-dat__the--hep {
+  max-width: 420px;
+}
+
 .trang-cai-dat__the-dau {
   display: flex;
   align-items: center;
