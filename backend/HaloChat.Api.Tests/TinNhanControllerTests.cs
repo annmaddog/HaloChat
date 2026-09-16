@@ -225,4 +225,18 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
 
         Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
     }
+
+    [Fact]
+    public async Task An_IdKhongPhaiTinNhanTonTai_TraVe404()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "anA", email = "anA@vi.du", matKhau = "MatKhau123!" });
+        var dangNhapA = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "anA", matKhau = "MatKhau123!" });
+        var tokenA = (await dangNhapA.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var idA = (await (await _client.GetAsync("/api/nguoidung/toi")).Content.ReadFromJsonAsync<HoSoCaNhanDto>())!.Id;
+
+        var phanHoiAn = await _client.PostAsync($"/api/tinnhan/{idA}/an", null);
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoiAn.StatusCode);
+    }
 }

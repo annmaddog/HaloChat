@@ -117,6 +117,59 @@ public class ChatHub : Hub
         }
     }
 
+    public async Task<TinNhanDto> ThuHoiTinNhan(string tinNhanId)
+    {
+        try
+        {
+            var tinNhan = await _dichVuTinNhan.ThuHoiAsync(NguoiDungHienTaiId, tinNhanId);
+            await GuiBroadcastCapNhatAsync(tinNhan, "TinNhanDaThuHoi");
+            return tinNhan;
+        }
+        catch (TinNhanKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongPhaiNguoiGuiException loi) { throw new HubException(loi.Message); }
+    }
+
+    public async Task<TinNhanDto> GhimTinNhan(string tinNhanId)
+    {
+        try
+        {
+            var tinNhan = await _dichVuTinNhan.GhimAsync(NguoiDungHienTaiId, tinNhanId);
+            await GuiBroadcastCapNhatAsync(tinNhan, "TinNhanDaGhim");
+            return tinNhan;
+        }
+        catch (TinNhanKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { throw new HubException(loi.Message); }
+        catch (NhomKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongPhaiThanhVienNhomException loi) { throw new HubException(loi.Message); }
+    }
+
+    public async Task<TinNhanDto> BoGhimTinNhan(string tinNhanId)
+    {
+        try
+        {
+            var tinNhan = await _dichVuTinNhan.BoGhimAsync(NguoiDungHienTaiId, tinNhanId);
+            await GuiBroadcastCapNhatAsync(tinNhan, "TinNhanBoGhim");
+            return tinNhan;
+        }
+        catch (TinNhanKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { throw new HubException(loi.Message); }
+        catch (NhomKhongTonTaiException loi) { throw new HubException(loi.Message); }
+        catch (KhongPhaiThanhVienNhomException loi) { throw new HubException(loi.Message); }
+    }
+
+    private async Task GuiBroadcastCapNhatAsync(TinNhanDto tinNhan, string tenSuKien)
+    {
+        if (tinNhan.NhomId is not null)
+        {
+            await Clients.OthersInGroup("nhom-" + tinNhan.NhomId).SendAsync(tenSuKien, tinNhan);
+        }
+        else
+        {
+            var idKia = tinNhan.NguoiGuiId == NguoiDungHienTaiId ? tinNhan.NguoiNhanId : tinNhan.NguoiGuiId;
+            await Clients.User(idKia!).SendAsync(tenSuKien, tinNhan);
+        }
+    }
+
     public Task DanhDauDaDoc(string? nguoiGuiId, string? nhomId) =>
         nhomId is not null
             ? _dichVuTinNhan.DanhDauDaDocNhomAsync(NguoiDungHienTaiId, nhomId)

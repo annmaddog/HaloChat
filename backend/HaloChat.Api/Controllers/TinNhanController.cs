@@ -158,4 +158,50 @@ public class TinNhanController : ControllerBase
 
         return Ok(await _dichVuTinNhan.LayDanhSachHoiThoaiAsync(IdHienTai));
     }
+
+    [HttpPost("{id}/an")]
+    public async Task<IActionResult> An(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await _dichVuTinNhan.AnAsync(IdHienTai, id);
+            return Ok(new { thongBao = "Đã ẩn tin nhắn." });
+        }
+        catch (TinNhanKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+        catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+    }
+
+    [HttpGet("nguoi-dung/{id}/ghim")]
+    public async Task<IActionResult> LayTinDaGhimTheoNguoiDung(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(await _dichVuTinNhan.LayTinDaGhimTheoNguoiDungAsync(IdHienTai, id));
+    }
+
+    [HttpGet("nhom/{id}/ghim")]
+    public async Task<IActionResult> LayTinDaGhimTheoNhom(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            return Ok(await _dichVuTinNhan.LayTinDaGhimTheoNhomAsync(IdHienTai, id));
+        }
+        catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+    }
 }

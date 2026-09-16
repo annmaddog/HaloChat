@@ -204,4 +204,72 @@ public class ChatHubTests : IClassFixture<ThietLapKiemThuTichHop>
         Assert.Equal(idB, suKienNhanDuoc!.Value.UserId);
         Assert.True(suKienNhanDuoc.Value.Online);
     }
+
+    [Fact]
+    public async Task ThuHoiTinNhan_LaNguoiGui_PhiaKiaNhanDuocSuKienRealtime()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubthuhoia");
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubthuhoib");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubthuhoib").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubthuhoib").ChoPhepTinNhanTuNguoiLa = true;
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await using var ketNoiB = TaoKetNoiHub(tokenB);
+        TinNhanDto? nhanDuoc = null;
+        var daNhan = new TaskCompletionSource();
+        ketNoiB.On<TinNhanDto>("TinNhanDaThuHoi", tn => { nhanDuoc = tn; daNhan.SetResult(); });
+
+        await ketNoiA.StartAsync();
+        await ketNoiB.StartAsync();
+        var tinGui = await ketNoiA.InvokeAsync<TinNhanDto>("GuiTinNhan", idB, null, "Text", "Bí mật", null, null, null, null, null);
+
+        await ketNoiA.InvokeAsync<TinNhanDto>("ThuHoiTinNhan", tinGui.Id);
+
+        await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.NotNull(nhanDuoc);
+        Assert.True(nhanDuoc!.DaThuHoi);
+        Assert.Equal("Tin nhắn đã được thu hồi.", nhanDuoc.NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task ThuHoiTinNhan_KhongPhaiNguoiGui_NemHubException()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubthuhoic");
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubthuhoid");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubthuhoid").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubthuhoid").ChoPhepTinNhanTuNguoiLa = true;
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await using var ketNoiB = TaoKetNoiHub(tokenB);
+        await ketNoiA.StartAsync();
+        await ketNoiB.StartAsync();
+        var tinGui = await ketNoiA.InvokeAsync<TinNhanDto>("GuiTinNhan", idB, null, "Text", "Bí mật", null, null, null, null, null);
+
+        await Assert.ThrowsAsync<HubException>(() => ketNoiB.InvokeAsync<TinNhanDto>("ThuHoiTinNhan", tinGui.Id));
+    }
+
+    [Fact]
+    public async Task GhimTinNhan_ThanhVienHopLe_PhiaKiaNhanDuocSuKien()
+    {
+        var tokenA = await TaoTaiKhoanVaDangNhapAsync("hubghima");
+        var tokenB = await TaoTaiKhoanVaDangNhapAsync("hubghimb");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubghimb").Id;
+        _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "hubghimb").ChoPhepTinNhanTuNguoiLa = true;
+
+        await using var ketNoiA = TaoKetNoiHub(tokenA);
+        await using var ketNoiB = TaoKetNoiHub(tokenB);
+        TinNhanDto? nhanDuoc = null;
+        var daNhan = new TaskCompletionSource();
+        ketNoiB.On<TinNhanDto>("TinNhanDaGhim", tn => { nhanDuoc = tn; daNhan.SetResult(); });
+
+        await ketNoiA.StartAsync();
+        await ketNoiB.StartAsync();
+        var tinGui = await ketNoiA.InvokeAsync<TinNhanDto>("GuiTinNhan", idB, null, "Text", "Ghi nhớ", null, null, null, null, null);
+
+        await ketNoiA.InvokeAsync<TinNhanDto>("GhimTinNhan", tinGui.Id);
+
+        await daNhan.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.NotNull(nhanDuoc);
+        Assert.True(nhanDuoc!.DaGhim);
+    }
 }
