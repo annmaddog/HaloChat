@@ -3,13 +3,15 @@ import { useLocation } from 'react-router-dom';
 import {
   LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong,
   LayTinDaGhimTheoNguoiDung, AnTinNhan, LayMediaTheoNguoiDung, TimKiemTinNhanTheoNguoiDung,
+  LayThongTinCaNhan,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
+import { ModalHoanTatHoSo } from '../ThanhPhan/ModalHoanTatHoSo';
 import { PanelKhoMedia } from './PanelKhoMedia';
-import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan, LoaiCamXuc } from '../KieuDuLieu';
+import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan, LoaiCamXuc, HoSoCaNhan } from '../KieuDuLieu';
 import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -53,6 +55,8 @@ export function TrangChat() {
   const [tinNhanGhimTheoDoiTac, setTinNhanGhimTheoDoiTac] = useState<Record<string, TinNhan[]>>({});
   const [hienKhoMedia, setHienKhoMedia] = useState(false);
   const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
+  const [hoSo, setHoSo] = useState<HoSoCaNhan | null>(null);
+  const [hienModalHoanTatHoSo, setHienModalHoanTatHoSo] = useState(false);
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -73,6 +77,15 @@ export function TrangChat() {
         setLoi(loiBat instanceof Error ? loiBat.message : 'Đã có lỗi xảy ra.');
       })
       .finally(() => setDangTaiDanhSach(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    LayThongTinCaNhan(token).then((ketQua) => {
+      setHoSo(ketQua);
+      setHienModalHoanTatHoSo(!ketQua.daXemHoanTatHoSo);
+    }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -471,6 +484,16 @@ export function TrangChat() {
             />
           )}
         </>
+      )}
+
+      {hienModalHoanTatHoSo && hoSo && (
+        <ModalHoanTatHoSo
+          tenHienThiBanDau={hoSo.tenHienThi}
+          onDong={(hoSoMoi) => {
+            if (hoSoMoi) setHoSo(hoSoMoi);
+            setHienModalHoanTatHoSo(false);
+          }}
+        />
       )}
     </div>
   );

@@ -82,6 +82,11 @@ describe('TrangChat', () => {
       taoHoiThoaiGiaLap({ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' }),
     ]);
     vi.spyOn(DichVuApi, 'LayTrangThaiHoatDong').mockResolvedValue({});
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', daXemHoanTatHoSo: true,
+    });
   });
 
   it('hiển thị danh sách hội thoại sau khi tải', async () => {
@@ -380,5 +385,44 @@ describe('TrangChat', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Thích tin nhắn này' }));
 
     await waitFor(() => expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('ThaCamXucTinNhan', 'm1', 'Thich'));
+  });
+
+  it('chua xem hoan tat ho so thi hien modal ngay khi vao trang', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', daXemHoanTatHoSo: false,
+    });
+
+    renderTrangChat();
+
+    expect(await screen.findByText('Hoàn tất hồ sơ')).toBeInTheDocument();
+  });
+
+  it('da xem hoan tat ho so thi khong hien modal', async () => {
+    renderTrangChat();
+
+    await screen.findByText('TranBinh');
+    expect(screen.queryByText('Hoàn tất hồ sơ')).not.toBeInTheDocument();
+  });
+
+  it('dong modal hoan tat ho so thi an modal va cap nhat ten hien thi tren giao dien', async () => {
+    vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', daXemHoanTatHoSo: false,
+    });
+    vi.spyOn(DichVuApi, 'DanhDauHoanTatHoSo').mockResolvedValue({
+      id: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false,
+      hienThiTrangThaiHoatDong: true, choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true,
+      thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'NguyenAn', daXemHoanTatHoSo: true,
+    });
+
+    renderTrangChat();
+    await screen.findByText('Hoàn tất hồ sơ');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Đóng' }));
+
+    expect(screen.queryByText('Hoàn tất hồ sơ')).not.toBeInTheDocument();
   });
 });
