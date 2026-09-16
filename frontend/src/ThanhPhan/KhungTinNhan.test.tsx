@@ -137,6 +137,36 @@ describe('KhungTinNhan', () => {
     expect(within(khoiTrichDan).getByText('Xin chào bạn')).toBeInTheDocument();
   });
 
+  it('doi hoi thoai (tenHienThi doi) reset trang thai dang tra loi', async () => {
+    const tinA: TinNhan = {
+      id: 'a1', nguoiGuiId: 'nguoi-a', nguoiNhanId: 'toi', nhomId: null,
+      loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai A', duongDanFile: null, tenFileGoc: null,
+      kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
+      thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+    };
+    const tinB: TinNhan = {
+      id: 'b1', nguoiGuiId: 'nguoi-b', nguoiNhanId: 'toi', nhomId: null,
+      loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai B', duongDanFile: null, tenFileGoc: null,
+      kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
+      thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+    };
+    const onGuiVanBan = vi.fn();
+    const { rerender } = render(
+      <KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinA]} idHienTai="toi" tenHienThi="Hoi thoai A" onGuiVanBan={onGuiVanBan} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Trả lời tin nhắn này' }));
+    expect(screen.getByText(/↩ Trả lời/)).toBeInTheDocument();
+
+    rerender(
+      <KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinB]} idHienTai="toi" tenHienThi="Hoi thoai B" onGuiVanBan={onGuiVanBan} />,
+    );
+
+    expect(screen.queryByText(/↩ Trả lời/)).not.toBeInTheDocument();
+
+    await userEvent.type(screen.getByPlaceholderText('Nhập tin nhắn...'), 'Tin nhan moi{enter}');
+    expect(onGuiVanBan).toHaveBeenCalledWith('Tin nhan moi', null);
+  });
+
   it('card File hien nut tron tai xuong rieng biet', () => {
     const tinFile: TinNhan = {
       id: 'm3', nguoiGuiId: 'toi', nguoiNhanId: 'nguoi-kia', nhomId: null,

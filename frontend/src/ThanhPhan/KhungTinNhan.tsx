@@ -54,6 +54,10 @@ export function KhungTinNhan({
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
 
+  useEffect(() => {
+    setDangTraLoiId(null);
+  }, [tenHienThi]);
+
   const tinDangTraLoi = danhSachTinNhan.find((tn) => tn.id === dangTraLoiId) ?? null;
 
   useEffect(() => {

@@ -145,11 +145,6 @@
   display: block;
 }
 
-.khung-tin-nhan__file {
-  color: inherit;
-  text-decoration: underline;
-}
-
 .khung-tin-nhan__nut-quay-lai {
   display: none;
   border: none;
