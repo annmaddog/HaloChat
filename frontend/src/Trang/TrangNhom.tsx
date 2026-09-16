@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayDanhSachNhom, TaoNhom, LayLichSuNhom, ThemThanhVien, XoaThanhVien, RoiNhom,
   LayDanhSachNguoiDung, LayBanBe, LoiGoiApi, TaiLenTep,
-  LayTinDaGhimTheoNhom, AnTinNhan, LayMediaTheoNhom,
+  LayTinDaGhimTheoNhom, AnTinNhan, LayMediaTheoNhom, TimKiemTinNhanTheoNhom,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
@@ -338,6 +338,44 @@ export function TrangNhom() {
       .finally(() => setDangTaiLichSu(false));
   }
 
+  function timKiemTinNhan(tuKhoa: string): Promise<TinNhan[]> {
+    if (!token || !nhomDangChon) return Promise.resolve([]);
+    return TimKiemTinNhanTheoNhom(token, nhomDangChon.id, tuKhoa);
+  }
+
+  async function nhayToiTinNhan(id: string): Promise<boolean> {
+    if (!token || !nhomDangChon) return false;
+    let dsHienTai = tinNhanTheoNhom[nhomDangChon.id] ?? [];
+    if (dsHienTai.some((tn) => tn.id === id)) return true;
+
+    for (let lan = 0; lan < 20; lan++) {
+      const cuNhat = dsHienTai[0];
+      if (!cuNhat) return false;
+
+      setDangTaiLichSu(true);
+      let cuHon: TinNhanHienThi[];
+      try {
+        cuHon = await LayLichSuNhom(token, nhomDangChon.id, cuNhat.id, SO_LUONG_LICH_SU_THEM);
+      } catch {
+        setLoi('Không tải được tin nhắn cũ hơn.');
+        return false;
+      } finally {
+        setDangTaiLichSu(false);
+      }
+
+      if (cuHon.length < SO_LUONG_LICH_SU_THEM) {
+        setConThemLichSu((truoc) => ({ ...truoc, [nhomDangChon.id]: false }));
+      }
+      const thuTu = [...cuHon].reverse();
+      dsHienTai = [...thuTu, ...dsHienTai];
+      setTinNhanTheoNhom((truoc) => ({ ...truoc, [nhomDangChon.id]: dsHienTai }));
+
+      if (cuHon.some((tn) => tn.id === id)) return true;
+      if (cuHon.length === 0) return false;
+    }
+    return false;
+  }
+
   function themThanhVien(userId: string) {
     if (!token || !nhomDangChon) return;
     ThemThanhVien(token, nhomDangChon.id, userId)
@@ -437,6 +475,8 @@ export function TrangNhom() {
             onAn={anTinNhanCucBo}
             danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
             onMoKhoMedia={moKhoMedia}
+            onTimKiem={timKiemTinNhan}
+            onNhayToiTinNhan={nhayToiTinNhan}
           />
           {hienKhoMedia && (
             <PanelKhoMedia

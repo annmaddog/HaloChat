@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong,
-  LayTinDaGhimTheoNguoiDung, AnTinNhan, LayMediaTheoNguoiDung,
+  LayTinDaGhimTheoNguoiDung, AnTinNhan, LayMediaTheoNguoiDung, TimKiemTinNhanTheoNguoiDung,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
@@ -345,6 +345,44 @@ export function TrangChat() {
       .finally(() => setDangTaiLichSu(false));
   }
 
+  function timKiemTinNhan(tuKhoa: string): Promise<TinNhan[]> {
+    if (!token || !nguoiDangChon) return Promise.resolve([]);
+    return TimKiemTinNhanTheoNguoiDung(token, nguoiDangChon.id, tuKhoa);
+  }
+
+  async function nhayToiTinNhan(id: string): Promise<boolean> {
+    if (!token || !nguoiDangChon) return false;
+    let dsHienTai = tinNhanTheoNguoiDung[nguoiDangChon.id] ?? [];
+    if (dsHienTai.some((tn) => tn.id === id)) return true;
+
+    for (let lan = 0; lan < 20; lan++) {
+      const cuNhat = dsHienTai[0];
+      if (!cuNhat) return false;
+
+      setDangTaiLichSu(true);
+      let cuHon: TinNhanHienThi[];
+      try {
+        cuHon = await LayLichSuTinNhan(token, nguoiDangChon.id, cuNhat.id, SO_LUONG_LICH_SU_THEM);
+      } catch {
+        setLoi('Không tải được tin nhắn cũ hơn.');
+        return false;
+      } finally {
+        setDangTaiLichSu(false);
+      }
+
+      if (cuHon.length < SO_LUONG_LICH_SU_THEM) {
+        setConThemLichSu((truoc) => ({ ...truoc, [nguoiDangChon.id]: false }));
+      }
+      const thuTuThoiGian = [...cuHon].reverse();
+      dsHienTai = [...thuTuThoiGian, ...dsHienTai];
+      setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: dsHienTai }));
+
+      if (cuHon.some((tn) => tn.id === id)) return true;
+      if (cuHon.length === 0) return false;
+    }
+    return false;
+  }
+
   return (
     <div className={`trang-chat${nguoiDangChon ? ' trang-chat--da-chon' : ''}`}>
       <aside className="trang-chat__sidebar">
@@ -404,6 +442,8 @@ export function TrangChat() {
             onAn={anTinNhanCucBo}
             danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
             onMoKhoMedia={moKhoMedia}
+            onTimKiem={timKiemTinNhan}
+            onNhayToiTinNhan={nhayToiTinNhan}
           />
           {hienKhoMedia && (
             <PanelKhoMedia

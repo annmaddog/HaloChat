@@ -338,4 +338,35 @@ describe('TrangChat', () => {
     expect(await screen.findByText('Kho lưu trữ Media & Tệp')).toBeInTheDocument();
     expect(screen.getByText('Hình ảnh (1)')).toBeInTheDocument();
   });
+
+  it('go tim kiem tin nhan goi dung TimKiemTinNhanTheoNguoiDung', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'TimKiemTinNhanTheoNguoiDung').mockResolvedValue([]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin chao');
+
+    await waitFor(() => expect(DichVuApi.TimKiemTinNhanTheoNguoiDung).toHaveBeenCalledWith(expect.any(String), '2', 'xin chao'));
+  });
+
+  it('bam ket qua tim kiem chua tai ve thi tu dong tai them lich su toi khi thay', async () => {
+    const tinCu = taoTinNhanGiaLap({ id: 'm-cu-nhat', noiDungTinNhan: 'Tin dau tien' });
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValueOnce([tinCu]);
+    const tinXa = taoTinNhanGiaLap({ id: 'm-xa-nhat', noiDungTinNhan: 'Xin chao rat xa' });
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValueOnce([tinXa]);
+    vi.spyOn(DichVuApi, 'TimKiemTinNhanTheoNguoiDung').mockResolvedValue([tinXa]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await screen.findByText('Tin dau tien');
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin chao');
+    const ketQua = await screen.findByTestId('ket-qua-tim-m-xa-nhat');
+
+    await userEvent.click(ketQua);
+
+    expect(await screen.findAllByText('Xin chao rat xa')).not.toHaveLength(0);
+  });
 });

@@ -300,4 +300,51 @@ describe('TrangNhom', () => {
     expect(screen.getByText('Hình ảnh (1)')).toBeInTheDocument();
     expect(DichVuApi.LayMediaTheoNhom).toHaveBeenCalledWith('token-gia-lap', 'n1');
   });
+
+  it('go tim kiem tin nhan goi dung TimKiemTinNhanTheoNhom', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'TimKiemTinNhanTheoNhom').mockResolvedValue([]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin chao');
+
+    await waitFor(() => expect(DichVuApi.TimKiemTinNhanTheoNhom).toHaveBeenCalledWith('token-gia-lap', 'n1', 'xin chao'));
+  });
+
+  it('bam ket qua tim kiem chua tai ve thi tu dong tai them lich su toi khi thay', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    const tinCu = {
+      id: 'm-cu-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
+      noiDungTinNhan: 'Tin dau tien', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
+      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+    };
+    const tinXa = {
+      id: 'm-xa-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
+      noiDungTinNhan: 'Xin chao rat xa', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
+      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+    };
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinCu]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinXa]);
+    vi.spyOn(DichVuApi, 'TimKiemTinNhanTheoNhom').mockResolvedValue([tinXa]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await screen.findByText('Tin dau tien');
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin chao');
+    const ketQua = await screen.findByTestId('ket-qua-tim-m-xa-nhat');
+
+    await userEvent.click(ketQua);
+
+    expect(await screen.findAllByText('Xin chao rat xa')).not.toHaveLength(0);
+  });
 });
