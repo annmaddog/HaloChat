@@ -6,6 +6,7 @@ import { TrangNhom } from './TrangNhom';
 import { NhaCungCapXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { NhaCungCapChat } from '../NguCanh/NguCanhChat';
 import * as DichVuApi from '../DichVuApi';
+import type { CamXuc } from '../KieuDuLieu';
 
 const ketNoiGiaLap = {
   start: vi.fn().mockResolvedValue(undefined),
@@ -70,7 +71,7 @@ describe('TrangNhom', () => {
       id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
       noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
     }]);
 
     renderTrangNhom();
@@ -289,7 +290,7 @@ describe('TrangNhom', () => {
       id: 'm-anh', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Anh',
       noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439001', tenFileGoc: 'a.png',
       kichThuocFile: 1024, loaiFile: 'image/png', daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z',
-      traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
     }]);
 
     renderTrangNhom();
@@ -324,13 +325,13 @@ describe('TrangNhom', () => {
       id: 'm-cu-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
       noiDungTinNhan: 'Tin dau tien', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[],
     };
     const tinXa = {
       id: 'm-xa-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
       noiDungTinNhan: 'Xin chao rat xa', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[],
     };
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinCu]);
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinXa]);
@@ -346,5 +347,30 @@ describe('TrangNhom', () => {
     await userEvent.click(ketQua);
 
     expect(await screen.findAllByText('Xin chao rat xa')).not.toHaveLength(0);
+  });
+
+  it('bam nhanh nut like goi ThaCamXucTinNhan qua hub', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([{
+      id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
+      noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
+      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+    }]);
+    ketNoiGiaLap.invoke.mockResolvedValue({
+      id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
+      noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
+      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      danhSachCamXuc: [{ nguoiDungId: '1', loaiCamXuc: 'Thich' }] as CamXuc[],
+    });
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(await screen.findByRole('button', { name: 'Thích tin nhắn này' }));
+
+    await waitFor(() => expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('ThaCamXucTinNhan', 'm1', 'Thich'));
   });
 });

@@ -8,7 +8,7 @@ const TIN_ANH: TinNhan = {
   id: 'm1', nguoiGuiId: '1', nguoiNhanId: '2', nhomId: null, loaiTinNhan: 'Anh',
   noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439001', tenFileGoc: 'a.png',
   kichThuocFile: 1024, loaiFile: 'image/png', daDoc: true, daNhan: true, thoiGianTao: '2026-01-01T00:00:00Z',
-  traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null,
+  traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
 };
 
 const TIN_FILE: TinNhan = {

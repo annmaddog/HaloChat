@@ -12,7 +12,7 @@ import { BieuTuongBanBe, BieuTuongMayAnh } from '../ThanhPhan/BieuTuong';
 import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
 import { PanelKhoMedia } from './PanelKhoMedia';
-import type { Nhom, NguoiDungTomTat, TinNhan } from '../KieuDuLieu';
+import type { Nhom, NguoiDungTomTat, TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './TrangNhom.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -163,6 +163,7 @@ export function TrangNhom() {
     ketNoi.on('TinNhanDaThuHoi', xuLyTinNhanThuHoi);
     ketNoi.on('TinNhanDaGhim', xuLyTinNhanGhim);
     ketNoi.on('TinNhanBoGhim', xuLyTinNhanBoGhim);
+    ketNoi.on('TinNhanDaCamXuc', capNhatTinNhanTrongState);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
       ketNoi.off('DuocThemVaoNhom', xuLyDuocThem);
@@ -172,6 +173,7 @@ export function TrangNhom() {
       ketNoi.off('TinNhanDaThuHoi', xuLyTinNhanThuHoi);
       ketNoi.off('TinNhanDaGhim', xuLyTinNhanGhim);
       ketNoi.off('TinNhanBoGhim', xuLyTinNhanBoGhim);
+      ketNoi.off('TinNhanDaCamXuc', capNhatTinNhanTrongState);
     };
   }, [ketNoi]);
 
@@ -293,6 +295,20 @@ export function TrangNhom() {
         }));
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ ghim thất bại.'));
+  }
+
+  function thaCamXuc(id: string, loaiCamXuc: LoaiCamXuc) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('ThaCamXucTinNhan', id, loaiCamXuc)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thả cảm xúc thất bại.'));
+  }
+
+  function boCamXuc(id: string) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('BoCamXucTinNhan', id)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ cảm xúc thất bại.'));
   }
 
   function anTinNhanCucBo(id: string) {
@@ -473,6 +489,8 @@ export function TrangNhom() {
             onGhim={ghimTinNhan}
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
+            onThaCamXuc={thaCamXuc}
+            onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
             onMoKhoMedia={moKhoMedia}
             onTimKiem={timKiemTinNhan}

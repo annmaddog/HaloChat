@@ -9,7 +9,7 @@ import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
 import { PanelKhoMedia } from './PanelKhoMedia';
-import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan } from '../KieuDuLieu';
+import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -176,12 +176,14 @@ export function TrangChat() {
     ketNoi.on('TinNhanDaThuHoi', xuLyTinNhanCapNhat);
     ketNoi.on('TinNhanDaGhim', xuLyTinNhanGhim);
     ketNoi.on('TinNhanBoGhim', xuLyTinNhanBoGhim);
+    ketNoi.on('TinNhanDaCamXuc', xuLyTinNhanCapNhat);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
       ketNoi.off('TrangThaiHoatDongThayDoi', xuLyTrangThaiThayDoi);
       ketNoi.off('TinNhanDaThuHoi', xuLyTinNhanCapNhat);
       ketNoi.off('TinNhanDaGhim', xuLyTinNhanGhim);
       ketNoi.off('TinNhanBoGhim', xuLyTinNhanBoGhim);
+      ketNoi.off('TinNhanDaCamXuc', xuLyTinNhanCapNhat);
     };
   }, [ketNoi, idHienTai]);
 
@@ -198,7 +200,7 @@ export function TrangChat() {
       loaiTinNhan: 'Text', noiDungTinNhan: noiDungGui, duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
       thoiGianTao: new Date().toISOString(), dangGui: true, traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
     };
     setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanTam] }));
 
@@ -296,6 +298,20 @@ export function TrangChat() {
         }));
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ ghim thất bại.'));
+  }
+
+  function thaCamXuc(id: string, loaiCamXuc: LoaiCamXuc) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('ThaCamXucTinNhan', id, loaiCamXuc)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thả cảm xúc thất bại.'));
+  }
+
+  function boCamXuc(id: string) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('BoCamXucTinNhan', id)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ cảm xúc thất bại.'));
   }
 
   function anTinNhanCucBo(id: string) {
@@ -440,6 +456,8 @@ export function TrangChat() {
             onGhim={ghimTinNhan}
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
+            onThaCamXuc={thaCamXuc}
+            onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
             onMoKhoMedia={moKhoMedia}
             onTimKiem={timKiemTinNhan}

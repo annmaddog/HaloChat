@@ -62,6 +62,7 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     daThuHoi: false,
     daGhim: false,
     thoiGianGhim: null,
+    danhSachCamXuc: [],
     ...gan,
   };
 }
@@ -368,5 +369,16 @@ describe('TrangChat', () => {
     await userEvent.click(ketQua);
 
     expect(await screen.findAllByText('Xin chao rat xa')).not.toHaveLength(0);
+  });
+
+  it('bam nhanh nut like goi ThaCamXucTinNhan qua hub', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([taoTinNhanGiaLap({ id: 'm1' })]);
+    ketNoiGiaLap.invoke.mockResolvedValue(taoTinNhanGiaLap({ id: 'm1', danhSachCamXuc: [{ nguoiDungId: '1', loaiCamXuc: 'Thich' }] }));
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await userEvent.click(await screen.findByRole('button', { name: 'Thích tin nhắn này' }));
+
+    await waitFor(() => expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('ThaCamXucTinNhan', 'm1', 'Thich'));
   });
 });
