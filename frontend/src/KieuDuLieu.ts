@@ -16,6 +16,13 @@ export interface KetQuaDangNhap {
 
 export type LoaiTinNhan = 'Text' | 'Anh' | 'File';
 
+export type LoaiCamXuc = 'Thich' | 'YeuThich' | 'Haha' | 'Wow' | 'Buon' | 'PhanNo';
+
+export interface CamXuc {
+  nguoiDungId: string;
+  loaiCamXuc: LoaiCamXuc;
+}
+
 export interface TinNhan {
   id: string;
   nguoiGuiId: string;
@@ -34,6 +41,7 @@ export interface TinNhan {
   daThuHoi: boolean;
   daGhim: boolean;
   thoiGianGhim: string | null;
+  danhSachCamXuc: CamXuc[];
 }
 
 export interface TepTinDaTaiLen {

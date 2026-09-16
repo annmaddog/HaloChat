@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
 import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
-import type { TinNhan } from '../KieuDuLieu';
+import type { TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './KhungTinNhan.css';
 
 export type TinNhanHienThi = TinNhan & { dangGui?: boolean };
@@ -30,6 +30,11 @@ const DANH_SACH_EMOJI = [
   '🥳', '🥰', '🤗', '🤩', '😇', '🤪', '😎', '🤠', '👍', '👎',
   '👏', '🙏', '❤️', '💔', '🔥', '🎉',
 ];
+
+const EMOJI_CAM_XUC: Record<LoaiCamXuc, string> = {
+  Thich: '👍', YeuThich: '❤️', Haha: '😂', Wow: '😮', Buon: '😢', PhanNo: '😠',
+};
+const THU_TU_CAM_XUC: LoaiCamXuc[] = ['Thich', 'YeuThich', 'Haha', 'Wow', 'Buon', 'PhanNo'];
 
 function trichNoiDungTinNhan(tn: TinNhan): string {
   if (tn.daThuHoi) return 'Tin nhắn đã được thu hồi.';
@@ -63,12 +68,15 @@ interface PropsKhungTinNhan {
   onMoKhoMedia: () => void;
   onTimKiem: (tuKhoa: string) => Promise<TinNhan[]>;
   onNhayToiTinNhan: (id: string) => Promise<boolean>;
+  onThaCamXuc: (id: string, loaiCamXuc: LoaiCamXuc) => void;
+  onBoCamXuc: (id: string) => void;
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
   onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
+  onThaCamXuc, onBoCamXuc,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
@@ -76,6 +84,8 @@ export function KhungTinNhan({
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
+  const [popupCamXucChoTinNhanId, setPopupCamXucChoTinNhanId] = useState<string | null>(null);
+  const homGioHanCamXucRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hienBangEmoji, setHienBangEmoji] = useState(false);
   const [hienOTimKiem, setHienOTimKiem] = useState(false);
   const [tuKhoaTim, setTuKhoaTim] = useState('');
@@ -347,6 +357,51 @@ export function KhungTinNhan({
               className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}${idDangNoiBat === tn.id ? ' khung-tin-nhan__hang--noi-bat' : ''}`}
             >
               <div className="khung-tin-nhan__icon-noi">
+                {!tn.daThuHoi && (
+                  <div className="khung-tin-nhan__cam-xuc-cum">
+                    <button
+                      type="button"
+                      className="khung-tin-nhan__nut-cam-xuc"
+                      aria-label="Thích tin nhắn này"
+                      onClick={(su) => {
+                        su.stopPropagation();
+                        const daCoCuaMinh = tn.danhSachCamXuc.some((cx) => cx.nguoiDungId === idHienTai);
+                        if (daCoCuaMinh) onBoCamXuc(tn.id);
+                        else onThaCamXuc(tn.id, 'Thich');
+                      }}
+                      onMouseEnter={() => {
+                        if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                        homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
+                      }}
+                      onMouseLeave={() => {
+                        if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                      }}
+                    >
+                      👍
+                    </button>
+                    {popupCamXucChoTinNhanId === tn.id && (
+                      <div
+                        className="khung-tin-nhan__popup-cam-xuc"
+                        onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
+                      >
+                        {THU_TU_CAM_XUC.map((loai) => (
+                          <button
+                            key={loai}
+                            type="button"
+                            aria-label={`Thả cảm xúc ${loai}`}
+                            onClick={(su) => {
+                              su.stopPropagation();
+                              onThaCamXuc(tn.id, loai);
+                              setPopupCamXucChoTinNhanId(null);
+                            }}
+                          >
+                            {EMOJI_CAM_XUC[loai]}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <button
                   type="button"
                   className="khung-tin-nhan__nut-tra-loi"
@@ -423,6 +478,16 @@ export function KhungTinNhan({
                     )}
                     {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
                   </>
+                )}
+                {!tn.daThuHoi && tn.danhSachCamXuc.length > 0 && (
+                  <span className="khung-tin-nhan__badge-cam-xuc">
+                    {Array.from(new Set(tn.danhSachCamXuc.map((cx) => cx.loaiCamXuc)))
+                      .slice(0, 3)
+                      .map((loai) => EMOJI_CAM_XUC[loai])
+                      .join('')}
+                    {' '}
+                    {tn.danhSachCamXuc.length}
+                  </span>
                 )}
                 {tinDangMoId === tn.id && (
                   <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>

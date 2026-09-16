@@ -590,3 +590,62 @@
   outline-offset: 2px;
   transition: outline-color 2s ease;
 }
+
+.khung-tin-nhan__cam-xuc-cum {
+  position: relative;
+}
+
+.khung-tin-nhan__nut-cam-xuc {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--mau-vien);
+  background: var(--mau-nen-the);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.khung-tin-nhan__popup-cam-xuc {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  background: var(--mau-nen-the);
+  border: 1px solid var(--mau-vien);
+  border-radius: 999px;
+  padding: 4px 6px;
+  box-shadow: var(--bong-the);
+  z-index: 7;
+}
+
+.khung-tin-nhan__popup-cam-xuc button {
+  border: none;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.khung-tin-nhan__popup-cam-xuc button:hover {
+  transform: scale(1.3);
+}
+
+.khung-tin-nhan__badge-cam-xuc {
+  align-self: flex-end;
+  background: var(--mau-nen-the);
+  border: 1px solid var(--mau-vien);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 11px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  margin-top: -8px;
+  margin-right: -4px;
+}
