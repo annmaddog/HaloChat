@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -61,12 +61,14 @@ interface PropsKhungTinNhan {
   onAn: (id: string) => void;
   danhSachTinNhanGhim: TinNhan[];
   onMoKhoMedia: () => void;
+  onTimKiem: (tuKhoa: string) => Promise<TinNhan[]>;
+  onNhayToiTinNhan: (id: string) => Promise<boolean>;
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
-  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia,
+  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
@@ -75,10 +77,64 @@ export function KhungTinNhan({
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
   const [hienBangEmoji, setHienBangEmoji] = useState(false);
+  const [hienOTimKiem, setHienOTimKiem] = useState(false);
+  const [tuKhoaTim, setTuKhoaTim] = useState('');
+  const [ketQuaTim, setKetQuaTim] = useState<TinNhan[]>([]);
+  const [loiTim, setLoiTim] = useState<string | null>(null);
+  const [idCanCuonToi, setIdCanCuonToi] = useState<string | null>(null);
+  const [idDangNoiBat, setIdDangNoiBat] = useState<string | null>(null);
+  const thamChieuBongBongRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const bomTimKiemRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setDangTraLoiId(null);
   }, [tenHienThi]);
+
+  useEffect(() => {
+    if (!hienOTimKiem) return;
+    if (bomTimKiemRef.current) clearTimeout(bomTimKiemRef.current);
+    if (!tuKhoaTim.trim()) {
+      setKetQuaTim([]);
+      return;
+    }
+    bomTimKiemRef.current = setTimeout(() => {
+      onTimKiem(tuKhoaTim.trim()).then(setKetQuaTim).catch(() => setKetQuaTim([]));
+    }, 300);
+    return () => {
+      if (bomTimKiemRef.current) clearTimeout(bomTimKiemRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tuKhoaTim, hienOTimKiem]);
+
+  useEffect(() => {
+    if (!idCanCuonToi) return;
+    const phanTu = thamChieuBongBongRef.current.get(idCanCuonToi);
+    if (!phanTu) return;
+    phanTu.scrollIntoView?.({ block: 'center' });
+    setIdDangNoiBat(idCanCuonToi);
+    setIdCanCuonToi(null);
+    const bom = setTimeout(() => setIdDangNoiBat(null), 2000);
+    return () => clearTimeout(bom);
+  }, [idCanCuonToi, danhSachTinNhan]);
+
+  async function moKetQuaTim(tn: TinNhan) {
+    const daCoSan = danhSachTinNhan.some((t) => t.id === tn.id);
+    setLoiTim(null);
+    if (daCoSan) {
+      setHienOTimKiem(false);
+      setTuKhoaTim('');
+      setIdCanCuonToi(tn.id);
+      return;
+    }
+    const timThay = await onNhayToiTinNhan(tn.id);
+    if (timThay) {
+      setHienOTimKiem(false);
+      setTuKhoaTim('');
+      setIdCanCuonToi(tn.id);
+    } else {
+      setLoiTim('Không tìm thấy tin nhắn này trong lịch sử.');
+    }
+  }
 
   // Đóng menu "..." khi bấm ra ngoài hoặc bấm Escape — bấm bên trong
   // `.khung-tin-nhan__icon-noi` (icon Trả lời/"..."/chính menu) không tính
@@ -199,23 +255,60 @@ export function KhungTinNhan({
             ←
           </button>
         )}
-        {onBamTieuDe ? (
-          <button className="khung-tin-nhan__tieu-de-bam" onClick={onBamTieuDe}>
-            <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
-            <div className="khung-tin-nhan__ten-cum">
-              <span className="khung-tin-nhan__ten">{tenHienThi}</span>
-              {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}
-            </div>
-          </button>
+        {hienOTimKiem ? (
+          <div className="khung-tin-nhan__o-tim-kiem-cum">
+            <input
+              autoFocus
+              type="text"
+              className="khung-tin-nhan__o-tim-kiem"
+              placeholder="Tìm tin nhắn..."
+              value={tuKhoaTim}
+              onChange={(su) => setTuKhoaTim(su.target.value)}
+            />
+            {(ketQuaTim.length > 0 || loiTim) && (
+              <div className="khung-tin-nhan__ket-qua-tim">
+                {loiTim && <p className="khung-tin-nhan__loi-tim">{loiTim}</p>}
+                {ketQuaTim.map((tn) => (
+                  <button
+                    key={tn.id}
+                    data-testid={`ket-qua-tim-${tn.id}`}
+                    className="khung-tin-nhan__dong-ket-qua-tim"
+                    onClick={() => moKetQuaTim(tn)}
+                  >
+                    <span className="khung-tin-nhan__ket-qua-ten">{layTenNguoiGui ? layTenNguoiGui(tn.nguoiGuiId) : 'một người dùng'}</span>
+                    <span className="khung-tin-nhan__ket-qua-noi-dung">{tn.noiDungTinNhan}</span>
+                    <span className="khung-tin-nhan__ket-qua-gio">{dinhDangGio(tn.thoiGianTao)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
-          <>
-            <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
-            <div className="khung-tin-nhan__ten-cum">
-              <span className="khung-tin-nhan__ten">{tenHienThi}</span>
-              {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}
-            </div>
-          </>
+          onBamTieuDe ? (
+            <button className="khung-tin-nhan__tieu-de-bam" onClick={onBamTieuDe}>
+              <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
+              <div className="khung-tin-nhan__ten-cum">
+                <span className="khung-tin-nhan__ten">{tenHienThi}</span>
+                {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}
+              </div>
+            </button>
+          ) : (
+            <>
+              <span className="khung-tin-nhan__avatar">{tenHienThi.charAt(0).toUpperCase()}</span>
+              <div className="khung-tin-nhan__ten-cum">
+                <span className="khung-tin-nhan__ten">{tenHienThi}</span>
+                {phuDe && <span className="khung-tin-nhan__phu-de">{phuDe}</span>}
+              </div>
+            </>
+          )
         )}
+        <button
+          className="khung-tin-nhan__nut-tim-kiem"
+          onClick={() => setHienOTimKiem((truoc) => !truoc)}
+          aria-label="Tìm tin nhắn"
+        >
+          <BieuTuongTimKiem />
+        </button>
         <button className="khung-tin-nhan__nut-kho-media" onClick={onMoKhoMedia} aria-label="Kho lưu trữ Media & Tệp">
           <BieuTuongKhoLuuTru />
         </button>
@@ -245,7 +338,14 @@ export function KhungTinNhan({
         {danhSachTinNhan.map((tn) => {
           const laCuaMinh = tn.nguoiGuiId === idHienTai;
           return (
-            <div key={tn.id} className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}`}>
+            <div
+              key={tn.id}
+              ref={(el) => {
+                if (el) thamChieuBongBongRef.current.set(tn.id, el);
+                else thamChieuBongBongRef.current.delete(tn.id);
+              }}
+              className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}${idDangNoiBat === tn.id ? ' khung-tin-nhan__hang--noi-bat' : ''}`}
+            >
               <div className="khung-tin-nhan__icon-noi">
                 <button
                   type="button"

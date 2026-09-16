@@ -24,6 +24,8 @@ const PROPS_MAC_DINH = {
   onAn: () => {},
   danhSachTinNhanGhim: [],
   onMoKhoMedia: () => {},
+  onTimKiem: () => Promise.resolve([]),
+  onNhayToiTinNhan: () => Promise.resolve(true),
 };
 
 const TIN_NHAN_MAU = {
@@ -373,5 +375,61 @@ describe('KhungTinNhan', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Kho lưu trữ Media & Tệp' }));
 
     expect(onMoKhoMedia).toHaveBeenCalledTimes(1);
+  });
+
+  it('bam icon kinh lup hien o tim kiem, go tu khoa goi onTimKiem', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const onTimKiem = vi.fn().mockResolvedValue([]);
+    render(<KhungTinNhan {...PROPS_MAC_DINH} onTimKiem={onTimKiem} />);
+
+    await userEvent.setup({ delay: null }).click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.setup({ delay: null }).type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin chao');
+    vi.advanceTimersByTime(350);
+
+    expect(onTimKiem).toHaveBeenCalledWith('xin chao');
+    vi.useRealTimers();
+  });
+
+  it('bam 1 ket qua da co san trong danh sach thi cuon toi va noi bat, khong goi onNhayToiTinNhan', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm1', noiDungTinNhan: 'Xin chao ban' };
+    const onTimKiem = vi.fn().mockResolvedValue([tin]);
+    const onNhayToiTinNhan = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} onTimKiem={onTimKiem} onNhayToiTinNhan={onNhayToiTinNhan} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin');
+    const ketQua = await screen.findByTestId('ket-qua-tim-m1');
+
+    await userEvent.click(ketQua);
+
+    expect(onNhayToiTinNhan).not.toHaveBeenCalled();
+    expect(screen.queryByPlaceholderText('Tìm tin nhắn...')).not.toBeInTheDocument();
+  });
+
+  it('bam 1 ket qua CHUA co trong danh sach thi goi onNhayToiTinNhan', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm-xa', noiDungTinNhan: 'Xin chao ban cu' };
+    const onTimKiem = vi.fn().mockResolvedValue([tin]);
+    const onNhayToiTinNhan = vi.fn().mockResolvedValue(true);
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[]} onTimKiem={onTimKiem} onNhayToiTinNhan={onNhayToiTinNhan} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin');
+    const ketQua = await screen.findByTestId('ket-qua-tim-m-xa');
+
+    await userEvent.click(ketQua);
+
+    expect(onNhayToiTinNhan).toHaveBeenCalledWith('m-xa');
+  });
+
+  it('khong tim thay tin sau khi tai het lich su thi hien thong bao', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm-mat', noiDungTinNhan: 'Tin da mat' };
+    const onTimKiem = vi.fn().mockResolvedValue([tin]);
+    const onNhayToiTinNhan = vi.fn().mockResolvedValue(false);
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[]} onTimKiem={onTimKiem} onNhayToiTinNhan={onNhayToiTinNhan} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Tìm tin nhắn' }));
+    await userEvent.type(screen.getByPlaceholderText('Tìm tin nhắn...'), 'xin');
+    const ketQua = await screen.findByTestId('ket-qua-tim-m-mat');
+
+    await userEvent.click(ketQua);
+
+    expect(await screen.findByText('Không tìm thấy tin nhắn này trong lịch sử.')).toBeInTheDocument();
   });
 });

@@ -5,6 +5,7 @@ import {
   GuiYeuCauQuenMatKhau, DatLaiMatKhau, DoiMatKhau, LaySoTinNhomChuaDoc, DoiTenHienThi,
   AnTinNhan, LayTinDaGhimTheoNguoiDung, LayTinDaGhimTheoNhom,
   LayMediaTheoNguoiDung, LayMediaTheoNhom,
+  TimKiemTinNhanTheoNguoiDung, TimKiemTinNhanTheoNhom,
 } from './DichVuApi';
 
 describe('DichVuApi', () => {
@@ -416,5 +417,21 @@ describe('DichVuApi', () => {
     await LayMediaTheoNhom('token-gia-lap', 'nhom-1');
 
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/tinnhan/nhom/nhom-1/media'), expect.anything());
+  });
+
+  it('TimKiemTinNhanTheoNguoiDung goi dung endpoint kem tuKhoa', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 })));
+
+    await TimKiemTinNhanTheoNguoiDung('token-gia-lap', 'doi-tac-1', 'xin chao');
+
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/tinnhan/nguoi-dung/doi-tac-1/tim-kiem?tuKhoa=xin+chao'), expect.anything());
+  });
+
+  it('TimKiemTinNhanTheoNhom goi dung endpoint kem tuKhoa', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 })));
+
+    await TimKiemTinNhanTheoNhom('token-gia-lap', 'nhom-1', 'xin chao');
+
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/tinnhan/nhom/nhom-1/tim-kiem?tuKhoa=xin+chao'), expect.anything());
   });
 });

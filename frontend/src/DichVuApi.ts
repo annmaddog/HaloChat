@@ -344,3 +344,15 @@ export async function LayMediaTheoNhom(token: string, nhomId: string): Promise<T
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function TimKiemTinNhanTheoNguoiDung(token: string, doiTacId: string, tuKhoa: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nguoi-dung/${doiTacId}/tim-kiem?${new URLSearchParams({ tuKhoa })}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function TimKiemTinNhanTheoNhom(token: string, nhomId: string, tuKhoa: string): Promise<TinNhan[]> {
+  return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}/tim-kiem?${new URLSearchParams({ tuKhoa })}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
