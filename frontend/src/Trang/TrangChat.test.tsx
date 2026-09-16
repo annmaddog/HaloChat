@@ -59,6 +59,9 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     daNhan: false,
     thoiGianTao: new Date().toISOString(),
     traLoi: null,
+    daThuHoi: false,
+    daGhim: false,
+    thoiGianGhim: null,
     ...gan,
   };
 }

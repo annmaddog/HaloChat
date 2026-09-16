@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayDanhSachNhom, TaoNhom, LayLichSuNhom, ThemThanhVien, XoaThanhVien, RoiNhom,
   LayDanhSachNguoiDung, LayBanBe, LoiGoiApi, TaiLenTep,
+  LayTinDaGhimTheoNhom, AnTinNhan,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
@@ -10,7 +11,7 @@ import { Avatar } from '../ThanhPhan/Avatar';
 import { BieuTuongBanBe, BieuTuongMayAnh } from '../ThanhPhan/BieuTuong';
 import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
-import type { Nhom, NguoiDungTomTat } from '../KieuDuLieu';
+import type { Nhom, NguoiDungTomTat, TinNhan } from '../KieuDuLieu';
 import './TrangNhom.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -43,6 +44,7 @@ export function TrangNhom() {
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const [panelDangMo, setPanelDangMo] = useState<'khong' | 'thong-tin' | 'quan-ly'>('khong');
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
+  const [tinNhanGhimTheoNhom, setTinNhanGhimTheoNhom] = useState<Record<string, TinNhan[]>>({});
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
 
@@ -79,6 +81,13 @@ export function TrangNhom() {
   }, [token, nhomDangChonId, daTaiLichSuIds]);
 
   useEffect(() => {
+    if (!token || !nhomDangChonId) return;
+    LayTinDaGhimTheoNhom(token, nhomDangChonId)
+      .then((ghim) => setTinNhanGhimTheoNhom((truoc) => ({ ...truoc, [nhomDangChonId]: ghim })))
+      .catch(() => {});
+  }, [token, nhomDangChonId]);
+
+  useEffect(() => {
     if (!ketNoi || !nhomDangChonId) return;
     ketNoi.invoke('DanhDauDaDoc', null, nhomDangChonId).catch(() => {});
   }, [ketNoi, nhomDangChonId]);
@@ -107,17 +116,41 @@ export function TrangNhom() {
       setDanhSachNhom((truoc) => truoc.map((n) => (n.id === nhom.id ? nhom : n)));
     }
 
+    function xuLyTinNhanGhim(tinNhan: TinNhanHienThi) {
+      capNhatTinNhanTrongState(tinNhan);
+      if (!tinNhan.nhomId) return;
+      setTinNhanGhimTheoNhom((truoc) => ({
+        ...truoc,
+        [tinNhan.nhomId as string]: [...(truoc[tinNhan.nhomId as string] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
+      }));
+    }
+
+    function xuLyTinNhanBoGhim(tinNhan: TinNhanHienThi) {
+      capNhatTinNhanTrongState(tinNhan);
+      if (!tinNhan.nhomId) return;
+      setTinNhanGhimTheoNhom((truoc) => ({
+        ...truoc,
+        [tinNhan.nhomId as string]: (truoc[tinNhan.nhomId as string] ?? []).filter((tn) => tn.id !== tinNhan.id),
+      }));
+    }
+
     ketNoi.on('NhanTinNhan', xuLyTinNhanMoi);
     ketNoi.on('DuocThemVaoNhom', xuLyDuocThem);
     ketNoi.on('BiXoaKhoiNhom', xuLyBiXoa);
     ketNoi.on('NhomDaGiaiTan', xuLyBiXoa);
     ketNoi.on('NhomDaCapNhat', xuLyCapNhat);
+    ketNoi.on('TinNhanDaThuHoi', capNhatTinNhanTrongState);
+    ketNoi.on('TinNhanDaGhim', xuLyTinNhanGhim);
+    ketNoi.on('TinNhanBoGhim', xuLyTinNhanBoGhim);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
       ketNoi.off('DuocThemVaoNhom', xuLyDuocThem);
       ketNoi.off('BiXoaKhoiNhom', xuLyBiXoa);
       ketNoi.off('NhomDaGiaiTan', xuLyBiXoa);
       ketNoi.off('NhomDaCapNhat', xuLyCapNhat);
+      ketNoi.off('TinNhanDaThuHoi', capNhatTinNhanTrongState);
+      ketNoi.off('TinNhanDaGhim', xuLyTinNhanGhim);
+      ketNoi.off('TinNhanBoGhim', xuLyTinNhanBoGhim);
     };
   }, [ketNoi]);
 
@@ -190,6 +223,59 @@ export function TrangNhom() {
       })
       .catch(() => setLoi('Gửi file thất bại.'))
       .finally(() => setDangTaiTep(false));
+  }
+
+  function capNhatTinNhanTrongState(tinCapNhat: TinNhanHienThi) {
+    if (!tinCapNhat.nhomId) return;
+    setTinNhanTheoNhom((truoc) => ({
+      ...truoc,
+      [tinCapNhat.nhomId as string]: (truoc[tinCapNhat.nhomId as string] ?? []).map((tn) => (tn.id === tinCapNhat.id ? tinCapNhat : tn)),
+    }));
+  }
+
+  function thuHoiTinNhan(id: string) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('ThuHoiTinNhan', id)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thu hồi tin nhắn thất bại.'));
+  }
+
+  function ghimTinNhan(id: string) {
+    if (!ketNoi || !nhomDangChon) return;
+    ketNoi.invoke<TinNhanHienThi>('GhimTinNhan', id)
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoNhom((truoc) => ({
+          ...truoc,
+          [nhomDangChon.id]: [...(truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+        }));
+      })
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Ghim tin nhắn thất bại.'));
+  }
+
+  function boGhimTinNhan(id: string) {
+    if (!ketNoi || !nhomDangChon) return;
+    ketNoi.invoke<TinNhanHienThi>('BoGhimTinNhan', id)
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoNhom((truoc) => ({
+          ...truoc,
+          [nhomDangChon.id]: (truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+      })
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ ghim thất bại.'));
+  }
+
+  function anTinNhanCucBo(id: string) {
+    if (!token || !nhomDangChon) return;
+    AnTinNhan(token, id)
+      .then(() => {
+        setTinNhanTheoNhom((truoc) => ({
+          ...truoc,
+          [nhomDangChon.id]: (truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+      })
+      .catch(() => setLoi('Xóa tin nhắn thất bại.'));
   }
 
   function taiThemLichSuCu() {
@@ -302,6 +388,11 @@ export function TrangNhom() {
             loi={loi}
             onQuayLai={() => setNhomDangChonId(null)}
             onBamTieuDe={() => setPanelDangMo('thong-tin')}
+            onThuHoi={thuHoiTinNhan}
+            onGhim={ghimTinNhan}
+            onBoGhim={boGhimTinNhan}
+            onAn={anTinNhanCucBo}
+            danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
           />
           {panelDangMo === 'thong-tin' && (
             <PanelThongTinNhom

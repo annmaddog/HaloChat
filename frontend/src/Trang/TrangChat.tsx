@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong } from '../DichVuApi';
+import {
+  LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong,
+  LayTinDaGhimTheoNguoiDung, AnTinNhan,
+} from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
-import type { NguoiDungTomTat, HoiThoaiTomTat } from '../KieuDuLieu';
+import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan } from '../KieuDuLieu';
 import './TrangChat.css';
 
 const GIOI_HAN_ANH_BYTES = 5 * 1024 * 1024;
@@ -37,6 +40,7 @@ export function TrangChat() {
   const [dangTaiTep, setDangTaiTep] = useState(false);
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
+  const [tinNhanGhimTheoDoiTac, setTinNhanGhimTheoDoiTac] = useState<Record<string, TinNhan[]>>({});
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -94,6 +98,14 @@ export function TrangChat() {
   }, [token, nguoiDangChon]);
 
   useEffect(() => {
+    if (!token || !nguoiDangChon) return;
+    LayTinDaGhimTheoNguoiDung(token, nguoiDangChon.id)
+      .then((ghim) => setTinNhanGhimTheoDoiTac((truoc) => ({ ...truoc, [nguoiDangChon.id]: ghim })))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, nguoiDangChon]);
+
+  useEffect(() => {
     if (!ketNoi || !nguoiDangChon) return;
     ketNoi.invoke('DanhDauDaDoc', nguoiDangChon.id, null).catch(() => {});
   }, [ketNoi, nguoiDangChon]);
@@ -114,11 +126,46 @@ export function TrangChat() {
       setTrangThaiOnline((truoc) => ({ ...truoc, [userId]: online }));
     }
 
+    function xuLyTinNhanCapNhat(tinNhan: TinNhanHienThi) {
+      if (tinNhan.nhomId) return;
+      const idKia = idNguoiKia(tinNhan, idHienTai);
+      setTinNhanTheoNguoiDung((truoc) => ({
+        ...truoc,
+        [idKia]: (truoc[idKia] ?? []).map((tn) => (tn.id === tinNhan.id ? tinNhan : tn)),
+      }));
+    }
+
+    function xuLyTinNhanGhim(tinNhan: TinNhanHienThi) {
+      xuLyTinNhanCapNhat(tinNhan);
+      if (tinNhan.nhomId) return;
+      const idKia = idNguoiKia(tinNhan, idHienTai);
+      setTinNhanGhimTheoDoiTac((truoc) => ({
+        ...truoc,
+        [idKia]: [...(truoc[idKia] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
+      }));
+    }
+
+    function xuLyTinNhanBoGhim(tinNhan: TinNhanHienThi) {
+      xuLyTinNhanCapNhat(tinNhan);
+      if (tinNhan.nhomId) return;
+      const idKia = idNguoiKia(tinNhan, idHienTai);
+      setTinNhanGhimTheoDoiTac((truoc) => ({
+        ...truoc,
+        [idKia]: (truoc[idKia] ?? []).filter((tn) => tn.id !== tinNhan.id),
+      }));
+    }
+
     ketNoi.on('NhanTinNhan', xuLyTinNhanMoi);
     ketNoi.on('TrangThaiHoatDongThayDoi', xuLyTrangThaiThayDoi);
+    ketNoi.on('TinNhanDaThuHoi', xuLyTinNhanCapNhat);
+    ketNoi.on('TinNhanDaGhim', xuLyTinNhanGhim);
+    ketNoi.on('TinNhanBoGhim', xuLyTinNhanBoGhim);
     return () => {
       ketNoi.off('NhanTinNhan', xuLyTinNhanMoi);
       ketNoi.off('TrangThaiHoatDongThayDoi', xuLyTrangThaiThayDoi);
+      ketNoi.off('TinNhanDaThuHoi', xuLyTinNhanCapNhat);
+      ketNoi.off('TinNhanDaGhim', xuLyTinNhanGhim);
+      ketNoi.off('TinNhanBoGhim', xuLyTinNhanBoGhim);
     };
   }, [ketNoi, idHienTai]);
 
@@ -135,6 +182,7 @@ export function TrangChat() {
       loaiTinNhan: 'Text', noiDungTinNhan: noiDungGui, duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
       thoiGianTao: new Date().toISOString(), dangGui: true, traLoi: null,
+      daThuHoi: false, daGhim: false, thoiGianGhim: null,
     };
     setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanTam] }));
 
@@ -183,6 +231,59 @@ export function TrangChat() {
         setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi file thất bại. Vui lòng thử lại.');
       })
       .finally(() => setDangTaiTep(false));
+  }
+
+  function capNhatTinNhanTrongState(tinCapNhat: TinNhanHienThi) {
+    const idKia = idNguoiKia(tinCapNhat, idHienTai);
+    setTinNhanTheoNguoiDung((truoc) => ({
+      ...truoc,
+      [idKia]: (truoc[idKia] ?? []).map((tn) => (tn.id === tinCapNhat.id ? tinCapNhat : tn)),
+    }));
+  }
+
+  function thuHoiTinNhan(id: string) {
+    if (!ketNoi) return;
+    ketNoi.invoke<TinNhanHienThi>('ThuHoiTinNhan', id)
+      .then((tinCapNhat) => capNhatTinNhanTrongState(tinCapNhat))
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Thu hồi tin nhắn thất bại.'));
+  }
+
+  function ghimTinNhan(id: string) {
+    if (!ketNoi || !nguoiDangChon) return;
+    ketNoi.invoke<TinNhanHienThi>('GhimTinNhan', id)
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoDoiTac((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+        }));
+      })
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Ghim tin nhắn thất bại.'));
+  }
+
+  function boGhimTinNhan(id: string) {
+    if (!ketNoi || !nguoiDangChon) return;
+    ketNoi.invoke<TinNhanHienThi>('BoGhimTinNhan', id)
+      .then((tinCapNhat) => {
+        capNhatTinNhanTrongState(tinCapNhat);
+        setTinNhanGhimTheoDoiTac((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+      })
+      .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Bỏ ghim thất bại.'));
+  }
+
+  function anTinNhanCucBo(id: string) {
+    if (!token || !nguoiDangChon) return;
+    AnTinNhan(token, id)
+      .then(() => {
+        setTinNhanTheoNguoiDung((truoc) => ({
+          ...truoc,
+          [nguoiDangChon.id]: (truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== id),
+        }));
+      })
+      .catch(() => setLoi('Xóa tin nhắn thất bại.'));
   }
 
   function taiThemLichSuCu() {
@@ -258,6 +359,11 @@ export function TrangChat() {
           dangTaiTep={dangTaiTep}
           loi={loi}
           onQuayLai={() => setNguoiDangChon(null)}
+          onThuHoi={thuHoiTinNhan}
+          onGhim={ghimTinNhan}
+          onBoGhim={boGhimTinNhan}
+          onAn={anTinNhanCucBo}
+          danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
         />
       )}
     </div>
