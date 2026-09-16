@@ -24,10 +24,12 @@ public class DichVuTinNhan : IDichVuTinNhan
     private readonly INhomRepository _khoNhom;
     private readonly IDocNhomRepository _khoDocNhom;
     private readonly IQuanLyKetNoiChat _quanLyKetNoi;
+    private readonly ITinNhanAnRepository _khoTinNhanAn;
 
     public DichVuTinNhan(
         ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan,
-        INhomRepository khoNhom, IDocNhomRepository khoDocNhom, IQuanLyKetNoiChat quanLyKetNoi)
+        INhomRepository khoNhom, IDocNhomRepository khoDocNhom, IQuanLyKetNoiChat quanLyKetNoi,
+        ITinNhanAnRepository khoTinNhanAn)
     {
         _khoTinNhan = khoTinNhan;
         _khoNguoiDung = khoNguoiDung;
@@ -35,6 +37,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         _khoNhom = khoNhom;
         _khoDocNhom = khoDocNhom;
         _quanLyKetNoi = quanLyKetNoi;
+        _khoTinNhanAn = khoTinNhanAn;
     }
 
     public async Task<TinNhanDto> GuiTinNhanAsync(
@@ -176,7 +179,8 @@ public class DichVuTinNhan : IDichVuTinNhan
     public async Task<List<TinNhanDto>> LayLichSuAsync(string nguoiHienTaiId, string nguoiKiaId, string? truocId, int soLuong)
     {
         var lichSu = await _khoTinNhan.LayLichSuTheoNguoiDungAsync(nguoiHienTaiId, nguoiKiaId, truocId, soLuong);
-        return lichSu.Select(AnhXaDto).ToList();
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(nguoiHienTaiId, lichSu.Select(t => t.Id));
+        return lichSu.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
     }
 
     public async Task<List<TinNhanDto>> LayLichSuNhomAsync(string nguoiHienTaiId, string nhomId, string? truocId, int soLuong)
@@ -188,7 +192,87 @@ public class DichVuTinNhan : IDichVuTinNhan
         }
 
         var lichSu = await _khoTinNhan.LayLichSuNhomAsync(nhomId, truocId, soLuong);
-        return lichSu.Select(AnhXaDto).ToList();
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(nguoiHienTaiId, lichSu.Select(t => t.Id));
+        return lichSu.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
+    private async Task KiemTraQuyenTrenTinNhanAsync(string idHienTai, TinNhan tinNhan)
+    {
+        if (tinNhan.NhomId is not null)
+        {
+            var nhom = await _khoNhom.TimTheoIdAsync(tinNhan.NhomId) ?? throw new NhomKhongTonTaiException();
+            if (!nhom.ThanhVienIds.Contains(idHienTai))
+            {
+                throw new KhongPhaiThanhVienNhomException();
+            }
+        }
+        else if (tinNhan.NguoiGuiId != idHienTai && tinNhan.NguoiNhanId != idHienTai)
+        {
+            throw new KhongCoQuyenTrenTinNhanException();
+        }
+    }
+
+    public async Task<TinNhanDto> ThuHoiAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        if (tinNhan.NguoiGuiId != idHienTai)
+        {
+            throw new KhongPhaiNguoiGuiException();
+        }
+
+        await _khoTinNhan.DanhDauThuHoiAsync(tinNhanId);
+        tinNhan.DaThuHoi = true;
+        return AnhXaDto(tinNhan);
+    }
+
+    public async Task<TinNhanDto> GhimAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+
+        var thoiGian = DateTime.UtcNow;
+        await _khoTinNhan.DatGhimAsync(tinNhanId, true, thoiGian);
+        tinNhan.DaGhim = true;
+        tinNhan.ThoiGianGhim = thoiGian;
+        return AnhXaDto(tinNhan);
+    }
+
+    public async Task<TinNhanDto> BoGhimAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+
+        await _khoTinNhan.DatGhimAsync(tinNhanId, false, null);
+        tinNhan.DaGhim = false;
+        tinNhan.ThoiGianGhim = null;
+        return AnhXaDto(tinNhan);
+    }
+
+    public async Task AnAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+        await _khoTinNhanAn.AnAsync(idHienTai, tinNhanId);
+    }
+
+    public async Task<List<TinNhanDto>> LayTinDaGhimTheoNguoiDungAsync(string idHienTai, string doiTacId)
+    {
+        var ghim = await _khoTinNhan.LayTinDaGhimTheoNguoiDungAsync(idHienTai, doiTacId);
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ghim.Select(t => t.Id));
+        return ghim.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
+    public async Task<List<TinNhanDto>> LayTinDaGhimTheoNhomAsync(string idHienTai, string nhomId)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(idHienTai))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+
+        var ghim = await _khoTinNhan.LayTinDaGhimTheoNhomAsync(nhomId);
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ghim.Select(t => t.Id));
+        return ghim.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
     }
 
     public Task DanhDauDaDocAsync(string nguoiHienTaiId, string nguoiGuiId) =>
@@ -246,8 +330,21 @@ public class DichVuTinNhan : IDichVuTinNhan
         return ketQua;
     }
 
-    private static TinNhanDto AnhXaDto(TinNhan t) => new(
-        t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
-        t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao,
-        t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString()));
+    private static TinNhanDto AnhXaDto(TinNhan t)
+    {
+        var traLoi = t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString());
+
+        if (t.DaThuHoi)
+        {
+            return new(
+                t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(),
+                "Tin nhắn đã được thu hồi.", null, null, null, null,
+                t.DaDoc, t.DaNhan, t.ThoiGianTao, traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim);
+        }
+
+        return new(
+            t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), t.NoiDungTinNhan,
+            t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao,
+            traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim);
+    }
 }

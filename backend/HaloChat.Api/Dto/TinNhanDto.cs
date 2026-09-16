@@ -14,4 +14,7 @@ public record TinNhanDto(
     bool DaDoc,
     bool DaNhan,
     DateTime ThoiGianTao,
-    TraLoiThongTinDto? TraLoi);
+    TraLoiThongTinDto? TraLoi,
+    bool DaThuHoi,
+    bool DaGhim,
+    DateTime? ThoiGianGhim);

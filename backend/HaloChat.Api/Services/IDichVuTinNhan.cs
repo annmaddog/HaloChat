@@ -17,4 +17,11 @@ public interface IDichVuTinNhan
     Task DanhDauDaDocNhomAsync(string nguoiHienTaiId, string nhomId);
 
     Task<List<HoiThoaiTomTatDto>> LayDanhSachHoiThoaiAsync(string nguoiDungId);
+
+    Task<TinNhanDto> ThuHoiAsync(string idHienTai, string tinNhanId);
+    Task<TinNhanDto> GhimAsync(string idHienTai, string tinNhanId);
+    Task<TinNhanDto> BoGhimAsync(string idHienTai, string tinNhanId);
+    Task AnAsync(string idHienTai, string tinNhanId);
+    Task<List<TinNhanDto>> LayTinDaGhimTheoNguoiDungAsync(string idHienTai, string doiTacId);
+    Task<List<TinNhanDto>> LayTinDaGhimTheoNhomAsync(string idHienTai, string nhomId);
 }
