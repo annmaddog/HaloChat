@@ -608,7 +608,7 @@ export function TrangNhom() {
                               });
                             }}
                           />
-                          <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" />
+                          <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" duongDanAnh={nd.duongDanAnhDaiDien} />
                           <span>{nd.tenHienThi}</span>
                         </label>
                       </li>
