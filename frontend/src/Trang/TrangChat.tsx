@@ -127,19 +127,19 @@ export function TrangChat() {
     [nguoiDangChon, tinNhanTheoNguoiDung],
   );
 
-  function guiTinNhanVanBan(noiDungGui: string) {
+  function guiTinNhanVanBan(noiDungGui: string, traLoiId: string | null) {
     if (!ketNoi || !nguoiDangChon) return;
     const idTam = `tam-${Date.now()}`;
     const tinNhanTam: TinNhanHienThi = {
       id: idTam, nguoiGuiId: idHienTai, nguoiNhanId: nguoiDangChon.id, nhomId: null,
       loaiTinNhan: 'Text', noiDungTinNhan: noiDungGui, duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
-      thoiGianTao: new Date().toISOString(), dangGui: true,
+      thoiGianTao: new Date().toISOString(), dangGui: true, traLoi: null,
     };
     setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanTam] }));
 
     ketNoi
-      .invoke<TinNhanHienThi>('GuiTinNhan', nguoiDangChon.id, null, 'Text', noiDungGui, null, null, null, null)
+      .invoke<TinNhanHienThi>('GuiTinNhan', nguoiDangChon.id, null, 'Text', noiDungGui, null, null, null, null, traLoiId)
       .then((tinNhanDaGui) => {
         setTinNhanTheoNguoiDung((truoc) => ({
           ...truoc,
@@ -155,7 +155,7 @@ export function TrangChat() {
       });
   }
 
-  function guiTep(tep: File) {
+  function guiTep(tep: File, traLoiId: string | null) {
     if (!ketNoi || !nguoiDangChon || !token) return;
 
     const laAnh = tep.type.startsWith('image/');
@@ -170,7 +170,7 @@ export function TrangChat() {
       .then((daTaiLen) =>
         ketNoi.invoke<TinNhanHienThi>(
           'GuiTinNhan', nguoiDangChon.id, null, laAnh ? 'Anh' : 'File', '',
-          daTaiLen.duongDanFile, daTaiLen.tenFileGoc, daTaiLen.kichThuocFile, daTaiLen.loaiFile,
+          daTaiLen.duongDanFile, daTaiLen.tenFileGoc, daTaiLen.kichThuocFile, daTaiLen.loaiFile, traLoiId,
         ),
       )
       .then((tinNhanDaGui) => {
@@ -254,6 +254,7 @@ export function TrangChat() {
           onTaiThemLichSuCu={taiThemLichSuCu}
           onGuiVanBan={guiTinNhanVanBan}
           onGuiTep={guiTep}
+          layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nguoiDangChon?.tenHienThi ?? 'một người dùng'))}
           dangTaiTep={dangTaiTep}
           loi={loi}
           onQuayLai={() => setNguoiDangChon(null)}

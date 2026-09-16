@@ -157,17 +157,17 @@ export function TrangNhom() {
       .finally(() => setDangTaiAnhNhomMoi(false));
   }
 
-  function guiTinNhanVanBan(noiDungGui: string) {
+  function guiTinNhanVanBan(noiDungGui: string, traLoiId: string | null) {
     if (!ketNoi || !nhomDangChon) return;
     ketNoi
-      .invoke<TinNhanHienThi>('GuiTinNhan', null, nhomDangChon.id, 'Text', noiDungGui, null, null, null, null)
+      .invoke<TinNhanHienThi>('GuiTinNhan', null, nhomDangChon.id, 'Text', noiDungGui, null, null, null, null, traLoiId)
       .then((tinNhanDaGui) => {
         setTinNhanTheoNhom((truoc) => ({ ...truoc, [nhomDangChon.id]: [...(truoc[nhomDangChon.id] ?? []), tinNhanDaGui] }));
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Gửi tin nhắn thất bại.'));
   }
 
-  function guiTep(tep: File) {
+  function guiTep(tep: File, traLoiId: string | null) {
     if (!ketNoi || !nhomDangChon || !token) return;
 
     const laAnh = tep.type.startsWith('image/');
@@ -182,7 +182,7 @@ export function TrangNhom() {
       .then((daTaiLen) =>
         ketNoi.invoke<TinNhanHienThi>(
           'GuiTinNhan', null, nhomDangChon.id, tep.type.startsWith('image/') ? 'Anh' : 'File', '',
-          daTaiLen.duongDanFile, daTaiLen.tenFileGoc, daTaiLen.kichThuocFile, daTaiLen.loaiFile,
+          daTaiLen.duongDanFile, daTaiLen.tenFileGoc, daTaiLen.kichThuocFile, daTaiLen.loaiFile, traLoiId,
         ),
       )
       .then((tinNhanDaGui) => {
@@ -297,6 +297,7 @@ export function TrangNhom() {
             onTaiThemLichSuCu={taiThemLichSuCu}
             onGuiVanBan={guiTinNhanVanBan}
             onGuiTep={guiTep}
+            layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nhomDangChon?.thanhVien.find((tv) => tv.id === id)?.tenHienThi ?? 'một người dùng'))}
             dangTaiTep={dangTaiTep}
             loi={loi}
             onQuayLai={() => setNhomDangChonId(null)}

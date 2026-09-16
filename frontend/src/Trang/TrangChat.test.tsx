@@ -58,6 +58,7 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     daDoc: false,
     daNhan: false,
     thoiGianTao: new Date().toISOString(),
+    traLoi: null,
     ...gan,
   };
 }
@@ -207,7 +208,7 @@ describe('TrangChat', () => {
 
     await waitFor(() =>
       expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith(
-        'GuiTinNhan', '2', null, 'Anh', '', '/uploads/abc.png', 'anh.png', 1024, 'image/png',
+        'GuiTinNhan', '2', null, 'Anh', '', '/uploads/abc.png', 'anh.png', 1024, 'image/png', null,
       ),
     );
     expect(await screen.findByRole('img')).toHaveAttribute('src', expect.stringContaining('/uploads/abc.png'));

@@ -69,7 +69,7 @@ describe('TrangNhom', () => {
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([{
       id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
       noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
-      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z',
+      loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
     }]);
 
     renderTrangNhom();
