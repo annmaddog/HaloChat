@@ -129,4 +129,27 @@ public class TinNhanGiaLap : ITinNhanRepository
             .ToList();
         return Task.FromResult(ketQua);
     }
+
+    public Task<List<TinNhan>> TimKiemTheoNguoiDungAsync(string nguoiA, string nguoiB, string tuKhoa)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi)
+            .Where(t => (t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA))
+            .Where(t => t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(t => t.ThoiGianTao)
+            .Take(50)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
+    public Task<List<TinNhan>> TimKiemTheoNhomAsync(string nhomId, string tuKhoa)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId && t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi)
+            .Where(t => t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(t => t.ThoiGianTao)
+            .Take(50)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
 }

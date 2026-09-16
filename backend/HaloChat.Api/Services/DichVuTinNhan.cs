@@ -352,6 +352,36 @@ public class DichVuTinNhan : IDichVuTinNhan
         return media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
     }
 
+    public async Task<List<TinNhanDto>> TimKiemTheoNguoiDungAsync(string idHienTai, string doiTacId, string tuKhoa)
+    {
+        if (string.IsNullOrWhiteSpace(tuKhoa))
+        {
+            return new List<TinNhanDto>();
+        }
+
+        var ketQua = await _khoTinNhan.TimKiemTheoNguoiDungAsync(idHienTai, doiTacId, tuKhoa.Trim());
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
+        return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
+    public async Task<List<TinNhanDto>> TimKiemTheoNhomAsync(string idHienTai, string nhomId, string tuKhoa)
+    {
+        var nhom = await _khoNhom.TimTheoIdAsync(nhomId) ?? throw new NhomKhongTonTaiException();
+        if (!nhom.ThanhVienIds.Contains(idHienTai))
+        {
+            throw new KhongPhaiThanhVienNhomException();
+        }
+
+        if (string.IsNullOrWhiteSpace(tuKhoa))
+        {
+            return new List<TinNhanDto>();
+        }
+
+        var ketQua = await _khoTinNhan.TimKiemTheoNhomAsync(nhomId, tuKhoa.Trim());
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
+        return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(AnhXaDto).ToList();
+    }
+
     private static TinNhanDto AnhXaDto(TinNhan t)
     {
         var traLoi = t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString());

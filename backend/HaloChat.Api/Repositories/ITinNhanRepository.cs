@@ -50,4 +50,10 @@ public interface ITinNhanRepository
 
     /// <summary>Toàn bộ tin Anh/File của 1 nhóm, mới nhất trước.</summary>
     Task<List<TinNhan>> LayMediaTheoNhomAsync(string nhomId);
+
+    /// <summary>Tin Text (2 chiều) giữa 2 người dùng có NoiDungTinNhan chứa tuKhoa (không phân biệt hoa/thường), chưa thu hồi, tối đa 50 kết quả, mới nhất trước.</summary>
+    Task<List<TinNhan>> TimKiemTheoNguoiDungAsync(string nguoiA, string nguoiB, string tuKhoa);
+
+    /// <summary>Tin Text của 1 nhóm chứa tuKhoa, chưa thu hồi, tối đa 50 kết quả, mới nhất trước.</summary>
+    Task<List<TinNhan>> TimKiemTheoNhomAsync(string nhomId, string tuKhoa);
 }

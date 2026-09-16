@@ -1,5 +1,6 @@
 using HaloChat.Api.Models;
 using MongoDB.Driver;
+using System.Text.RegularExpressions;
 
 namespace HaloChat.Api.Repositories;
 
@@ -152,5 +153,32 @@ public class TinNhanRepository : ITinNhanRepository
         var boLoc = Builders<TinNhan>.Filter.And(
             Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId), boLocLoai);
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).ToListAsync();
+    }
+
+    public async Task<List<TinNhan>> TimKiemTheoNguoiDungAsync(string nguoiA, string nguoiB, string tuKhoa)
+    {
+        var boLocCapDoi = Builders<TinNhan>.Filter.Or(
+            Builders<TinNhan>.Filter.And(
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiA),
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiB)),
+            Builders<TinNhan>.Filter.And(
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiB),
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiA)));
+        var boLoc = Builders<TinNhan>.Filter.And(
+            boLocCapDoi,
+            Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
+            Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Regex(t => t.NoiDungTinNhan, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(tuKhoa), "i")));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
+    }
+
+    public async Task<List<TinNhan>> TimKiemTheoNhomAsync(string nhomId, string tuKhoa)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
+            Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
+            Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Regex(t => t.NoiDungTinNhan, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(tuKhoa), "i")));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
     }
 }

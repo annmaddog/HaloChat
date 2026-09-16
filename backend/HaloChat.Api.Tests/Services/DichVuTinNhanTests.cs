@@ -474,4 +474,55 @@ public class DichVuTinNhanTests
 
         await Assert.ThrowsAsync<KhongPhaiThanhVienNhomException>(() => dichVu.LayMediaTheoNhomAsync(IdNguoiGui, "n1"));
     }
+
+    // --- Tìm tin nhắn (GĐ7b) ---
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDungAsync_TuKhoaRong_TraVeRong()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var ketQua = await dichVu.TimKiemTheoNguoiDungAsync(IdNguoiGui, IdNguoiNhan, "   ");
+
+        Assert.Empty(ketQua);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDungAsync_LoaiTruTinDaAn()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, khoTinNhanAn) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tin = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Hẹn 5 giờ chiều", null, null, null, null, null);
+        await khoTinNhanAn.AnAsync(IdNguoiNhan, tin.Id);
+
+        var ketQua = await dichVu.TimKiemTheoNguoiDungAsync(IdNguoiNhan, IdNguoiGui, "hẹn");
+
+        Assert.Empty(ketQua);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDungAsync_TinHopLe_TraVeDung()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Hẹn 5 giờ chiều", null, null, null, null, null);
+
+        var ketQua = await dichVu.TimKiemTheoNguoiDungAsync(IdNguoiGui, IdNguoiNhan, "hẹn");
+
+        Assert.Single(ketQua);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNhomAsync_KhongPhaiThanhVien_NemNgoaiLe()
+    {
+        var (dichVu, _, _, _, khoNhom, _) = TaoDichVu();
+        khoNhom.DanhSach.Add(new Nhom { Id = "n1", ThanhVienIds = new List<string> { "thanh-vien-khac" } });
+
+        await Assert.ThrowsAsync<KhongPhaiThanhVienNhomException>(() => dichVu.TimKiemTheoNhomAsync(IdNguoiGui, "n1", "hẹn"));
+    }
 }

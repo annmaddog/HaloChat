@@ -256,4 +256,41 @@ public class TinNhanController : ControllerBase
         catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
         catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
     }
+
+    [HttpGet("nguoi-dung/{id}/tim-kiem")]
+    public async Task<IActionResult> TimKiemTheoNguoiDung(string id, [FromQuery] string tuKhoa)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id người dùng không hợp lệ." });
+        }
+
+        return Ok(await _dichVuTinNhan.TimKiemTheoNguoiDungAsync(IdHienTai, id, tuKhoa ?? string.Empty));
+    }
+
+    [HttpGet("nhom/{id}/tim-kiem")]
+    public async Task<IActionResult> TimKiemTheoNhom(string id, [FromQuery] string tuKhoa)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id nhóm không hợp lệ." });
+        }
+
+        try
+        {
+            return Ok(await _dichVuTinNhan.TimKiemTheoNhomAsync(IdHienTai, id, tuKhoa ?? string.Empty));
+        }
+        catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+    }
 }

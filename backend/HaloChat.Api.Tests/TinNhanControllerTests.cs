@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using HaloChat.Api.Dto;
@@ -262,6 +263,50 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var phanHoi = await _client.GetAsync("/api/tinnhan/nhom/507f1f77bcf86cd799439099/media");
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDung_TraVeDungKetQua()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "timA", email = "timA@vi.du", matKhau = "MatKhau123!" });
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "timB", email = "timB@vi.du", matKhau = "MatKhau123!" });
+        var dangNhapA = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "timA", matKhau = "MatKhau123!" });
+        var tokenA = (await dangNhapA.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var dsNguoiDung = await (await _client.GetAsync("/api/nguoidung")).Content.ReadFromJsonAsync<List<NguoiDungTomTatDto>>();
+        var idB = dsNguoiDung!.Single(nd => nd.TenTaiKhoan == "timB").Id;
+
+        var phanHoi = await _client.GetAsync($"/api/tinnhan/nguoi-dung/{idB}/tim-kiem?tuKhoa=xyz");
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, phanHoi.StatusCode);
+        var ketQua = await phanHoi.Content.ReadFromJsonAsync<List<TinNhanDto>>();
+        Assert.Empty(ketQua!);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDung_IdKhongPhaiObjectId_TraVe400()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "timC", email = "timC@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "timC", matKhau = "MatKhau123!" });
+        var token = (await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nguoi-dung/khong-hop-le/tim-kiem?tuKhoa=xyz");
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNhom_KhongTonTai_TraVe404()
+    {
+        await _client.PostAsJsonAsync("/api/nguoidung/dang-ky", new { tenTaiKhoan = "timD", email = "timD@vi.du", matKhau = "MatKhau123!" });
+        var dangNhap = await _client.PostAsJsonAsync("/api/nguoidung/dang-nhap", new { tenDangNhap = "timD", matKhau = "MatKhau123!" });
+        var token = (await dangNhap.Content.ReadFromJsonAsync<DangNhapResponse>())!.Token;
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/nhom/507f1f77bcf86cd799439099/tim-kiem?tuKhoa=xyz");
 
         Assert.Equal(System.Net.HttpStatusCode.NotFound, phanHoi.StatusCode);
     }
