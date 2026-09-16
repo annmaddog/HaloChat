@@ -99,9 +99,22 @@ export function PanelKhoMedia({ danhSachMedia, tenCuocTroChuyen, onDong }: Props
       </div>
 
       {anhDangXemTo && (
-        <div className="panel-kho-media__lightbox" onClick={() => setAnhDangXemToId(null)}>
+        <div
+          className="panel-kho-media__lightbox"
+          onClick={(su) => {
+            su.stopPropagation();
+            setAnhDangXemToId(null);
+          }}
+        >
           <img src={`${DIA_CHI_GOC}${anhDangXemTo.duongDanFile}`} alt={`Xem ảnh lớn ${anhDangXemTo.tenFileGoc}`} />
-          <button className="panel-kho-media__lightbox-dong" onClick={() => setAnhDangXemToId(null)} aria-label="Đóng ảnh lớn">
+          <button
+            className="panel-kho-media__lightbox-dong"
+            onClick={(su) => {
+              su.stopPropagation();
+              setAnhDangXemToId(null);
+            }}
+            aria-label="Đóng ảnh lớn"
+          >
             <BieuTuongDong />
           </button>
         </div>

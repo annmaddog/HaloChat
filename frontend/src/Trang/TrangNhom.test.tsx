@@ -279,4 +279,25 @@ describe('TrangNhom', () => {
 
     expect(container.querySelector('.panel-thong-tin-nhom')).not.toBeInTheDocument();
   });
+
+  it('bam icon kho media goi LayMediaTheoNhom va hien panel', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayMediaTheoNhom').mockResolvedValue([{
+      id: 'm-anh', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Anh',
+      noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439001', tenFileGoc: 'a.png',
+      kichThuocFile: 1024, loaiFile: 'image/png', daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z',
+      traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null,
+    }]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(screen.getByRole('button', { name: 'Kho lưu trữ Media & Tệp' }));
+
+    expect(await screen.findByText('Kho lưu trữ Media & Tệp')).toBeInTheDocument();
+    expect(screen.getByText('Hình ảnh (1)')).toBeInTheDocument();
+    expect(DichVuApi.LayMediaTheoNhom).toHaveBeenCalledWith('token-gia-lap', 'n1');
+  });
 });

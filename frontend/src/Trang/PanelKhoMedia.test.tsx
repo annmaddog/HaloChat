@@ -44,8 +44,9 @@ describe('PanelKhoMedia', () => {
     expect(screen.getByText('Chưa có tài liệu nào được chia sẻ trong đoạn chat này')).toBeInTheDocument();
   });
 
-  it('bam anh mo lightbox, bam dong lightbox tra ve panel', async () => {
-    render(<PanelKhoMedia danhSachMedia={[TIN_ANH]} tenCuocTroChuyen="TranBinh" onDong={() => {}} />);
+  it('bam anh mo lightbox, bam dong lightbox tra ve panel (khong dong ca modal)', async () => {
+    const onDong = vi.fn();
+    render(<PanelKhoMedia danhSachMedia={[TIN_ANH]} tenCuocTroChuyen="TranBinh" onDong={onDong} />);
 
     await userEvent.click(screen.getByAltText('a.png'));
 
@@ -54,6 +55,18 @@ describe('PanelKhoMedia', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Đóng ảnh lớn' }));
 
     expect(screen.queryByRole('img', { name: 'Xem ảnh lớn a.png' })).not.toBeInTheDocument();
+    expect(onDong).not.toHaveBeenCalled();
+  });
+
+  it('bam nen lightbox tra ve panel (khong dong ca modal)', async () => {
+    const onDong = vi.fn();
+    render(<PanelKhoMedia danhSachMedia={[TIN_ANH]} tenCuocTroChuyen="TranBinh" onDong={onDong} />);
+
+    await userEvent.click(screen.getByAltText('a.png'));
+    await userEvent.click(screen.getByRole('img', { name: 'Xem ảnh lớn a.png' }).parentElement!);
+
+    expect(screen.queryByRole('img', { name: 'Xem ảnh lớn a.png' })).not.toBeInTheDocument();
+    expect(onDong).not.toHaveBeenCalled();
   });
 
   it('bam nut dong goi onDong', async () => {
