@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
   LayDanhSachNhom, TaoNhom, LayLichSuNhom, ThemThanhVien, XoaThanhVien, RoiNhom,
-  LayDanhSachNguoiDung, LoiGoiApi, TaiLenTep,
+  LayDanhSachNguoiDung, LayBanBe, LoiGoiApi, TaiLenTep,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
+import { BieuTuongBanBe, BieuTuongMayAnh } from '../ThanhPhan/BieuTuong';
 import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
 import type { Nhom, NguoiDungTomTat } from '../KieuDuLieu';
@@ -33,7 +34,11 @@ export function TrangNhom() {
   const [hienFormTao, setHienFormTao] = useState(false);
   const [tenNhomMoi, setTenNhomMoi] = useState('');
   const [tatCaNguoiDung, setTatCaNguoiDung] = useState<NguoiDungTomTat[]>([]);
+  const [banBe, setBanBe] = useState<NguoiDungTomTat[]>([]);
   const [thanhVienDuocChon, setThanhVienDuocChon] = useState<Set<string>>(new Set());
+  const [tuKhoaTimKiemThanhVien, setTuKhoaTimKiemThanhVien] = useState('');
+  const [duongDanAnhNhomMoi, setDuongDanAnhNhomMoi] = useState<string | null>(null);
+  const [dangTaiAnhNhomMoi, setDangTaiAnhNhomMoi] = useState(false);
   const [daTaiLichSuIds] = useState<Set<string>>(() => new Set());
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const [panelDangMo, setPanelDangMo] = useState<'khong' | 'thong-tin' | 'quan-ly'>('khong');
@@ -43,10 +48,11 @@ export function TrangNhom() {
 
   useEffect(() => {
     if (!token) return;
-    Promise.all([LayDanhSachNhom(token), LayDanhSachNguoiDung(token)])
-      .then(([nhoms, nguoiDungs]) => {
+    Promise.all([LayDanhSachNhom(token), LayDanhSachNguoiDung(token), LayBanBe(token)])
+      .then(([nhoms, nguoiDungs, banBes]) => {
         setDanhSachNhom(nhoms);
         setTatCaNguoiDung(nguoiDungs);
+        setBanBe(banBes);
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Không tải được danh sách nhóm.'))
       .finally(() => setDangTaiDanhSach(false));
@@ -117,15 +123,38 @@ export function TrangNhom() {
 
   function taoNhomMoi() {
     if (!token || !tenNhomMoi.trim()) return;
-    TaoNhom(token, tenNhomMoi.trim(), null, null, [...thanhVienDuocChon])
+    TaoNhom(token, tenNhomMoi.trim(), null, duongDanAnhNhomMoi, [...thanhVienDuocChon])
       .then((nhom) => {
         setDanhSachNhom((truoc) => [...truoc, nhom]);
-        setHienFormTao(false);
-        setTenNhomMoi('');
-        setThanhVienDuocChon(new Set());
+        dongModalTao();
         setNhomDangChonId(nhom.id);
       })
       .catch((loiBat) => setLoi(loiBat instanceof LoiGoiApi ? loiBat.message : 'Tạo nhóm thất bại.'));
+  }
+
+  function dongModalTao() {
+    setHienFormTao(false);
+    setTenNhomMoi('');
+    setThanhVienDuocChon(new Set());
+    setTuKhoaTimKiemThanhVien('');
+    setDuongDanAnhNhomMoi(null);
+  }
+
+  function doiAnhNhomMoi(tep: File) {
+    if (!token) return;
+    if (!tep.type.startsWith('image/')) {
+      setLoi('Chỉ chấp nhận file ảnh.');
+      return;
+    }
+    if (tep.size > GIOI_HAN_ANH_BYTES) {
+      setLoi(`Ảnh vượt quá giới hạn ${GIOI_HAN_ANH_BYTES / 1024 / 1024}MB.`);
+      return;
+    }
+    setDangTaiAnhNhomMoi(true);
+    TaiLenTep(token, tep)
+      .then((daTaiLen) => setDuongDanAnhNhomMoi(daTaiLen.duongDanFile))
+      .catch(() => setLoi('Tải ảnh đại diện nhóm thất bại.'))
+      .finally(() => setDangTaiAnhNhomMoi(false));
   }
 
   function guiTinNhanVanBan(noiDungGui: string) {
@@ -296,38 +325,97 @@ export function TrangNhom() {
       )}
 
       {hienFormTao && (
-        <div className="trang-nhom__modal-nen" onClick={() => setHienFormTao(false)}>
+        <div className="trang-nhom__modal-nen" onClick={dongModalTao}>
           <div className="trang-nhom__modal" onClick={(su) => su.stopPropagation()}>
-            <h3>Tạo nhóm</h3>
+            <div className="trang-nhom__modal-dau">
+              <span className="trang-nhom__modal-icon"><BieuTuongBanBe /></span>
+              <div className="trang-nhom__modal-tieu-de-cum">
+                <h3 className="trang-nhom__modal-tieu-de">Tạo nhóm chat mới</h3>
+                <p className="trang-nhom__modal-phu-de">Tạo không gian trò chuyện cùng bạn bè</p>
+              </div>
+              <button className="trang-nhom__modal-dong" onClick={dongModalTao} aria-label="Đóng">×</button>
+            </div>
+            <hr className="trang-nhom__modal-chia" />
+
+            <div className="trang-nhom__modal-anh-ten">
+              <label className="trang-nhom__modal-anh-upload">
+                {dangTaiAnhNhomMoi ? (
+                  '...'
+                ) : duongDanAnhNhomMoi ? (
+                  <Avatar id="nhom-moi" ten={tenNhomMoi || '?'} duongDanAnh={duongDanAnhNhomMoi} />
+                ) : (
+                  <BieuTuongMayAnh />
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  hidden
+                  disabled={dangTaiAnhNhomMoi}
+                  onChange={(su) => {
+                    const tep = su.target.files?.[0];
+                    if (tep) doiAnhNhomMoi(tep);
+                    su.target.value = '';
+                  }}
+                />
+              </label>
+              <label className="trang-nhom__modal-nhan-ten">
+                Tên nhóm chat
+                <input
+                  type="text"
+                  placeholder="Nhập tên nhóm trò chuyện..."
+                  value={tenNhomMoi}
+                  onChange={(su) => setTenNhomMoi(su.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="trang-nhom__modal-nhan-thanh-vien">
+              <span>Thêm thành viên</span>
+              <span className="trang-nhom__modal-badge">{thanhVienDuocChon.size} đã chọn</span>
+            </div>
             <input
               type="text"
-              placeholder="Nhập tên nhóm..."
-              value={tenNhomMoi}
-              onChange={(su) => setTenNhomMoi(su.target.value)}
+              className="trang-nhom__modal-tim-thanh-vien"
+              placeholder="Tìm bạn bè..."
+              value={tuKhoaTimKiemThanhVien}
+              onChange={(su) => setTuKhoaTimKiemThanhVien(su.target.value)}
             />
-            <p>Thêm thành viên:</p>
-            <ul className="trang-nhom__chon-thanh-vien">
-              {tatCaNguoiDung.map((nd) => (
-                <li key={nd.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={thanhVienDuocChon.has(nd.id)}
-                      onChange={(su) => {
-                        setThanhVienDuocChon((truoc) => {
-                          const moi = new Set(truoc);
-                          if (su.target.checked) moi.add(nd.id); else moi.delete(nd.id);
-                          return moi;
-                        });
-                      }}
-                    />
-                    {nd.tenHienThi}
-                  </label>
-                </li>
-              ))}
-            </ul>
+            <div className="trang-nhom__modal-ds-thanh-vien">
+              {banBe.length === 0 && (
+                <div className="trang-nhom__modal-trong">
+                  <BieuTuongBanBe />
+                  <p>Bạn chưa có bạn bè nào. Hãy kết bạn trước khi tạo nhóm!</p>
+                </div>
+              )}
+              {banBe.length > 0 && (
+                <ul className="trang-nhom__chon-thanh-vien">
+                  {banBe
+                    .filter((nd) => nd.tenHienThi.toLowerCase().includes(tuKhoaTimKiemThanhVien.trim().toLowerCase()))
+                    .map((nd) => (
+                      <li key={nd.id}>
+                        <label className="trang-nhom__modal-hang-thanh-vien">
+                          <input
+                            type="checkbox"
+                            checked={thanhVienDuocChon.has(nd.id)}
+                            onChange={(su) => {
+                              setThanhVienDuocChon((truoc) => {
+                                const moi = new Set(truoc);
+                                if (su.target.checked) moi.add(nd.id); else moi.delete(nd.id);
+                                return moi;
+                              });
+                            }}
+                          />
+                          <Avatar id={nd.id} ten={nd.tenHienThi} kichThuoc="nho" />
+                          <span>{nd.tenHienThi}</span>
+                        </label>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+
             <div className="trang-nhom__modal-hanh-dong">
-              <button onClick={() => setHienFormTao(false)}>Hủy</button>
+              <button className="nut-phu" onClick={dongModalTao}>Hủy</button>
               <button className="nut-chinh" onClick={taoNhomMoi} disabled={!tenNhomMoi.trim()}>Tạo nhóm</button>
             </div>
           </div>

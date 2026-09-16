@@ -49,6 +49,7 @@ describe('TrangNhom', () => {
     ketNoiGiaLap.invoke.mockResolvedValue(undefined);
     localStorage.setItem('haloChatToken', 'token-gia-lap');
     vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' }]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([{ id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' }]);
   });
 
   it('hiển thị danh sách nhóm đã tham gia', async () => {
@@ -117,11 +118,95 @@ describe('TrangNhom', () => {
 
     renderTrangNhom();
     await userEvent.click(await screen.findByText('+ Tạo nhóm'));
-    await userEvent.type(screen.getByPlaceholderText('Nhập tên nhóm...'), 'Nhóm mới');
+    await userEvent.type(screen.getByPlaceholderText('Nhập tên nhóm trò chuyện...'), 'Nhóm mới');
     await userEvent.click(screen.getByText('TranBinh'));
     await userEvent.click(screen.getByRole('button', { name: 'Tạo nhóm' }));
 
     await waitFor(() => expect(DichVuApi.TaoNhom).toHaveBeenCalledWith('token-gia-lap', 'Nhóm mới', null, null, ['2']));
+  });
+
+  it('modal tao nhom chi hien ban be, khong hien tat ca nguoi dung', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayDanhSachNguoiDung').mockResolvedValue([
+      { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+      { id: '3', tenTaiKhoan: 'LeCam', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeCam' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([
+      { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+    ]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('+ Tạo nhóm'));
+
+    expect(await screen.findByText('TranBinh')).toBeInTheDocument();
+    expect(screen.queryByText('LeCam')).not.toBeInTheDocument();
+  });
+
+  it('modal tao nhom hien trang thai trong khi chua co ban be nao', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('+ Tạo nhóm'));
+
+    expect(await screen.findByText(/Bạn chưa có bạn bè nào/)).toBeInTheDocument();
+  });
+
+  it('badge "da chon" cap nhat dung so luong khi tick thanh vien', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([
+      { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+      { id: '3', tenTaiKhoan: 'LeCam', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeCam' },
+    ]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('+ Tạo nhóm'));
+    expect(screen.getByText('0 đã chọn')).toBeInTheDocument();
+
+    await userEvent.click(await screen.findByText('TranBinh'));
+
+    expect(screen.getByText('1 đã chọn')).toBeInTheDocument();
+  });
+
+  it('o tim kiem thanh vien trong modal loc dung theo tenHienThi', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([
+      { id: '2', tenTaiKhoan: 'TranBinh', email: 'b@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'TranBinh' },
+      { id: '3', tenTaiKhoan: 'LeCam', email: 'c@gmail.com', choPhepTinNhanTuNguoiLa: true, tenHienThi: 'LeCam' },
+    ]);
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('+ Tạo nhóm'));
+    await screen.findByText('TranBinh');
+
+    await userEvent.type(screen.getByPlaceholderText('Tìm bạn bè...'), 'Cam');
+
+    expect(screen.getByText('LeCam')).toBeInTheDocument();
+    expect(screen.queryByText('TranBinh')).not.toBeInTheDocument();
+  });
+
+  it('chon anh dai dien nhom trong modal tao goi TaiLenTep va gui kem duong dan khi tao nhom', async () => {
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayBanBe').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'TaiLenTep').mockResolvedValue({
+      duongDanFile: '/uploads/nhom-moi.png', tenFileGoc: 'nhom.png', kichThuocFile: 1000, loaiFile: 'image/png',
+    });
+    vi.spyOn(DichVuApi, 'TaoNhom').mockResolvedValue({
+      id: 'n3', tenNhom: 'Nhóm ảnh', moTa: null, duongDanAnhDaiDien: '/uploads/nhom-moi.png', nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z',
+    });
+
+    renderTrangNhom();
+    await userEvent.click(await screen.findByText('+ Tạo nhóm'));
+    await userEvent.type(screen.getByPlaceholderText('Nhập tên nhóm trò chuyện...'), 'Nhóm ảnh');
+
+    const tep = new File(['noi-dung'], 'nhom.png', { type: 'image/png' });
+    const oChonTep = document.querySelector('.trang-nhom__modal input[type="file"]') as HTMLInputElement;
+    await userEvent.upload(oChonTep, tep);
+
+    await waitFor(() => expect(DichVuApi.TaiLenTep).toHaveBeenCalledWith('token-gia-lap', tep));
+    await userEvent.click(screen.getByRole('button', { name: 'Tạo nhóm' }));
+
+    await waitFor(() => expect(DichVuApi.TaoNhom).toHaveBeenCalledWith('token-gia-lap', 'Nhóm ảnh', null, '/uploads/nhom-moi.png', []));
   });
 
   it('bam vao tieu de header mo PanelThongTinNhom', async () => {
