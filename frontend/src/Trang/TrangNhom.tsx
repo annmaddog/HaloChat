@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   LayDanhSachNhom, TaoNhom, LayLichSuNhom, ThemThanhVien, XoaThanhVien, RoiNhom,
   LayDanhSachNguoiDung, LayBanBe, LoiGoiApi, TaiLenTep,
-  LayTinDaGhimTheoNhom, AnTinNhan,
+  LayTinDaGhimTheoNhom, AnTinNhan, LayMediaTheoNhom,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
@@ -11,6 +11,7 @@ import { Avatar } from '../ThanhPhan/Avatar';
 import { BieuTuongBanBe, BieuTuongMayAnh } from '../ThanhPhan/BieuTuong';
 import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
+import { PanelKhoMedia } from './PanelKhoMedia';
 import type { Nhom, NguoiDungTomTat, TinNhan } from '../KieuDuLieu';
 import './TrangNhom.css';
 
@@ -52,6 +53,8 @@ export function TrangNhom() {
   const [panelDangMo, setPanelDangMo] = useState<'khong' | 'thong-tin' | 'quan-ly'>('khong');
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
   const [tinNhanGhimTheoNhom, setTinNhanGhimTheoNhom] = useState<Record<string, TinNhan[]>>({});
+  const [hienKhoMedia, setHienKhoMedia] = useState(false);
+  const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
 
@@ -308,6 +311,16 @@ export function TrangNhom() {
       .catch(() => setLoi('Xóa tin nhắn thất bại.'));
   }
 
+  function moKhoMedia() {
+    if (!token || !nhomDangChon) return;
+    LayMediaTheoNhom(token, nhomDangChon.id)
+      .then((media) => {
+        setDanhSachMedia(media);
+        setHienKhoMedia(true);
+      })
+      .catch(() => setLoi('Không tải được kho media.'));
+  }
+
   function taiThemLichSuCu() {
     if (!token || !nhomDangChon) return;
     const cuNhat = (tinNhanTheoNhom[nhomDangChon.id] ?? [])[0];
@@ -423,7 +436,15 @@ export function TrangNhom() {
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
             danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
+            onMoKhoMedia={moKhoMedia}
           />
+          {hienKhoMedia && (
+            <PanelKhoMedia
+              danhSachMedia={danhSachMedia}
+              tenCuocTroChuyen={nhomDangChon.tenNhom}
+              onDong={() => setHienKhoMedia(false)}
+            />
+          )}
           {panelDangMo === 'thong-tin' && (
             <PanelThongTinNhom
               nhom={nhomDangChon}

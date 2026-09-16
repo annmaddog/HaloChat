@@ -324,4 +324,18 @@ describe('TrangChat', () => {
     expect(dongGhim[0]).toHaveTextContent('Ghim moi hon');
     expect(dongGhim[1]).toHaveTextContent('Ghim cu hon');
   });
+
+  it('bam icon kho media goi LayMediaTheoNguoiDung va hien panel', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayMediaTheoNguoiDung').mockResolvedValue([
+      taoTinNhanGiaLap({ id: 'm-anh', loaiTinNhan: 'Anh', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439001', tenFileGoc: 'a.png' }),
+    ]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    await userEvent.click(screen.getByRole('button', { name: 'Kho lưu trữ Media & Tệp' }));
+
+    expect(await screen.findByText('Kho lưu trữ Media & Tệp')).toBeInTheDocument();
+    expect(screen.getByText('Hình ảnh (1)')).toBeInTheDocument();
+  });
 });

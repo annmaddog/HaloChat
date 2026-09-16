@@ -23,6 +23,7 @@ const PROPS_MAC_DINH = {
   onBoGhim: () => {},
   onAn: () => {},
   danhSachTinNhanGhim: [],
+  onMoKhoMedia: () => {},
 };
 
 const TIN_NHAN_MAU = {
@@ -363,5 +364,14 @@ describe('KhungTinNhan', () => {
     await userEvent.click(document.body);
 
     expect(screen.queryByTestId('bang-emoji')).not.toBeInTheDocument();
+  });
+
+  it('bam icon kho media goi onMoKhoMedia', async () => {
+    const onMoKhoMedia = vi.fn();
+    render(<KhungTinNhan {...PROPS_MAC_DINH} onMoKhoMedia={onMoKhoMedia} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Kho lưu trữ Media & Tệp' }));
+
+    expect(onMoKhoMedia).toHaveBeenCalledTimes(1);
   });
 });

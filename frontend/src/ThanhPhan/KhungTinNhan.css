@@ -48,6 +48,21 @@
   color: var(--mau-loi);
 }
 
+.khung-tin-nhan__nut-kho-media {
+  margin-left: auto;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--mau-chu-phu);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.khung-tin-nhan__nut-kho-media:hover {
+  background: var(--mau-nen-tren);
+}
+
 .khung-tin-nhan__danh-sach-tin-nhan {
   flex: 1;
   overflow-y: auto;

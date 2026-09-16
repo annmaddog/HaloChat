@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru } from './BieuTuong';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan } from '../KieuDuLieu';
 import './KhungTinNhan.css';
@@ -60,12 +60,13 @@ interface PropsKhungTinNhan {
   onBoGhim: (id: string) => void;
   onAn: (id: string) => void;
   danhSachTinNhanGhim: TinNhan[];
+  onMoKhoMedia: () => void;
 }
 
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
-  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim,
+  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
   const cuoiDanhSachRef = useRef<HTMLDivElement | null>(null);
@@ -215,6 +216,9 @@ export function KhungTinNhan({
             </div>
           </>
         )}
+        <button className="khung-tin-nhan__nut-kho-media" onClick={onMoKhoMedia} aria-label="Kho lưu trữ Media & Tệp">
+          <BieuTuongKhoLuuTru />
+        </button>
         {!dangKetNoi && <span className="khung-tin-nhan__mat-ket-noi">Mất kết nối realtime...</span>}
       </header>
 

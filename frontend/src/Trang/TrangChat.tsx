@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   LayDanhSachHoiThoai, LayLichSuTinNhan, TaiLenTep, LoiGoiApi, LayTrangThaiHoatDong,
-  LayTinDaGhimTheoNguoiDung, AnTinNhan,
+  LayTinDaGhimTheoNguoiDung, AnTinNhan, LayMediaTheoNguoiDung,
 } from '../DichVuApi';
 import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
+import { PanelKhoMedia } from './PanelKhoMedia';
 import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan } from '../KieuDuLieu';
 import './TrangChat.css';
 
@@ -50,6 +51,8 @@ export function TrangChat() {
   const [tuKhoaTimKiem, setTuKhoaTimKiem] = useState('');
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
   const [tinNhanGhimTheoDoiTac, setTinNhanGhimTheoDoiTac] = useState<Record<string, TinNhan[]>>({});
+  const [hienKhoMedia, setHienKhoMedia] = useState(false);
+  const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
   const idDaTaiLichSuRef = useRef<Set<string>>(new Set());
 
   const idHienTai = nguoiDungHienTai?.id ?? '';
@@ -311,6 +314,16 @@ export function TrangChat() {
       .catch(() => setLoi('Xóa tin nhắn thất bại.'));
   }
 
+  function moKhoMedia() {
+    if (!token || !nguoiDangChon) return;
+    LayMediaTheoNguoiDung(token, nguoiDangChon.id)
+      .then((media) => {
+        setDanhSachMedia(media);
+        setHienKhoMedia(true);
+      })
+      .catch(() => setLoi('Không tải được kho media.'));
+  }
+
   function taiThemLichSuCu() {
     if (!token || !nguoiDangChon) return;
     const cuNhat = (tinNhanTheoNguoiDung[nguoiDangChon.id] ?? [])[0];
@@ -368,28 +381,38 @@ export function TrangChat() {
         </div>
       )}
       {nguoiDangChon && (
-        <KhungTinNhan
-          loaiHoiThoai="nguoiDung"
-          tenHienThi={nguoiDangChon.tenHienThi}
-          phuDe={trangThaiOnline[nguoiDangChon.id] ? 'Đang hoạt động' : undefined}
-          danhSachTinNhan={tinNhanDangHien}
-          idHienTai={idHienTai}
-          dangKetNoi={dangKetNoi}
-          dangTaiLichSu={dangTaiLichSu}
-          coTheTaiThem={conThemLichSu[nguoiDangChon.id] !== false}
-          onTaiThemLichSuCu={taiThemLichSuCu}
-          onGuiVanBan={guiTinNhanVanBan}
-          onGuiTep={guiTep}
-          layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nguoiDangChon?.tenHienThi ?? 'một người dùng'))}
-          dangTaiTep={dangTaiTep}
-          loi={loi}
-          onQuayLai={() => setNguoiDangChon(null)}
-          onThuHoi={thuHoiTinNhan}
-          onGhim={ghimTinNhan}
-          onBoGhim={boGhimTinNhan}
-          onAn={anTinNhanCucBo}
-          danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
-        />
+        <>
+          <KhungTinNhan
+            loaiHoiThoai="nguoiDung"
+            tenHienThi={nguoiDangChon.tenHienThi}
+            phuDe={trangThaiOnline[nguoiDangChon.id] ? 'Đang hoạt động' : undefined}
+            danhSachTinNhan={tinNhanDangHien}
+            idHienTai={idHienTai}
+            dangKetNoi={dangKetNoi}
+            dangTaiLichSu={dangTaiLichSu}
+            coTheTaiThem={conThemLichSu[nguoiDangChon.id] !== false}
+            onTaiThemLichSuCu={taiThemLichSuCu}
+            onGuiVanBan={guiTinNhanVanBan}
+            onGuiTep={guiTep}
+            layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nguoiDangChon?.tenHienThi ?? 'một người dùng'))}
+            dangTaiTep={dangTaiTep}
+            loi={loi}
+            onQuayLai={() => setNguoiDangChon(null)}
+            onThuHoi={thuHoiTinNhan}
+            onGhim={ghimTinNhan}
+            onBoGhim={boGhimTinNhan}
+            onAn={anTinNhanCucBo}
+            danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
+            onMoKhoMedia={moKhoMedia}
+          />
+          {hienKhoMedia && (
+            <PanelKhoMedia
+              danhSachMedia={danhSachMedia}
+              tenCuocTroChuyen={nguoiDangChon.tenHienThi}
+              onDong={() => setHienKhoMedia(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );
