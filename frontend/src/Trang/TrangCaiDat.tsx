@@ -266,7 +266,7 @@ export function TrangCaiDat() {
               </div>
             </div>
 
-            <form className="trang-cai-dat__the trang-cai-dat__the--hep" onSubmit={xuLyDoiMatKhau}>
+            <form className="trang-cai-dat__the" onSubmit={xuLyDoiMatKhau}>
               <div className="trang-cai-dat__the-dau">
                 <span className="trang-cai-dat__the-icon"><BieuTuongKhoa /></span>
                 <h2 className="trang-cai-dat__the-tieu-de">Đổi mật khẩu</h2>
@@ -278,42 +278,44 @@ export function TrangCaiDat() {
                 </p>
               )}
               {thanhCongDoiMatKhau && <p className="trang-cai-dat__da-luu">Đã đổi mật khẩu thành công.</p>}
-              <TruongNhap
-                nhan="Mật khẩu hiện tại"
-                anNhan
-                bieuTuong={<BieuTuongKhoa />}
-                coTheAn
-                placeholder="Mật khẩu hiện tại"
-                value={matKhauCu}
-                onChange={(su) => setMatKhauCu(su.target.value)}
-                required
-              />
-              <TruongNhap
-                nhan="Mật khẩu mới"
-                anNhan
-                bieuTuong={<BieuTuongKhoa />}
-                coTheAn
-                placeholder="Mật khẩu mới"
-                value={matKhauMoi}
-                onChange={(su) => setMatKhauMoi(su.target.value)}
-                required
-                minLength={6}
-              />
-              <TruongNhap
-                nhan="Xác nhận mật khẩu mới"
-                anNhan
-                bieuTuong={<BieuTuongKhoa />}
-                coTheAn
-                placeholder="Xác nhận mật khẩu mới"
-                value={xacNhanMatKhauMoi}
-                onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
-                required
-                minLength={6}
-              />
-              <div className="trang-cai-dat__hang-nut">
-                <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
-                  <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
-                </button>
+              <div className="trang-cai-dat__khoi-hep">
+                <TruongNhap
+                  nhan="Mật khẩu hiện tại"
+                  anNhan
+                  bieuTuong={<BieuTuongKhoa />}
+                  coTheAn
+                  placeholder="Mật khẩu hiện tại"
+                  value={matKhauCu}
+                  onChange={(su) => setMatKhauCu(su.target.value)}
+                  required
+                />
+                <TruongNhap
+                  nhan="Mật khẩu mới"
+                  anNhan
+                  bieuTuong={<BieuTuongKhoa />}
+                  coTheAn
+                  placeholder="Mật khẩu mới"
+                  value={matKhauMoi}
+                  onChange={(su) => setMatKhauMoi(su.target.value)}
+                  required
+                  minLength={6}
+                />
+                <TruongNhap
+                  nhan="Xác nhận mật khẩu mới"
+                  anNhan
+                  bieuTuong={<BieuTuongKhoa />}
+                  coTheAn
+                  placeholder="Xác nhận mật khẩu mới"
+                  value={xacNhanMatKhauMoi}
+                  onChange={(su) => setXacNhanMatKhauMoi(su.target.value)}
+                  required
+                  minLength={6}
+                />
+                <div className="trang-cai-dat__hang-nut">
+                  <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
+                    <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
+                  </button>
+                </div>
               </div>
             </form>
           </>

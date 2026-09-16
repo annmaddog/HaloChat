@@ -84,12 +84,17 @@
   background: var(--mau-nen-the);
   border: 1px solid var(--mau-vien);
   border-radius: var(--ban-kinh-the);
-  padding: 24px;
-  margin-bottom: 20px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
 }
 
-.trang-cai-dat__the--hep {
+.trang-cai-dat__khoi-hep {
   max-width: 420px;
+}
+
+.trang-cai-dat__khoi-hep .truong-nhap {
+  margin-bottom: 12px;
 }
 
 .trang-cai-dat__the-dau {
@@ -117,7 +122,7 @@
 }
 
 .trang-cai-dat__the-phu-de {
-  margin: 0 0 20px 48px;
+  margin: 0 0 16px 48px;
   font-size: 13px;
   color: var(--mau-chu-phu);
 }
