@@ -66,6 +66,31 @@ export function KhungTinNhan({
     setDangTraLoiId(null);
   }, [tenHienThi]);
 
+  // Đóng menu "..." khi bấm ra ngoài hoặc bấm Escape — bấm bên trong
+  // `.khung-tin-nhan__icon-noi` (icon Trả lời/"..."/chính menu) không tính
+  // là "ra ngoài", để không tự đóng ngay khi vừa mở hoặc khi thao tác trong menu.
+  useEffect(() => {
+    if (!menuMoChoTinNhanId) return;
+
+    function xuLyBamNgoai(su: MouseEvent) {
+      const dich = su.target as HTMLElement;
+      if (!dich.closest('.khung-tin-nhan__icon-noi')) {
+        setMenuMoChoTinNhanId(null);
+      }
+    }
+
+    function xuLyPhimEscape(su: KeyboardEvent) {
+      if (su.key === 'Escape') setMenuMoChoTinNhanId(null);
+    }
+
+    document.addEventListener('mousedown', xuLyBamNgoai);
+    document.addEventListener('keydown', xuLyPhimEscape);
+    return () => {
+      document.removeEventListener('mousedown', xuLyBamNgoai);
+      document.removeEventListener('keydown', xuLyPhimEscape);
+    };
+  }, [menuMoChoTinNhanId]);
+
   const tinDangTraLoi = danhSachTinNhan.find((tn) => tn.id === dangTraLoiId) ?? null;
 
   useEffect(() => {

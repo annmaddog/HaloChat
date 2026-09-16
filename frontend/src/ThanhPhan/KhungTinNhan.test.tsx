@@ -263,6 +263,38 @@ describe('KhungTinNhan', () => {
     expect(onAn).toHaveBeenCalledWith('m1');
   });
 
+  it('bam ra ngoai menu dang mo se dong menu lai', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm1' };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+
+    await userEvent.click(document.body);
+
+    expect(screen.queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
+  });
+
+  it('bam phim Escape khi menu dang mo se dong menu lai', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm1' };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(screen.queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
+  });
+
+  it('bam vao nut Tra loi trong khi menu dang mo khong lam menu tu dong dong truoc khi bam', async () => {
+    const tin = { ...TIN_NHAN_MAU, id: 'm1' };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Thêm tùy chọn' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Trả lời tin nhắn này' }));
+
+    expect(screen.getByText(/↩ Trả lời/)).toBeInTheDocument();
+  });
+
   it('banner ghim hien dung danh sach tin da ghim, an khi rong', () => {
     const { rerender } = render(<KhungTinNhan {...PROPS_MAC_DINH} idHienTai="1" onThuHoi={() => {}} onGhim={() => {}} onBoGhim={() => {}} onAn={() => {}} danhSachTinNhanGhim={[]} />);
     expect(screen.queryByText(/^\[File\]|^\[Ảnh\]/)).not.toBeInTheDocument();

@@ -302,4 +302,26 @@ describe('TrangChat', () => {
     expect(await screen.findByText(/Tin nhắn đã được thu hồi\./)).toBeInTheDocument();
     expect(screen.queryByText(/Nội dung đang ghim/)).not.toBeInTheDocument();
   });
+
+  it('ghim tin nhan moi qua realtime chen dung vi tri theo thu tu thoiGianGhim giam dan', async () => {
+    vi.spyOn(DichVuApi, 'LayLichSuTinNhan').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'LayTinDaGhimTheoNguoiDung').mockResolvedValue([
+      taoTinNhanGiaLap({ id: 'm-cu', noiDungTinNhan: 'Ghim cu hon', thoiGianGhim: '2026-01-01T00:00:00.000Z' }),
+    ]);
+
+    renderTrangChat();
+    await userEvent.click(await screen.findByText('TranBinh'));
+    expect(await screen.findByText(/Ghim cu hon/)).toBeInTheDocument();
+
+    await waitFor(() => expect(ketNoiGiaLap.on).toHaveBeenCalledWith('TinNhanDaGhim', expect.any(Function)));
+    const handler = ketNoiGiaLap.on.mock.calls.find((cuocGoi) => cuocGoi[0] === 'TinNhanDaGhim')![1];
+    handler(taoTinNhanGiaLap({
+      id: 'm-moi', noiDungTinNhan: 'Ghim moi hon', daGhim: true, thoiGianGhim: '2026-06-01T00:00:00.000Z',
+    }));
+
+    await screen.findByText(/Ghim moi hon/);
+    const dongGhim = screen.getAllByText(/Ghim (moi|cu) hon/);
+    expect(dongGhim[0]).toHaveTextContent('Ghim moi hon');
+    expect(dongGhim[1]).toHaveTextContent('Ghim cu hon');
+  });
 });

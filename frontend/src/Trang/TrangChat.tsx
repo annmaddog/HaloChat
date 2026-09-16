@@ -24,6 +24,15 @@ function idNguoiKia(tinNhan: TinNhanHienThi, idHienTai: string): string {
   return tinNhan.nguoiGuiId === idHienTai ? (tinNhan.nguoiNhanId ?? '') : tinNhan.nguoiGuiId;
 }
 
+// [Ghim] Server luôn trả danh sách tin ghim mới-ghim-trước; sau khi ghim 1
+// tin mới qua realtime/tự thao tác, sắp lại đúng thứ tự đó thay vì chỉ nối
+// vào cuối mảng — tránh banner ghim lệch thứ tự so với khi tải lại trang.
+function sapXepGiamDanTheoThoiGianGhim(danhSach: TinNhanHienThi[]): TinNhanHienThi[] {
+  return [...danhSach].sort(
+    (a, b) => new Date(b.thoiGianGhim ?? 0).getTime() - new Date(a.thoiGianGhim ?? 0).getTime(),
+  );
+}
+
 export function TrangChat() {
   const { token, nguoiDungHienTai, dangXuat } = useXacThuc();
   const { ketNoi, dangKetNoi } = useChat();
@@ -145,7 +154,7 @@ export function TrangChat() {
       const idKia = idNguoiKia(tinNhan, idHienTai);
       setTinNhanGhimTheoDoiTac((truoc) => ({
         ...truoc,
-        [idKia]: [...(truoc[idKia] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
+        [idKia]: sapXepGiamDanTheoThoiGianGhim([...(truoc[idKia] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan]),
       }));
     }
 
@@ -265,7 +274,9 @@ export function TrangChat() {
         capNhatTinNhanTrongState(tinCapNhat);
         setTinNhanGhimTheoDoiTac((truoc) => ({
           ...truoc,
-          [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+          [nguoiDangChon.id]: sapXepGiamDanTheoThoiGianGhim(
+            [...(truoc[nguoiDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+          ),
         }));
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Ghim tin nhắn thất bại.'));

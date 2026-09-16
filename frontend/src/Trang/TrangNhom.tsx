@@ -20,6 +20,13 @@ const GIOI_HAN_FILE_BYTES = 20 * 1024 * 1024;
 const SO_LUONG_LICH_SU_DAU = 20;
 const SO_LUONG_LICH_SU_THEM = 30;
 
+// [Ghim] Xem giải thích ở TrangChat.tsx.
+function sapXepGiamDanTheoThoiGianGhim(danhSach: TinNhanHienThi[]): TinNhanHienThi[] {
+  return [...danhSach].sort(
+    (a, b) => new Date(b.thoiGianGhim ?? 0).getTime() - new Date(a.thoiGianGhim ?? 0).getTime(),
+  );
+}
+
 export function TrangNhom() {
   const { token, nguoiDungHienTai } = useXacThuc();
   const { ketNoi, dangKetNoi } = useChat();
@@ -121,7 +128,9 @@ export function TrangNhom() {
       if (!tinNhan.nhomId) return;
       setTinNhanGhimTheoNhom((truoc) => ({
         ...truoc,
-        [tinNhan.nhomId as string]: [...(truoc[tinNhan.nhomId as string] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
+        [tinNhan.nhomId as string]: sapXepGiamDanTheoThoiGianGhim(
+          [...(truoc[tinNhan.nhomId as string] ?? []).filter((tn) => tn.id !== tinNhan.id), tinNhan],
+        ),
       }));
     }
 
@@ -262,7 +271,9 @@ export function TrangNhom() {
         capNhatTinNhanTrongState(tinCapNhat);
         setTinNhanGhimTheoNhom((truoc) => ({
           ...truoc,
-          [nhomDangChon.id]: [...(truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+          [nhomDangChon.id]: sapXepGiamDanTheoThoiGianGhim(
+            [...(truoc[nhomDangChon.id] ?? []).filter((tn) => tn.id !== tinCapNhat.id), tinCapNhat],
+          ),
         }));
       })
       .catch((loiBat) => setLoi(loiBat instanceof Error ? loiBat.message : 'Ghim tin nhắn thất bại.'));
