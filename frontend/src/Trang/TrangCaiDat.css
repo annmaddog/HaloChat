@@ -66,6 +66,26 @@
     flex-direction: row;
     overflow-x: auto;
   }
+
+  .trang-cai-dat__hang-tk {
+    align-items: flex-start;
+  }
+
+  .trang-cai-dat__ngan-doc {
+    display: none;
+  }
+
+  .trang-cai-dat__cot-ten {
+    width: 100%;
+  }
+
+  .trang-cai-dat__hang-duoi {
+    justify-content: flex-start;
+  }
+
+  .trang-cai-dat__hang-duoi .nut-chinh {
+    width: 100%;
+  }
 }
 
 .trang-cai-dat__dong {
@@ -86,6 +106,49 @@
   border-radius: var(--ban-kinh-the);
   padding: 20px 24px;
   margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.trang-cai-dat__the-tk {
+  padding: 0;
+  overflow: hidden;
+}
+
+.trang-cai-dat__ngan {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, var(--mau-chinh-nhat), var(--mau-chinh-dam));
+  color: #fff;
+}
+
+.trang-cai-dat__ngan-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trang-cai-dat__ngan-tieu-de {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.trang-cai-dat__ngan-phu-de {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.trang-cai-dat__than {
+  padding: 24px;
   box-sizing: border-box;
 }
 
@@ -129,15 +192,44 @@
 
 .trang-cai-dat__hang-tk {
   display: flex;
-  gap: 32px;
+  align-items: center;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
-.trang-cai-dat__cot-anh {
+.trang-cai-dat__thong-tin-co-ban {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.trang-cai-dat__dong-tt {
+  display: flex;
   align-items: flex-start;
   gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--mau-chu-phu);
+}
+
+.trang-cai-dat__dong-tt svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--mau-chinh-dam);
+}
+
+.trang-cai-dat__dong-tt strong {
+  display: block;
+  color: var(--mau-chu-dam);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.trang-cai-dat__ngan-doc {
+  align-self: stretch;
+  width: 1px;
+  background: var(--mau-vien);
   flex-shrink: 0;
 }
 
@@ -149,7 +241,29 @@
 
 .trang-cai-dat__cot-ten {
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
+}
+
+.trang-cai-dat__gach {
+  border: none;
+  border-top: 1px solid var(--mau-vien);
+  margin: 20px 0 0;
+}
+
+.trang-cai-dat__hang-duoi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.trang-cai-dat__doi-anh-cum {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .trang-cai-dat__nhan-ten {

@@ -4,7 +4,7 @@ import { useXacThuc } from '../NguCanh/NguCanhXacThuc';
 import { CongTac } from '../ThanhPhan/CongTac';
 import { Avatar } from '../ThanhPhan/Avatar';
 import { TruongNhap } from '../ThanhPhan/TruongNhap';
-import { BieuTuongNguoiDung, BieuTuongKhoa, BieuTuongMayAnh, BieuTuongLuu } from '../ThanhPhan/BieuTuong';
+import { BieuTuongNguoiDung, BieuTuongEmail, BieuTuongKhoa, BieuTuongMayAnh, BieuTuongLuu } from '../ThanhPhan/BieuTuong';
 import { apDungGiaoDien, layGiaoDienDaLuu, type GiaoDien } from '../NguCanh/GiaoDien';
 import './TrangCaiDat.css';
 
@@ -202,66 +202,82 @@ export function TrangCaiDat() {
 
         {mucDangChon === 'tai-khoan' && (
           <>
-            <div className="trang-cai-dat__the">
-              <div className="trang-cai-dat__the-dau">
-                <span className="trang-cai-dat__the-icon"><BieuTuongNguoiDung /></span>
-                <h2 className="trang-cai-dat__the-tieu-de">Thông tin tài khoản</h2>
+            <div className="trang-cai-dat__the trang-cai-dat__the-tk">
+              <div className="trang-cai-dat__ngan">
+                <span className="trang-cai-dat__ngan-icon"><BieuTuongNguoiDung /></span>
+                <div>
+                  <h2 className="trang-cai-dat__ngan-tieu-de">Thông tin tài khoản</h2>
+                  <p className="trang-cai-dat__ngan-phu-de">Quản lý và cập nhật thông tin tài khoản của bạn</p>
+                </div>
               </div>
-              <p className="trang-cai-dat__the-phu-de">
-                <strong>Tên tài khoản:</strong> {nguoiDungHienTai?.tenTaiKhoan}
-                <br />
-                <strong>Email:</strong> {nguoiDungHienTai?.email}
-              </p>
 
-              <div className="trang-cai-dat__hang-tk">
-                <div className="trang-cai-dat__cot-anh">
+              <div className="trang-cai-dat__than">
+                <div className="trang-cai-dat__hang-tk">
                   <Avatar id={nguoiDungHienTai?.id ?? ''} ten={tenHienThi || '?'} kichThuoc="lon" duongDanAnh={duongDanAnhDaiDien} />
-                  <label className="trang-cai-dat__nut-doi-anh">
-                    <BieuTuongMayAnh />
-                    {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
+
+                  <div className="trang-cai-dat__thong-tin-co-ban">
+                    <p className="trang-cai-dat__dong-tt">
+                      <BieuTuongNguoiDung />
+                      <span>Tên tài khoản<br /><strong>{nguoiDungHienTai?.tenTaiKhoan}</strong></span>
+                    </p>
+                    <p className="trang-cai-dat__dong-tt">
+                      <BieuTuongEmail />
+                      <span>Email<br /><strong>{nguoiDungHienTai?.email}</strong></span>
+                    </p>
+                  </div>
+
+                  <div className="trang-cai-dat__ngan-doc" />
+
+                  <div className="trang-cai-dat__cot-ten">
+                    <label className="trang-cai-dat__nhan-ten" htmlFor="trang-cai-dat-ten-hien-thi">Tên hiển thị</label>
+                    {loiDoiTen && (
+                      <p className="thong-bao-loi" role="alert">
+                        {loiDoiTen}
+                      </p>
+                    )}
+                    {daLuuTen && <p className="trang-cai-dat__da-luu">Đã lưu tên hiển thị.</p>}
                     <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      hidden
-                      disabled={dangTaiAnh}
-                      onChange={(su) => {
-                        const tep = su.target.files?.[0];
-                        if (tep) doiAnhDaiDien(tep);
-                        su.target.value = '';
-                      }}
+                      id="trang-cai-dat-ten-hien-thi"
+                      type="text"
+                      className="trang-cai-dat__o-ten"
+                      value={tenHienThi}
+                      onChange={(su) => { setTenHienThi(su.target.value); setDaLuuTen(false); }}
+                      disabled={dangLuuTen}
+                      maxLength={50}
                     />
-                  </label>
-                  <p className="trang-cai-dat__anh-goi-y">JPG, PNG, WEBP • Tối đa 5MB</p>
-                  {loiAnh && <p className="thong-bao-loi" role="alert">{loiAnh}</p>}
+                    <span className="trang-cai-dat__dem-ky-tu">{tenHienThi.length}/50</span>
+                  </div>
                 </div>
 
-                <div className="trang-cai-dat__cot-ten">
-                  <label className="trang-cai-dat__nhan-ten" htmlFor="trang-cai-dat-ten-hien-thi">Tên hiển thị</label>
-                  {loiDoiTen && (
-                    <p className="thong-bao-loi" role="alert">
-                      {loiDoiTen}
-                    </p>
-                  )}
-                  {daLuuTen && <p className="trang-cai-dat__da-luu">Đã lưu tên hiển thị.</p>}
-                  <input
-                    id="trang-cai-dat-ten-hien-thi"
-                    type="text"
-                    className="trang-cai-dat__o-ten"
-                    value={tenHienThi}
-                    onChange={(su) => { setTenHienThi(su.target.value); setDaLuuTen(false); }}
-                    disabled={dangLuuTen}
-                    maxLength={50}
-                  />
-                  <span className="trang-cai-dat__dem-ky-tu">{tenHienThi.length}/50</span>
-                  <div className="trang-cai-dat__hang-nut">
-                    <button
-                      className="nut-chinh trang-cai-dat__nut-nho"
-                      onClick={xuLyDoiTenHienThi}
-                      disabled={dangLuuTen || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc}
-                    >
-                      <BieuTuongLuu /> {dangLuuTen ? 'Đang lưu...' : 'Lưu thay đổi'}
-                    </button>
+                <hr className="trang-cai-dat__gach" />
+
+                <div className="trang-cai-dat__hang-duoi">
+                  <div className="trang-cai-dat__doi-anh-cum">
+                    <label className="trang-cai-dat__nut-doi-anh">
+                      <BieuTuongMayAnh />
+                      {dangTaiAnh ? 'Đang tải...' : 'Đổi ảnh đại diện'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        hidden
+                        disabled={dangTaiAnh}
+                        onChange={(su) => {
+                          const tep = su.target.files?.[0];
+                          if (tep) doiAnhDaiDien(tep);
+                          su.target.value = '';
+                        }}
+                      />
+                    </label>
+                    <span className="trang-cai-dat__anh-goi-y">JPG, PNG, WEBP • Tối đa 5MB</span>
+                    {loiAnh && <p className="thong-bao-loi" role="alert">{loiAnh}</p>}
                   </div>
+                  <button
+                    className="nut-chinh trang-cai-dat__nut-nho"
+                    onClick={xuLyDoiTenHienThi}
+                    disabled={dangLuuTen || !tenHienThi.trim() || tenHienThi.trim() === tenHienThiGoc}
+                  >
+                    <BieuTuongLuu /> {dangLuuTen ? 'Đang lưu...' : 'Lưu thay đổi'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -313,7 +329,7 @@ export function TrangCaiDat() {
                 />
                 <div className="trang-cai-dat__hang-nut">
                   <button type="submit" className="nut-chinh trang-cai-dat__nut-nho" disabled={dangDoiMatKhau}>
-                    <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Đổi mật khẩu'}
+                    <BieuTuongKhoa /> {dangDoiMatKhau ? 'Đang đổi...' : 'Cập nhật mật khẩu'}
                   </button>
                 </div>
               </div>

@@ -81,8 +81,8 @@ describe('TrangCaiDat', () => {
 
     renderTrangCaiDat();
 
-    expect(await screen.findByText('Tên tài khoản:')).toBeInTheDocument();
-    expect(screen.getByText('Email:')).toBeInTheDocument();
+    expect(await screen.findByText('Tên tài khoản')).toBeInTheDocument();
+    expect(screen.getByText('Email')).toBeInTheDocument();
   });
 
   it('chuyển sang mục Bảo mật hiển thị nội dung "sắp ra mắt"', async () => {
@@ -138,7 +138,7 @@ describe('TrangCaiDat', () => {
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu hiện tại'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
     fireEvent.change(screen.getByPlaceholderText('Xác nhận mật khẩu mới'), { target: { value: 'Moi123456' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cập nhật mật khẩu' }));
 
     await waitFor(() => expect(screen.getByText('Đã đổi mật khẩu thành công.')).toBeInTheDocument());
   });
@@ -156,7 +156,7 @@ describe('TrangCaiDat', () => {
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu hiện tại'), { target: { value: 'Cu123456' } });
     fireEvent.change(screen.getByPlaceholderText('Mật khẩu mới'), { target: { value: 'Moi123456' } });
     fireEvent.change(screen.getByPlaceholderText('Xác nhận mật khẩu mới'), { target: { value: 'Khac123456' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Đổi mật khẩu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cập nhật mật khẩu' }));
 
     expect(screen.getByText('Xác nhận mật khẩu mới không khớp.')).toBeInTheDocument();
     expect(doiMatKhauSpy).not.toHaveBeenCalled();
