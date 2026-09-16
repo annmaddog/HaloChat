@@ -95,3 +95,23 @@
     border-top: 1px solid var(--mau-vien);
   }
 }
+
+.panel-thong-tin-nhom__anh-cum {
+  position: relative;
+}
+
+.panel-thong-tin-nhom__nut-doi-anh {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--mau-nen-the);
+  background: var(--mau-chinh-dam);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

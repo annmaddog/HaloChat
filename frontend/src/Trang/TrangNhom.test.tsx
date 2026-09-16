@@ -373,4 +373,27 @@ describe('TrangNhom', () => {
 
     await waitFor(() => expect(ketNoiGiaLap.invoke).toHaveBeenCalledWith('ThaCamXucTinNhan', 'm1', 'Thich'));
   });
+
+  it('doi anh dai dien nhom tu Thong tin nhom cap nhat dung state', async () => {
+    const phanThanToken = btoa(JSON.stringify({ sub: '1', tenTaiKhoan: 'NguyenAn', email: 'a@gmail.com' }));
+    const tokenGiaLap = `header.${phanThanToken}.chuky`;
+    localStorage.setItem('haloChatToken', tokenGiaLap);
+    vi.spyOn(DichVuApi, 'LayDanhSachNhom').mockResolvedValue([
+      { id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: null, nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z' },
+    ]);
+    vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValue([]);
+    vi.spyOn(DichVuApi, 'TaiLenTep').mockResolvedValue({ duongDanFile: '/api/tinnhan/file/nhom456', tenFileGoc: 'a.png', kichThuocFile: 100, loaiFile: 'image/png' });
+    vi.spyOn(DichVuApi, 'CapNhatNhom').mockResolvedValue({
+      id: 'n1', tenNhom: 'Nhóm CNTT', moTa: null, duongDanAnhDaiDien: '/api/tinnhan/file/nhom456', nguoiTaoId: '1', thanhVien: [], thoiGianTao: '2026-01-01T00:00:00Z',
+    });
+
+    const { container } = renderTrangNhom();
+    await userEvent.click(await screen.findByText('Nhóm CNTT'));
+    await userEvent.click(container.querySelector('.khung-tin-nhan__tieu-de-bam') as Element);
+    const tep = new File(['noi-dung'], 'a.png', { type: 'image/png' });
+
+    await userEvent.upload(screen.getByLabelText('Đổi ảnh đại diện nhóm'), tep);
+
+    await waitFor(() => expect(DichVuApi.CapNhatNhom).toHaveBeenCalledWith(tokenGiaLap, 'n1', 'Nhóm CNTT', null, '/api/tinnhan/file/nhom456'));
+  });
 });

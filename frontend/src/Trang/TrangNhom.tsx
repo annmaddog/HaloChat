@@ -510,6 +510,7 @@ export function TrangNhom() {
               onDong={() => setPanelDangMo('khong')}
               onMoQuanLy={() => setPanelDangMo('quan-ly')}
               onRoiNhom={roiNhom}
+              onCapNhatNhom={(nhomMoi) => setDanhSachNhom((truoc) => truoc.map((n) => (n.id === nhomMoi.id ? nhomMoi : n)))}
             />
           )}
           {panelDangMo === 'quan-ly' && laAdmin && (
