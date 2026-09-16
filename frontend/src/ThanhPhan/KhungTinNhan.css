@@ -205,6 +205,11 @@
   right: 8px;
 }
 
+.khung-tin-nhan__hang--minh .khung-tin-nhan__menu {
+  left: auto;
+  right: 8px;
+}
+
 .khung-tin-nhan__hang:hover .khung-tin-nhan__icon-noi,
 .khung-tin-nhan__hang--mo .khung-tin-nhan__icon-noi {
   display: flex;
@@ -344,7 +349,11 @@
 .khung-tin-nhan__menu {
   position: absolute;
   top: 16px;
-  right: 8px;
+  /* Mặc định (tin người khác): menu neo trái, mở rộng sang phải — cùng
+     phía với .khung-tin-nhan__icon-noi (đã bám trái). Neo theo hướng
+     ngược lại (right:8px như trước) sẽ khiến menu bắn ngược sang trái
+     ra ngoài màn hình vì container icon-noi hẹp nằm gần mép trái. */
+  left: 8px;
   z-index: 5;
   min-width: 160px;
   background: var(--mau-nen-the);
