@@ -493,5 +493,6 @@ describe('KhungTinNhan', () => {
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" />);
 
     expect(screen.queryByText(/👍/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Thích tin nhắn này' })).not.toBeInTheDocument();
   });
 });

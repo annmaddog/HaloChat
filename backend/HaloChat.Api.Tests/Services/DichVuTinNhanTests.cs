@@ -461,6 +461,17 @@ public class DichVuTinNhanTests
     }
 
     [Fact]
+    public async Task ThaCamXucAsync_LoaiCamXucLaChuoiSo_NemTinNhanKhongHopLe()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(new NguoiDung { Id = IdNguoiGui, TenTaiKhoan = "NguoiGui", ChoPhepTinNhanTuNguoiLa = true });
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tin = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Vui qua", null, null, null, null, null);
+
+        await Assert.ThrowsAsync<TinNhanKhongHopLeException>(() => dichVu.ThaCamXucAsync(IdNguoiNhan, tin.Id, "99"));
+    }
+
+    [Fact]
     public async Task ThaCamXucAsync_KhongThuocHoiThoai_NemKhongCoQuyen()
     {
         const string IdNguoiThuBa = "507f1f77bcf86cd799439013";

@@ -384,7 +384,7 @@ public class DichVuTinNhan : IDichVuTinNhan
 
     public async Task<TinNhanDto> ThaCamXucAsync(string idHienTai, string tinNhanId, string loaiCamXuc)
     {
-        if (!Enum.TryParse<LoaiCamXuc>(loaiCamXuc, ignoreCase: true, out var loai))
+        if (!Enum.TryParse<LoaiCamXuc>(loaiCamXuc, ignoreCase: true, out var loai) || !Enum.IsDefined(loai))
         {
             throw new TinNhanKhongHopLeException($"Loại cảm xúc không hợp lệ: {loaiCamXuc}.");
         }

@@ -194,6 +194,33 @@ export function KhungTinNhan({
     };
   }, [hienBangEmoji]);
 
+  // Đóng popup 6 cảm xúc khi bấm ra ngoài hoặc bấm Escape — cùng cơ chế
+  // với menu "..."/bảng emoji ở trên (spec yêu cầu "giống dropdown menu
+  // đã có"); trước khi có effect này, popup chỉ đóng khi chuột rời khỏi
+  // chính popup nên có thể kẹt mở nếu người dùng di chuột ra ngoài theo
+  // hướng khác.
+  useEffect(() => {
+    if (!popupCamXucChoTinNhanId) return;
+
+    function xuLyBamNgoai(su: MouseEvent) {
+      const dich = su.target as HTMLElement;
+      if (!dich.closest('.khung-tin-nhan__cam-xuc-cum')) {
+        setPopupCamXucChoTinNhanId(null);
+      }
+    }
+
+    function xuLyPhimEscape(su: KeyboardEvent) {
+      if (su.key === 'Escape') setPopupCamXucChoTinNhanId(null);
+    }
+
+    document.addEventListener('mousedown', xuLyBamNgoai);
+    document.addEventListener('keydown', xuLyPhimEscape);
+    return () => {
+      document.removeEventListener('mousedown', xuLyBamNgoai);
+      document.removeEventListener('keydown', xuLyPhimEscape);
+    };
+  }, [popupCamXucChoTinNhanId]);
+
   // Chèn emoji vào đúng vị trí con trỏ trong ô nhập (uncontrolled input —
   // thao tác trực tiếp qua ref) rồi focus lại và đóng bảng.
   function chenEmoji(emoji: string) {
