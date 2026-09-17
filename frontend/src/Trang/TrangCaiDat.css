@@ -51,9 +51,10 @@
   margin-top: 8px;
 }
 
-.trang-cai-dat__sap-ra-mat {
+.trang-cai-dat__da-ap-dung {
   color: var(--mau-chu-phu);
   font-size: 13px;
+  line-height: 1.6;
 }
 
 @media (max-width: 640px) {

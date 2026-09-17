@@ -405,7 +405,11 @@ export function TrangCaiDat() {
         {mucDangChon === 'bao-mat' && (
           <>
             <h2>Bảo mật</h2>
-            <p className="trang-cai-dat__sap-ra-mat">🔒 Mã hóa tin nhắn AES-256-GCM + quản lý khóa RSA — sắp ra mắt (GĐ6).</p>
+            <p className="trang-cai-dat__da-ap-dung">
+              🔒 Nội dung tin nhắn (1-1 và nhóm) được mã hóa bằng AES-256-GCM ngay trên máy chủ; khóa phiên AES được trao đổi
+              riêng cho từng người bằng RSA-OAEP. Tính năng tự áp dụng khi tất cả người tham gia hội thoại đã có khóa mã hóa
+              (được cấp tự động khi đăng nhập).
+            </p>
           </>
         )}
 
