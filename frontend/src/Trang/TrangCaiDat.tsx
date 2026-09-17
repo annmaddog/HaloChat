@@ -217,9 +217,9 @@ export function TrangCaiDat() {
                       <BieuTuongNguoiDung />
                       <span>Tên tài khoản<br /><strong>{nguoiDungHienTai?.tenTaiKhoan}</strong></span>
                     </p>
-                    <p className="trang-cai-dat__dong-tt">
+                    <p className="trang-cai-dat__dong-tt trang-cai-dat__dong-tt--email">
                       <BieuTuongEmail />
-                      <span>Email<br /><strong>{nguoiDungHienTai?.email}</strong></span>
+                      <span>Email<br /><strong className="trang-cai-dat__email" title={nguoiDungHienTai?.email}>{nguoiDungHienTai?.email}</strong></span>
                     </p>
                   </div>
 
