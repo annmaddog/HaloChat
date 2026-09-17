@@ -734,4 +734,36 @@ public class DichVuTinNhanTests
 
         Assert.Equal("Xin chào bạn", Assert.Single(hoiThoaiNguoiNhan).TinNhanCuoi);
     }
+
+    [Fact]
+    public async Task TimKiemTheoNguoiDungAsync_TinDaMaHoa_VanTimThayNhoGiaiMaLaiDeLoc()
+    {
+        // [GĐ6] Regex trên NoiDungTinNhan (kho thật) không bao giờ khớp được
+        // tin đã mã hóa vì NoiDungTinNhan lúc đó rỗng — DichVuTinNhan phải tự
+        // giải mã các "ứng viên đã mã hóa" rồi lọc từ khóa ở tầng service.
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Hẹn 5 giờ chiều", null, null, null, null, null);
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Chào buổi sáng", null, null, null, null, null);
+
+        var ketQua = await dichVu.TimKiemTheoNguoiDungAsync(IdNguoiNhan, IdNguoiGui, "hẹn");
+
+        Assert.Equal("Hẹn 5 giờ chiều", Assert.Single(ketQua).NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task TimKiemTheoNhomAsync_TinDaMaHoa_VanTimThayNhoGiaiMaLaiDeLoc()
+    {
+        var (dichVu, _, khoNguoiDung, _, khoNhom, _) = TaoDichVu();
+        const string IdNhom = "507f1f77bcf86cd799439099";
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        khoNhom.DanhSach.Add(new Nhom { Id = IdNhom, ThanhVienIds = new List<string> { IdNguoiGui, IdNguoiNhan } });
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, null, IdNhom, "Text", "Họp nhóm 5 giờ chiều", null, null, null, null, null);
+
+        var ketQua = await dichVu.TimKiemTheoNhomAsync(IdNguoiNhan, IdNhom, "họp");
+
+        Assert.Equal("Họp nhóm 5 giờ chiều", Assert.Single(ketQua).NoiDungTinNhan);
+    }
 }

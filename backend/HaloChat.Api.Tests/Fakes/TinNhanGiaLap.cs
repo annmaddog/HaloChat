@@ -153,6 +153,25 @@ public class TinNhanGiaLap : ITinNhanRepository
         return Task.FromResult(ketQua);
     }
 
+    public Task<List<TinNhan>> LayTinDaMaHoaTheoNguoiDungAsync(string nguoiA, string nguoiB)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.NoiDungTinNhan == string.Empty)
+            .Where(t => (t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA))
+            .OrderByDescending(t => t.ThoiGianTao)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
+    public Task<List<TinNhan>> LayTinDaMaHoaTheoNhomAsync(string nhomId)
+    {
+        var ketQua = DanhSach
+            .Where(t => t.NhomId == nhomId && t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.NoiDungTinNhan == string.Empty)
+            .OrderByDescending(t => t.ThoiGianTao)
+            .ToList();
+        return Task.FromResult(ketQua);
+    }
+
     public Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc)
     {
         var tinNhan = DanhSach.FirstOrDefault(t => t.Id == id);

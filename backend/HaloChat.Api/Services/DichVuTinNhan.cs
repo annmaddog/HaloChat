@@ -493,10 +493,32 @@ public class DichVuTinNhan : IDichVuTinNhan
             return new List<TinNhanDto>();
         }
 
-        var ketQua = await _khoTinNhan.TimKiemTheoNguoiDungAsync(idHienTai, doiTacId, tuKhoa.Trim());
-        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
+        var tuKhoaChuan = tuKhoa.Trim();
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
+        var ketQuaPlaintext = await _khoTinNhan.TimKiemTheoNguoiDungAsync(idHienTai, doiTacId, tuKhoaChuan);
+        var ungVienMaHoa = await _khoTinNhan.LayTinDaMaHoaTheoNguoiDungAsync(idHienTai, doiTacId);
+        var ketQua = GomKetQuaTimKiem(ketQuaPlaintext, ungVienMaHoa, idHienTai, khoaBiMat, tuKhoaChuan);
+
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
         return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+    }
+
+    /// <summary>
+    /// [GĐ6] TimKiemTheoNguoiDungAsync/TimKiemTheoNhomAsync ở kho (regex trên NoiDungTinNhan) chỉ khớp
+    /// được tin CHƯA mã hóa — tin đã mã hóa luôn có NoiDungTinNhan rỗng nên không thể lọc bằng Mongo.
+    /// Gộp thêm "ứng viên đã mã hóa" (đã fetch riêng), tự giải mã dưới góc nhìn idHienTai rồi lọc theo
+    /// tuKhoa (Contains, không phân biệt hoa/thường) — cùng tiêu chí với query Mongo phía trên.
+    /// </summary>
+    private List<TinNhan> GomKetQuaTimKiem(List<TinNhan> ketQuaPlaintext, List<TinNhan> ungVienMaHoa, string idHienTai, string? khoaBiMat, string tuKhoa)
+    {
+        var tuMaHoaKhopTuKhoa = ungVienMaHoa
+            .Where(t => GiaiMaNoiDungThucTe(t, idHienTai, khoaBiMat).Contains(tuKhoa, StringComparison.OrdinalIgnoreCase));
+
+        return ketQuaPlaintext
+            .Concat(tuMaHoaKhopTuKhoa)
+            .OrderByDescending(t => t.ThoiGianTao)
+            .Take(50)
+            .ToList();
     }
 
     public async Task<List<TinNhanDto>> TimKiemTheoNhomAsync(string idHienTai, string nhomId, string tuKhoa)
@@ -512,9 +534,13 @@ public class DichVuTinNhan : IDichVuTinNhan
             return new List<TinNhanDto>();
         }
 
-        var ketQua = await _khoTinNhan.TimKiemTheoNhomAsync(nhomId, tuKhoa.Trim());
-        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
+        var tuKhoaChuan = tuKhoa.Trim();
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
+        var ketQuaPlaintext = await _khoTinNhan.TimKiemTheoNhomAsync(nhomId, tuKhoaChuan);
+        var ungVienMaHoa = await _khoTinNhan.LayTinDaMaHoaTheoNhomAsync(nhomId);
+        var ketQua = GomKetQuaTimKiem(ketQuaPlaintext, ungVienMaHoa, idHienTai, khoaBiMat, tuKhoaChuan);
+
+        var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
         return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
     }
 

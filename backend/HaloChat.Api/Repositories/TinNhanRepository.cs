@@ -182,6 +182,33 @@ public class TinNhanRepository : ITinNhanRepository
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
     }
 
+    public async Task<List<TinNhan>> LayTinDaMaHoaTheoNguoiDungAsync(string nguoiA, string nguoiB)
+    {
+        var boLocCapDoi = Builders<TinNhan>.Filter.Or(
+            Builders<TinNhan>.Filter.And(
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiA),
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiB)),
+            Builders<TinNhan>.Filter.And(
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiGuiId, nguoiB),
+                Builders<TinNhan>.Filter.Eq(t => t.NguoiNhanId, nguoiA)));
+        var boLoc = Builders<TinNhan>.Filter.And(
+            boLocCapDoi,
+            Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
+            Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Eq(t => t.NoiDungTinNhan, string.Empty));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).ToListAsync();
+    }
+
+    public async Task<List<TinNhan>> LayTinDaMaHoaTheoNhomAsync(string nhomId)
+    {
+        var boLoc = Builders<TinNhan>.Filter.And(
+            Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
+            Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
+            Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Eq(t => t.NoiDungTinNhan, string.Empty));
+        return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).ToListAsync();
+    }
+
     public async Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc)
     {
         var boLoc = Builders<TinNhan>.Filter.Eq(t => t.Id, id);

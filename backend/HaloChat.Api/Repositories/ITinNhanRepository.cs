@@ -57,6 +57,17 @@ public interface ITinNhanRepository
     /// <summary>Tin Text của 1 nhóm chứa tuKhoa, chưa thu hồi, tối đa 50 kết quả, mới nhất trước.</summary>
     Task<List<TinNhan>> TimKiemTheoNhomAsync(string nhomId, string tuKhoa);
 
+    /// <summary>
+    /// [GĐ6] Toàn bộ tin Text ĐÃ MÃ HÓA (2 chiều) giữa 2 người dùng, chưa thu hồi — dùng làm
+    /// "ứng viên" để DichVuTinNhan giải mã rồi tự lọc theo từ khóa ở tầng service, vì
+    /// TimKiemTheoNguoiDungAsync (regex trên NoiDungTinNhan) không bao giờ khớp được tin đã
+    /// mã hóa (NoiDungTinNhan lúc đó luôn rỗng).
+    /// </summary>
+    Task<List<TinNhan>> LayTinDaMaHoaTheoNguoiDungAsync(string nguoiA, string nguoiB);
+
+    /// <summary>[GĐ6] Như trên nhưng cho 1 nhóm — xem LayTinDaMaHoaTheoNguoiDungAsync.</summary>
+    Task<List<TinNhan>> LayTinDaMaHoaTheoNhomAsync(string nhomId);
+
     /// <summary>Thả/thay thế cảm xúc của nguoiDungId trên tin nhắn id (xóa cảm xúc cũ của cùng người nếu có, trước khi thêm mới).</summary>
     Task ThaCamXucAsync(string id, string nguoiDungId, LoaiCamXuc loaiCamXuc);
 
