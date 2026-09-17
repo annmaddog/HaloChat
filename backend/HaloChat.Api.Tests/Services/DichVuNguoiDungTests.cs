@@ -19,9 +19,21 @@ public class DichVuNguoiDungTests
             ChuoiBiMat = "khoa-bi-mat-du-dai-danh-cho-kiem-thu-toi-thieu-32-ky-tu",
         }));
         var dichVu = new DichVuNguoiDung(
-            kho, new DichVuMatKhau(), dichVuJwt, email,
+            kho, new DichVuMatKhau(), dichVuJwt, email, new DichVuMaHoa(),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<DichVuNguoiDung>.Instance);
         return (dichVu, kho, email);
+    }
+
+    [Fact]
+    public async Task DangKyTaiKhoan_ThanhCong_SinhCapKhoaRsaChoTaiKhoanMoi()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+
+        await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
+
+        var nguoiDungMoi = Assert.Single(kho.DanhSach);
+        Assert.False(string.IsNullOrWhiteSpace(nguoiDungMoi.KhoaCongKhai));
+        Assert.False(string.IsNullOrWhiteSpace(nguoiDungMoi.KhoaBiMat));
     }
 
     [Fact]

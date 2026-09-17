@@ -10,6 +10,18 @@ public enum LoaiTinNhan
     File,
 }
 
+// [GĐ6] 1 bản AES Session Key đã được mã hóa riêng bằng RSA Public Key của
+// đúng 1 người — RSA-OAEP chỉ mã hóa được cho 1 người nhận nên tin nhắn có
+// nhiều người tham gia (1-1: người gửi + người nhận; nhóm: mọi thành viên)
+// cần 1 bản ghi cho mỗi người, cùng trỏ tới 1 Ciphertext/Nonce/AuthTag chung.
+public class KhoaPhienNguoiDung
+{
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string NguoiDungId { get; set; } = string.Empty;
+
+    public string KhoaPhienDaMaHoa { get; set; } = string.Empty;
+}
+
 public class TinNhan
 {
     [BsonId]
@@ -61,4 +73,14 @@ public class TinNhan
     // [GĐ7c] Mỗi người dùng chỉ có tối đa 1 phần tử (thả cảm xúc khác =
     // thay thế, không cộng dồn).
     public List<CamXucTinNhan> DanhSachCamXuc { get; set; } = new();
+
+    // [GĐ6] Mã hóa lai RSA-AES. Rỗng/null = tin nhắn không mã hóa được lưu
+    // thẳng vào NoiDungTinNhan như trước (tin nhắn cũ trước khi bật mã hóa,
+    // loại khác Text, hoặc 1 trong các bên tham gia chưa có cặp khóa RSA —
+    // xem DichVuTinNhan.CoTheMaHoaAsync). Khi CÓ giá trị, NoiDungTinNhan để
+    // rỗng, nội dung thật nằm trong CiphertextTinNhan (đã mã hóa).
+    public List<KhoaPhienNguoiDung> DanhSachKhoaPhien { get; set; } = new();
+    public string? CiphertextTinNhan { get; set; }
+    public string? Nonce { get; set; }
+    public string? AuthTag { get; set; }
 }

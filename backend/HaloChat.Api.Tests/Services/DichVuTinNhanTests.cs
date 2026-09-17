@@ -1,6 +1,7 @@
 using HaloChat.Api.Models;
 using HaloChat.Api.Services;
 using HaloChat.Api.Tests.Fakes;
+using HaloChat.Security;
 using Xunit;
 
 namespace HaloChat.Api.Tests.Services;
@@ -19,8 +20,23 @@ public class DichVuTinNhanTests
         var khoDocNhom = new DocNhomGiaLap();
         var khoTinNhanAn = new TinNhanAnGiaLap();
         var quanLyKetNoi = new QuanLyKetNoiChat();
-        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoDocNhom, quanLyKetNoi, khoTinNhanAn);
+        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoDocNhom, quanLyKetNoi, khoTinNhanAn, new DichVuMaHoa());
         return (dichVu, khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoTinNhanAn);
+    }
+
+    // [GĐ6] Người dùng CÓ cặp khóa RSA thật — dùng khi test cần kiểm tra
+    // đúng hành vi mã hóa/giải mã (khác với TaoNguoiNhanChoPhepNguoiLa(),
+    // vốn cố tình để trống khóa để giữ các test khác không liên quan tới
+    // mã hóa không bị ảnh hưởng — thiếu khóa ở bất kỳ bên nào thì
+    // DichVuTinNhan tự rơi về lưu plaintext như trước GĐ6).
+    private static NguoiDung TaoNguoiDungCoKhoaRsa(string id, string tenTaiKhoan)
+    {
+        var (khoaCongKhai, khoaBiMat) = new DichVuMaHoa().SinhCapKhoaRsa();
+        return new NguoiDung
+        {
+            Id = id, TenTaiKhoan = tenTaiKhoan, ChoPhepTinNhanTuNguoiLa = true,
+            KhoaCongKhai = khoaCongKhai, KhoaBiMat = khoaBiMat,
+        };
     }
 
     // Hầu hết test dưới đây KHÔNG kiểm tra chính sách bạn bè (đã có nhóm test
@@ -619,5 +635,103 @@ public class DichVuTinNhanTests
         khoNhom.DanhSach.Add(new Nhom { Id = "n1", ThanhVienIds = new List<string> { "thanh-vien-khac" } });
 
         await Assert.ThrowsAsync<KhongPhaiThanhVienNhomException>(() => dichVu.TimKiemTheoNhomAsync(IdNguoiGui, "n1", "hẹn"));
+    }
+
+    // --- Mã hóa lai RSA-AES (GĐ6) ---
+
+    [Fact]
+    public async Task GuiTinNhanAsync_CaHaiBenCoKhoaRsa_LuuMaHoaTrongKhoKhongLuuPlaintext()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Chào Bình, tối nay học mật mã nhé!", null, null, null, null, null);
+
+        var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
+        Assert.Empty(tinNhanTrongKho.NoiDungTinNhan); // Không lưu plaintext.
+        Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.CiphertextTinNhan));
+        Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.Nonce));
+        Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.AuthTag));
+        Assert.Equal(2, tinNhanTrongKho.DanhSachKhoaPhien.Count); // Cả người gửi lẫn người nhận đều đọc lại được.
+        Assert.Contains(tinNhanTrongKho.DanhSachKhoaPhien, k => k.NguoiDungId == IdNguoiGui);
+        Assert.Contains(tinNhanTrongKho.DanhSachKhoaPhien, k => k.NguoiDungId == IdNguoiNhan);
+        // DTO trả về ngay lúc gửi vẫn phải là nội dung gốc (đã giải mã lại để hiển thị cho người gửi thấy).
+        Assert.Equal("Chào Bình, tối nay học mật mã nhé!", ketQua.NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_NguoiGuiChuaCoKhoaRsa_RoiVePluTextNhuTruocGD6()
+    {
+        // NguoiGui không được thêm vào kho (giống hầu hết test khác trong
+        // file này) — mô phỏng đúng tài khoản tạo trước GĐ6/chưa có khóa.
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
+        Assert.Equal("Xin chào", tinNhanTrongKho.NoiDungTinNhan);
+        Assert.Empty(tinNhanTrongKho.DanhSachKhoaPhien);
+        Assert.Null(tinNhanTrongKho.CiphertextTinNhan);
+        Assert.Equal("Xin chào", ketQua.NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task LayLichSuAsync_TinDaMaHoa_NguoiNhanGiaiMaDungNoiDungGoc()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Nội dung bí mật", null, null, null, null, null);
+
+        var lichSuNguoiNhan = await dichVu.LayLichSuAsync(IdNguoiNhan, IdNguoiGui, null, 30);
+        var lichSuNguoiGui = await dichVu.LayLichSuAsync(IdNguoiGui, IdNguoiNhan, null, 30);
+
+        Assert.Equal("Nội dung bí mật", Assert.Single(lichSuNguoiNhan).NoiDungTinNhan);
+        Assert.Equal("Nội dung bí mật", Assert.Single(lichSuNguoiGui).NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_Nhom_TatCaThanhVienCoKhoa_MoiThanhVienGiaiMaDungNoiDung()
+    {
+        var (dichVu, _, khoNguoiDung, _, khoNhom, _) = TaoDichVu();
+        const string IdThanhVien3 = "507f1f77bcf86cd799439013";
+        const string IdNhom = "507f1f77bcf86cd799439099";
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdThanhVien3, "ThanhVien3"));
+        khoNhom.DanhSach.Add(new Nhom { Id = IdNhom, ThanhVienIds = new List<string> { IdNguoiGui, IdNguoiNhan, IdThanhVien3 } });
+
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, null, IdNhom, "Text", "Họp nhóm 5 giờ chiều", null, null, null, null, null);
+
+        var lichSuThanhVien3 = await dichVu.LayLichSuNhomAsync(IdThanhVien3, IdNhom, null, 30);
+        Assert.Equal("Họp nhóm 5 giờ chiều", Assert.Single(lichSuThanhVien3).NoiDungTinNhan);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_TraLoiTinDaMaHoa_TrichDanHienDungNoiDungGocKhongPhaiCiphertext()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        var tinGoc = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Hẹn 5 giờ chiều", null, null, null, null, null);
+
+        var tinTraLoi = await dichVu.GuiTinNhanAsync(IdNguoiNhan, IdNguoiGui, null, "Text", "OK", null, null, null, null, tinGoc.Id);
+
+        Assert.Equal("Hẹn 5 giờ chiều", tinTraLoi.TraLoi!.NoiDungTomTat);
+    }
+
+    [Fact]
+    public async Task LayDanhSachHoiThoaiAsync_TinDaMaHoa_XemTruocHienDungNoiDungGoc()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào bạn", null, null, null, null, null);
+
+        var hoiThoaiNguoiNhan = await dichVu.LayDanhSachHoiThoaiAsync(IdNguoiNhan);
+
+        Assert.Equal("Xin chào bạn", Assert.Single(hoiThoaiNguoiNhan).TinNhanCuoi);
     }
 }

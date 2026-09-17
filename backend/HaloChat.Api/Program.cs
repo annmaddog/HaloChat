@@ -24,6 +24,7 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 
 builder.Services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
 builder.Services.AddScoped<IDichVuMatKhau, DichVuMatKhau>();
+builder.Services.AddScoped<IDichVuMaHoa, DichVuMaHoa>();
 builder.Services.AddScoped<IDichVuJwt, DichVuJwt>();
 builder.Services.AddScoped<IDichVuNguoiDung, DichVuNguoiDung>();
 builder.Services.AddScoped<ITinNhanRepository, TinNhanRepository>();

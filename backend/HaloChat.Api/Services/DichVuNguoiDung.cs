@@ -12,6 +12,7 @@ public class DichVuNguoiDung : IDichVuNguoiDung
     private readonly IDichVuMatKhau _dichVuMatKhau;
     private readonly IDichVuJwt _dichVuJwt;
     private readonly IDichVuEmail _dichVuEmail;
+    private readonly IDichVuMaHoa _dichVuMaHoa;
     private readonly ILogger<DichVuNguoiDung> _nhatKy;
 
     private const int HetHanOtpPhut = 10;
@@ -20,12 +21,13 @@ public class DichVuNguoiDung : IDichVuNguoiDung
 
     public DichVuNguoiDung(
         INguoiDungRepository kho, IDichVuMatKhau dichVuMatKhau, IDichVuJwt dichVuJwt, IDichVuEmail dichVuEmail,
-        ILogger<DichVuNguoiDung> nhatKy)
+        IDichVuMaHoa dichVuMaHoa, ILogger<DichVuNguoiDung> nhatKy)
     {
         _kho = kho;
         _dichVuMatKhau = dichVuMatKhau;
         _dichVuJwt = dichVuJwt;
         _dichVuEmail = dichVuEmail;
+        _dichVuMaHoa = dichVuMaHoa;
         _nhatKy = nhatKy;
     }
 
@@ -42,12 +44,15 @@ public class DichVuNguoiDung : IDichVuNguoiDung
         }
 
         var salt = _dichVuMatKhau.TaoSalt();
+        var (khoaCongKhai, khoaBiMat) = _dichVuMaHoa.SinhCapKhoaRsa();
         var nguoiDungMoi = new NguoiDung
         {
             TenTaiKhoan = tenTaiKhoan,
             Email = email,
             Salt = salt,
             MatKhauBam = _dichVuMatKhau.BamMatKhau(matKhau, salt),
+            KhoaCongKhai = khoaCongKhai,
+            KhoaBiMat = khoaBiMat,
         };
 
         try

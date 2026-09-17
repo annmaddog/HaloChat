@@ -14,9 +14,11 @@ public class NguoiDung
     public string MatKhauBam { get; set; } = string.Empty;
     public string Salt { get; set; } = string.Empty;
 
-    // [BẢO MẬT - GĐ6] Cặp khóa RSA (KhoaCongKhai/KhoaBiMat) sẽ được sinh và
-    // gán vào đây khi nhóm triển khai mã hóa lai RSA-AES. Để trống ở giai
-    // đoạn này theo đúng chính sách stub trong spec (§9).
+    // [GĐ6] Cặp khóa RSA — sinh 1 lần bằng IDichVuMaHoa.SinhCapKhoaRsa() ngay
+    // lúc đăng ký (DichVuNguoiDung.DangKyTaiKhoan), dạng Base64. Rỗng = tài
+    // khoản tạo trước GĐ6 hoặc dữ liệu giả lập trong test — DichVuTinNhan coi
+    // các bên tham gia hội thoại thiếu khóa là "chưa mã hóa được", tự động
+    // rơi về lưu plaintext như trước (xem DichVuTinNhan.CoTheMaHoaAsync).
     public string KhoaCongKhai { get; set; } = string.Empty;
     public string KhoaBiMat { get; set; } = string.Empty;
 
