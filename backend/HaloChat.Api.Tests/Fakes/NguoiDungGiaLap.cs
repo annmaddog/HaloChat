@@ -123,4 +123,15 @@ public class NguoiDungGiaLap : INguoiDungRepository
         }
         return Task.CompletedTask;
     }
+
+    public Task CapNhatKhoaRsaAsync(string id, string khoaCongKhai, string khoaBiMat)
+    {
+        var nguoiDung = DanhSach.FirstOrDefault(nd => nd.Id == id);
+        if (nguoiDung is not null)
+        {
+            nguoiDung.KhoaCongKhai = khoaCongKhai;
+            nguoiDung.KhoaBiMat = khoaBiMat;
+        }
+        return Task.CompletedTask;
+    }
 }

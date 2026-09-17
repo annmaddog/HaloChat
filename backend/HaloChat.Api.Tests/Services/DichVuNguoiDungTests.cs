@@ -140,6 +140,42 @@ public class DichVuNguoiDungTests
     }
 
     [Fact]
+    public async Task DangNhap_TaiKhoanTaoTruocGD6ThieuKhoaRsa_TuDongCapKhoaBuTru()
+    {
+        // Mô phỏng tài khoản đã tồn tại từ trước khi có tính năng mã hóa
+        // GĐ6 (hoặc dữ liệu cũ trên Mongo thật) — KhoaCongKhai/KhoaBiMat
+        // rỗng. Đăng nhập phải tự vá bằng cách sinh cặp khóa mới, để các
+        // tin nhắn gửi SAU lần đăng nhập này được mã hóa bình thường.
+        var (dichVu, kho, _) = TaoDichVu();
+        var matKhau = new DichVuMatKhau();
+        var salt = matKhau.TaoSalt();
+        kho.DanhSach.Add(new NguoiDung
+        {
+            TenTaiKhoan = "NguoiCu", Email = "nguoicu@gmail.com", Salt = salt,
+            MatKhauBam = matKhau.BamMatKhau("MatKhau123", salt),
+        });
+
+        var token = await dichVu.DangNhap("NguoiCu", "MatKhau123");
+
+        Assert.NotNull(token);
+        var nguoiDung = Assert.Single(kho.DanhSach);
+        Assert.False(string.IsNullOrWhiteSpace(nguoiDung.KhoaCongKhai));
+        Assert.False(string.IsNullOrWhiteSpace(nguoiDung.KhoaBiMat));
+    }
+
+    [Fact]
+    public async Task DangNhap_TaiKhoanDaCoKhoaRsa_KhongSinhKhoaMoiGhiDe()
+    {
+        var (dichVu, kho, _) = TaoDichVu();
+        await dichVu.DangKyTaiKhoan("NguyenAn", "nguyenan@gmail.com", "MatKhau123");
+        var khoaCongKhaiTruoc = kho.DanhSach[0].KhoaCongKhai;
+
+        await dichVu.DangNhap("NguyenAn", "MatKhau123");
+
+        Assert.Equal(khoaCongKhaiTruoc, kho.DanhSach[0].KhoaCongKhai);
+    }
+
+    [Fact]
     public async Task LayDanhSachNguoiDung_KhongBaoGomChinhMinh()
     {
         var (dichVu, kho, _) = TaoDichVu();

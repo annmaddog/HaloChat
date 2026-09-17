@@ -130,4 +130,13 @@ public class NguoiDungRepository : INguoiDungRepository
         var capNhat = Builders<NguoiDung>.Update.Set(nd => nd.DaXemHoanTatHoSo, true);
         await _collection.UpdateOneAsync(boLoc, capNhat);
     }
+
+    public async Task CapNhatKhoaRsaAsync(string id, string khoaCongKhai, string khoaBiMat)
+    {
+        var boLoc = Builders<NguoiDung>.Filter.Eq(nd => nd.Id, id);
+        var capNhat = Builders<NguoiDung>.Update
+            .Set(nd => nd.KhoaCongKhai, khoaCongKhai)
+            .Set(nd => nd.KhoaBiMat, khoaBiMat);
+        await _collection.UpdateOneAsync(boLoc, capNhat);
+    }
 }

@@ -80,6 +80,18 @@ public class DichVuNguoiDung : IDichVuNguoiDung
             return null;
         }
 
+        // [GĐ6] Tài khoản tạo trước khi có tính năng mã hóa (hoặc dữ liệu cũ
+        // trên Mongo thật) không có sẵn cặp khóa RSA — vá ngay lúc đăng nhập
+        // để những tin nhắn gửi TỪ ĐÂY VỀ SAU của họ được mã hóa bình
+        // thường, thay vì mãi mãi rơi về plaintext do thiếu Public Key.
+        if (string.IsNullOrWhiteSpace(nguoiDung.KhoaCongKhai))
+        {
+            var (khoaCongKhai, khoaBiMat) = _dichVuMaHoa.SinhCapKhoaRsa();
+            await _kho.CapNhatKhoaRsaAsync(nguoiDung.Id, khoaCongKhai, khoaBiMat);
+            nguoiDung.KhoaCongKhai = khoaCongKhai;
+            nguoiDung.KhoaBiMat = khoaBiMat;
+        }
+
         return _dichVuJwt.TaoJwt(nguoiDung);
     }
 
