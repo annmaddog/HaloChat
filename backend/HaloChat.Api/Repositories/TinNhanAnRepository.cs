@@ -17,8 +17,11 @@ public class TinNhanAnRepository : ITinNhanAnRepository
         var boLoc = Builders<TinNhanAn>.Filter.And(
             Builders<TinNhanAn>.Filter.Eq(x => x.NguoiDungId, nguoiDungId),
             Builders<TinNhanAn>.Filter.Eq(x => x.TinNhanId, tinNhanId));
-        var thayThe = new TinNhanAn { NguoiDungId = nguoiDungId, TinNhanId = tinNhanId };
-        await _collection.ReplaceOneAsync(boLoc, thayThe, new ReplaceOptions { IsUpsert = true });
+        // SetOnInsert chỉ ghi Id/ThoiGianAn khi tạo mới; nếu bản ghi đã có (ẩn lần 2) thì không đụng tới _id bất biến.
+        var capNhat = Builders<TinNhanAn>.Update
+            .SetOnInsert(x => x.Id, MongoDB.Bson.ObjectId.GenerateNewId().ToString())
+            .SetOnInsert(x => x.ThoiGianAn, DateTime.UtcNow);
+        await _collection.UpdateOneAsync(boLoc, capNhat, new UpdateOptions { IsUpsert = true });
     }
 
     public async Task<HashSet<string>> LayDanhSachIdDaAnAsync(string nguoiDungId, IEnumerable<string> tinNhanIds)
