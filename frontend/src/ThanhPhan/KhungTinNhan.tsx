@@ -17,7 +17,7 @@ function dinhDangKichThuoc(bytes: number): string {
 // đúng tin nhắn đó (xem state tinDangMoId bên dưới).
 function dinhDangGio(thoiGianTao: string): string {
   const ngay = new Date(thoiGianTao);
-  return ngay.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  return ngay.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 }
 
 // [Bộ emoji ô nhập] Danh sách phẳng, không chia danh mục/tab — theo đúng
