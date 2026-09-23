@@ -649,7 +649,9 @@ public class DichVuTinNhanTests
         var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Chào Bình, tối nay học mật mã nhé!", null, null, null, null, null);
 
         var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
-        Assert.Empty(tinNhanTrongKho.NoiDungTinNhan); // Không lưu plaintext.
+        Assert.NotEqual("Chào Bình, tối nay học mật mã nhé!", tinNhanTrongKho.NoiDungTinNhan); // Không lưu plaintext.
+        Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.NoiDungTinNhan));
+        Assert.Equal(tinNhanTrongKho.CiphertextTinNhan, tinNhanTrongKho.NoiDungTinNhan); // Trường nội dung chứa chính bản mã.
         Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.CiphertextTinNhan));
         Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.Nonce));
         Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.AuthTag));

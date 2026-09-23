@@ -77,8 +77,8 @@ public class TinNhan
     // [GĐ6] Mã hóa lai RSA-AES. Rỗng/null = tin nhắn không mã hóa được lưu
     // thẳng vào NoiDungTinNhan như trước (tin nhắn cũ trước khi bật mã hóa,
     // loại khác Text, hoặc 1 trong các bên tham gia chưa có cặp khóa RSA —
-    // xem DichVuTinNhan.CoTheMaHoaAsync). Khi CÓ giá trị, NoiDungTinNhan để
-    // rỗng, nội dung thật nằm trong CiphertextTinNhan (đã mã hóa).
+    // xem DichVuTinNhan.CoTheMaHoaAsync). Khi CÓ giá trị, NoiDungTinNhan chứa
+    // chính bản mã (Base64, giống CiphertextTinNhan) — plaintext không được lưu.
     public List<KhoaPhienNguoiDung> DanhSachKhoaPhien { get; set; } = new();
     public string? CiphertextTinNhan { get; set; }
     public string? Nonce { get; set; }

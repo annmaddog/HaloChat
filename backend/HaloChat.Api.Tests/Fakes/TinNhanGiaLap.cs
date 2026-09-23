@@ -135,7 +135,7 @@ public class TinNhanGiaLap : ITinNhanRepository
         var ketQua = DanhSach
             .Where(t => t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi)
             .Where(t => (t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA))
-            .Where(t => t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.DanhSachKhoaPhien.Count == 0 && t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(t => t.ThoiGianTao)
             .Take(50)
             .ToList();
@@ -146,7 +146,7 @@ public class TinNhanGiaLap : ITinNhanRepository
     {
         var ketQua = DanhSach
             .Where(t => t.NhomId == nhomId && t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi)
-            .Where(t => t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
+            .Where(t => t.DanhSachKhoaPhien.Count == 0 && t.NoiDungTinNhan.Contains(tuKhoa, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(t => t.ThoiGianTao)
             .Take(50)
             .ToList();
@@ -156,7 +156,7 @@ public class TinNhanGiaLap : ITinNhanRepository
     public Task<List<TinNhan>> LayTinDaMaHoaTheoNguoiDungAsync(string nguoiA, string nguoiB)
     {
         var ketQua = DanhSach
-            .Where(t => t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.NoiDungTinNhan == string.Empty)
+            .Where(t => t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.DanhSachKhoaPhien.Count > 0)
             .Where(t => (t.NguoiGuiId == nguoiA && t.NguoiNhanId == nguoiB) || (t.NguoiGuiId == nguoiB && t.NguoiNhanId == nguoiA))
             .OrderByDescending(t => t.ThoiGianTao)
             .ToList();
@@ -166,7 +166,7 @@ public class TinNhanGiaLap : ITinNhanRepository
     public Task<List<TinNhan>> LayTinDaMaHoaTheoNhomAsync(string nhomId)
     {
         var ketQua = DanhSach
-            .Where(t => t.NhomId == nhomId && t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.NoiDungTinNhan == string.Empty)
+            .Where(t => t.NhomId == nhomId && t.LoaiTinNhan == LoaiTinNhan.Text && !t.DaThuHoi && t.DanhSachKhoaPhien.Count > 0)
             .OrderByDescending(t => t.ThoiGianTao)
             .ToList();
         return Task.FromResult(ketQua);

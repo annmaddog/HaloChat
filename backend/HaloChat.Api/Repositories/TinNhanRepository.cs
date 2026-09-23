@@ -168,6 +168,7 @@ public class TinNhanRepository : ITinNhanRepository
             boLocCapDoi,
             Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
             Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Size(t => t.DanhSachKhoaPhien, 0),
             Builders<TinNhan>.Filter.Regex(t => t.NoiDungTinNhan, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(tuKhoa), "i")));
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
     }
@@ -178,6 +179,7 @@ public class TinNhanRepository : ITinNhanRepository
             Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
             Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
             Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
+            Builders<TinNhan>.Filter.Size(t => t.DanhSachKhoaPhien, 0),
             Builders<TinNhan>.Filter.Regex(t => t.NoiDungTinNhan, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(tuKhoa), "i")));
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).Limit(50).ToListAsync();
     }
@@ -195,7 +197,7 @@ public class TinNhanRepository : ITinNhanRepository
             boLocCapDoi,
             Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
             Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
-            Builders<TinNhan>.Filter.Eq(t => t.NoiDungTinNhan, string.Empty));
+            Builders<TinNhan>.Filter.SizeGt(t => t.DanhSachKhoaPhien, 0));
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).ToListAsync();
     }
 
@@ -205,7 +207,7 @@ public class TinNhanRepository : ITinNhanRepository
             Builders<TinNhan>.Filter.Eq(t => t.NhomId, nhomId),
             Builders<TinNhan>.Filter.Eq(t => t.LoaiTinNhan, LoaiTinNhan.Text),
             Builders<TinNhan>.Filter.Eq(t => t.DaThuHoi, false),
-            Builders<TinNhan>.Filter.Eq(t => t.NoiDungTinNhan, string.Empty));
+            Builders<TinNhan>.Filter.SizeGt(t => t.DanhSachKhoaPhien, 0));
         return await _collection.Find(boLoc).SortByDescending(t => t.ThoiGianTao).ToListAsync();
     }
 

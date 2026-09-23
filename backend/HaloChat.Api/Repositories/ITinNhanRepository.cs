@@ -61,7 +61,8 @@ public interface ITinNhanRepository
     /// [GĐ6] Toàn bộ tin Text ĐÃ MÃ HÓA (2 chiều) giữa 2 người dùng, chưa thu hồi — dùng làm
     /// "ứng viên" để DichVuTinNhan giải mã rồi tự lọc theo từ khóa ở tầng service, vì
     /// TimKiemTheoNguoiDungAsync (regex trên NoiDungTinNhan) không bao giờ khớp được tin đã
-    /// mã hóa (NoiDungTinNhan lúc đó luôn rỗng).
+    /// mã hóa (lúc đó NoiDungTinNhan chỉ chứa bản mã Base64, không phải chữ thật); tin mã hóa được nhận biết
+    /// qua DanhSachKhoaPhien không rỗng.
     /// </summary>
     Task<List<TinNhan>> LayTinDaMaHoaTheoNguoiDungAsync(string nguoiA, string nguoiB);
 

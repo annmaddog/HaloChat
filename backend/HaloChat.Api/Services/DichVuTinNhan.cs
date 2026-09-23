@@ -195,7 +195,7 @@ public class DichVuTinNhan : IDichVuTinNhan
 
             var nguoiGuiGoc = await _khoNguoiDung.TimTheoIdAsync(tinGoc.NguoiGuiId);
             var tenNguoiGuiGoc = nguoiGuiGoc?.TenHienThiThucTe() ?? "Người dùng đã xoá";
-            // [GĐ6] tinGoc.NoiDungTinNhan có thể là chuỗi rỗng (đã mã hóa) —
+            // [GĐ6] tinGoc.NoiDungTinNhan có thể là bản mã (đã mã hóa) —
             // giải mã lại bằng khóa của CHÍNH người đang trả lời (nguoiGuiId
             // của tin MỚI này), vì họ chắc chắn là 1 bên tham gia hội thoại
             // chứa tinGoc nên luôn có 1 bản khóa phiên dành riêng cho mình.
@@ -265,7 +265,9 @@ public class DichVuTinNhan : IDichVuTinNhan
                 KhoaPhienDaMaHoa = _dichVuMaHoa.MaHoaKhoaPhien(khoaPhien, nd.KhoaCongKhai),
             })
             .ToList();
-        tinNhan.NoiDungTinNhan = string.Empty;
+        // Trường nội dung lưu chính bản mã (Base64) — trong MongoDB chỉ thấy chuỗi vô nghĩa, không có plaintext.
+        // Phân biệt tin đã mã hóa bằng DanhSachKhoaPhien không rỗng, KHÔNG dựa vào NoiDungTinNhan.
+        tinNhan.NoiDungTinNhan = ketQuaMaHoa.Ciphertext;
     }
 
     /// <summary>
@@ -443,7 +445,7 @@ public class DichVuTinNhan : IDichVuTinNhan
             }
 
             var soChuaDoc = tatCaTinNhan.Count(t => t.NguoiGuiId == idKia && t.NguoiNhanId == nguoiDungId && !t.DaDoc);
-            // [GĐ6] tn.NoiDungTinNhan có thể rỗng (đã mã hóa) — giải mã dưới
+            // [GĐ6] tn.NoiDungTinNhan có thể là bản mã (đã mã hóa) — giải mã dưới
             // góc nhìn của nguoiDungId (chính người xem danh sách hội thoại
             // này); mapNguoiDung đã có sẵn toàn bộ user nên không cần query
             // thêm để lấy KhoaBiMat của họ.
@@ -505,7 +507,7 @@ public class DichVuTinNhan : IDichVuTinNhan
 
     /// <summary>
     /// [GĐ6] TimKiemTheoNguoiDungAsync/TimKiemTheoNhomAsync ở kho (regex trên NoiDungTinNhan) chỉ khớp
-    /// được tin CHƯA mã hóa — tin đã mã hóa luôn có NoiDungTinNhan rỗng nên không thể lọc bằng Mongo.
+    /// được tin CHƯA mã hóa — tin đã mã hóa chỉ lưu bản mã trong NoiDungTinNhan nên không thể lọc theo từ khóa bằng Mongo.
     /// Gộp thêm "ứng viên đã mã hóa" (đã fetch riêng), tự giải mã dưới góc nhìn idHienTai rồi lọc theo
     /// tuKhoa (Contains, không phân biệt hoa/thường) — cùng tiêu chí với query Mongo phía trên.
     /// </summary>
