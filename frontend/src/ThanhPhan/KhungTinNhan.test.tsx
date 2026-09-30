@@ -23,6 +23,7 @@ const PROPS_MAC_DINH = {
   onBoGhim: () => {},
   onAn: () => {},
   onChuyenTiep: () => {},
+  onXemThongTinKyThuat: () => {},
   danhSachTinNhanGhim: [],
   onMoKhoMedia: () => {},
   onTimKiem: () => Promise.resolve([]),

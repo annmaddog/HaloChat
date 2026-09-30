@@ -66,6 +66,7 @@ interface PropsKhungTinNhan {
   onBoGhim: (id: string) => void;
   onAn: (id: string) => void;
   onChuyenTiep: (id: string) => void;
+  onXemThongTinKyThuat: (id: string) => void;
   danhSachTinNhanGhim: TinNhan[];
   onMoKhoMedia: () => void;
   onTimKiem: (tuKhoa: string) => Promise<TinNhan[]>;
@@ -78,7 +79,7 @@ interface PropsKhungTinNhan {
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
-  onThuHoi, onGhim, onBoGhim, onAn, onChuyenTiep, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
+  onThuHoi, onGhim, onBoGhim, onAn, onChuyenTiep, onXemThongTinKyThuat, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
   onThaCamXuc, onBoCamXuc, duongDanAnh,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
@@ -551,6 +552,7 @@ export function KhungTinNhan({
                               Lưu về thiết bị
                             </a>
                           )}
+                          <button onClick={() => { onXemThongTinKyThuat(tn.id); setMenuMoChoTinNhanId(null); }}>Thông tin kỹ thuật</button>
                           {!tn.daThuHoi && !tn.daGhim && (
                             <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
                           )}

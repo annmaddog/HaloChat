@@ -13,6 +13,7 @@ import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
 import { PanelKhoMedia } from './PanelKhoMedia';
 import { ModalChuyenTiep, type MucTieuChuyenTiep } from '../ThanhPhan/ModalChuyenTiep';
+import { ModalThongTinKyThuat } from '../ThanhPhan/ModalThongTinKyThuat';
 import type { Nhom, NguoiDungTomTat, TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './TrangNhom.css';
 
@@ -56,6 +57,7 @@ export function TrangNhom() {
   const [tinNhanGhimTheoNhom, setTinNhanGhimTheoNhom] = useState<Record<string, TinNhan[]>>({});
   const [hienKhoMedia, setHienKhoMedia] = useState(false);
   const [tinChuyenTiep, setTinChuyenTiep] = useState<TinNhanHienThi | null>(null);
+  const [idXemThongTinKyThuat, setIdXemThongTinKyThuat] = useState<string | null>(null);
   const [dangChuyenTiep, setDangChuyenTiep] = useState(false);
   const [loiChuyenTiep, setLoiChuyenTiep] = useState<string | null>(null);
   const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
@@ -525,6 +527,7 @@ export function TrangNhom() {
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
             onChuyenTiep={moChuyenTiep}
+            onXemThongTinKyThuat={setIdXemThongTinKyThuat}
             onThaCamXuc={thaCamXuc}
             onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
@@ -667,6 +670,14 @@ export function TrangNhom() {
           loi={loiChuyenTiep}
           onDong={() => setTinChuyenTiep(null)}
           onXacNhan={xacNhanChuyenTiep}
+        />
+      )}
+
+      {idXemThongTinKyThuat && (
+        <ModalThongTinKyThuat
+          token={token ?? ''}
+          tinNhanId={idXemThongTinKyThuat}
+          onDong={() => setIdXemThongTinKyThuat(null)}
         />
       )}
     </div>

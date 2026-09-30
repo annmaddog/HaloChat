@@ -11,6 +11,7 @@ import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
 import { ModalHoanTatHoSo } from '../ThanhPhan/ModalHoanTatHoSo';
 import { ModalChuyenTiep, type MucTieuChuyenTiep } from '../ThanhPhan/ModalChuyenTiep';
+import { ModalThongTinKyThuat } from '../ThanhPhan/ModalThongTinKyThuat';
 import { PanelKhoMedia } from './PanelKhoMedia';
 import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan, LoaiCamXuc, HoSoCaNhan } from '../KieuDuLieu';
 import './TrangChat.css';
@@ -56,6 +57,7 @@ export function TrangChat() {
   const [tinNhanGhimTheoDoiTac, setTinNhanGhimTheoDoiTac] = useState<Record<string, TinNhan[]>>({});
   const [hienKhoMedia, setHienKhoMedia] = useState(false);
   const [tinChuyenTiep, setTinChuyenTiep] = useState<TinNhanHienThi | null>(null);
+  const [idXemThongTinKyThuat, setIdXemThongTinKyThuat] = useState<string | null>(null);
   const [dangChuyenTiep, setDangChuyenTiep] = useState(false);
   const [loiChuyenTiep, setLoiChuyenTiep] = useState<string | null>(null);
   const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
@@ -504,6 +506,7 @@ export function TrangChat() {
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
             onChuyenTiep={moChuyenTiep}
+            onXemThongTinKyThuat={setIdXemThongTinKyThuat}
             onThaCamXuc={thaCamXuc}
             onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
@@ -538,6 +541,14 @@ export function TrangChat() {
           loi={loiChuyenTiep}
           onDong={() => setTinChuyenTiep(null)}
           onXacNhan={xacNhanChuyenTiep}
+        />
+      )}
+
+      {idXemThongTinKyThuat && (
+        <ModalThongTinKyThuat
+          token={token ?? ''}
+          tinNhanId={idXemThongTinKyThuat}
+          onDong={() => setIdXemThongTinKyThuat(null)}
         />
       )}
     </div>

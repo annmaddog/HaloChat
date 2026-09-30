@@ -1,0 +1,103 @@
+.modal-thong-tin-ky-thuat__nen {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 27, 51, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.modal-thong-tin-ky-thuat__hop {
+  background: var(--mau-nen-the);
+  border-radius: var(--ban-kinh-the);
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  max-height: min(600px, calc(100vh - 32px));
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-thong-tin-ky-thuat__dau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-thong-tin-ky-thuat__dau h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.modal-thong-tin-ky-thuat__dau button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--mau-chu-phu);
+}
+
+.modal-thong-tin-ky-thuat__trang-thai {
+  color: var(--mau-chu-phu);
+  font-size: 13px;
+  text-align: center;
+  margin: 12px 0;
+}
+
+.modal-thong-tin-ky-thuat__muc {
+  border: 1px solid var(--mau-vien);
+  border-radius: var(--ban-kinh-o);
+  padding: 12px;
+}
+
+.modal-thong-tin-ky-thuat__muc-dau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.modal-thong-tin-ky-thuat__badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mau-nen-tren);
+  color: var(--mau-chu-phu);
+}
+
+.modal-thong-tin-ky-thuat__badge--xanh {
+  background: rgba(47, 123, 246, 0.15);
+  color: var(--mau-chinh-dam);
+}
+
+.modal-thong-tin-ky-thuat__badge--do {
+  background: rgba(214, 69, 69, 0.15);
+  color: var(--mau-loi);
+}
+
+.modal-thong-tin-ky-thuat__ds {
+  margin: 10px 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+
+.modal-thong-tin-ky-thuat__ds dt {
+  color: var(--mau-chu-phu);
+}
+
+.modal-thong-tin-ky-thuat__ds dd {
+  margin: 0;
+  text-align: right;
+  word-break: break-all;
+}
+
+.modal-thong-tin-ky-thuat__ma {
+  font-family: monospace;
+  font-size: 11px;
+}

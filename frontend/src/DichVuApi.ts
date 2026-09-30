@@ -1,6 +1,7 @@
 import type {
   KetQuaDangKy, KetQuaDangNhap, NguoiDungTomTat, TinNhan, TepTinDaTaiLen,
   LoiMoiKetBan, HoiThoaiTomTat, HoSoCaNhan, Nhom, KetQuaRoiNhom, KetQuaThongBao, SoTinNhomChuaDoc,
+  ThongTinKyThuat,
 } from './KieuDuLieu';
 
 // Đọc từ biến môi trường lúc build (VITE_API_BASE_URL) để trỏ đúng backend
@@ -368,6 +369,12 @@ export async function TimKiemTinNhanTheoNguoiDung(token: string, doiTacId: strin
 
 export async function TimKiemTinNhanTheoNhom(token: string, nhomId: string, tuKhoa: string): Promise<TinNhan[]> {
   return goiApi<TinNhan[]>(`/tinnhan/nhom/${nhomId}/tim-kiem?${new URLSearchParams({ tuKhoa })}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function LayThongTinKyThuat(token: string, tinNhanId: string): Promise<ThongTinKyThuat> {
+  return goiApi<ThongTinKyThuat>(`/tinnhan/${tinNhanId}/thong-tin-ky-thuat`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 }

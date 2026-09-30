@@ -105,3 +105,20 @@ export interface KetQuaThongBao {
 export interface SoTinNhomChuaDoc {
   soTinChuaDoc: number;
 }
+
+export interface ThongTinKyThuat {
+  apDungDuoc: boolean;
+  daMaHoa: boolean;
+  thuatToanMaHoa: string | null;
+  kichThuocGocByte: number | null;
+  kichThuocMaHoaByte: number | null;
+  tyLePhinh: number | null;
+  ciphertextRutGon: string | null;
+  nonceRutGon: string | null;
+  authTagRutGon: string | null;
+  thoiGianMaHoaMs: number | null;
+  thoiGianGiaiMaMs: number | null;
+  coChuKy: boolean;
+  daXacThucChuKy: boolean | null;
+  thuatToanChuKy: string | null;
+}
