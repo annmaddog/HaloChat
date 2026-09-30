@@ -115,6 +115,15 @@ export function BieuTuongChuong() {
   );
 }
 
+export function BieuTuongThichRong() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M7 22V11" />
+      <path d="M2 13v7a2 2 0 0 0 2 2h13.4a2 2 0 0 0 2-1.7l1.4-8A2 2 0 0 0 19 10h-5.5l1-4.5a1.5 1.5 0 0 0-2.7-1.2L7 11" />
+    </svg>
+  );
+}
+
 export function BieuTuongTraLoi() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

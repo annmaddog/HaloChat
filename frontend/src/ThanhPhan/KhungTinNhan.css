@@ -70,6 +70,11 @@
 }
 
 .khung-tin-nhan__bong {
+  position: relative;
+  /* Chừa thêm khoảng trống dưới bong bóng để badge Thích nổi (bottom:-10px,
+     cao 22px, xem .khung-tin-nhan__cam-xuc-noi) không đè lên hàng công cụ
+     ngay bên dưới nó. */
+  margin-bottom: 8px;
   padding: 10px 14px;
   border-radius: var(--ban-kinh-o);
   background: var(--mau-nen-tren);
@@ -605,29 +610,54 @@
   transition: outline-color 2s ease;
 }
 
-.khung-tin-nhan__cam-xuc-cum {
-  position: relative;
+/* [Thiết kế lại] Nút Thích giờ là 1 badge nhỏ NỔI ĐÈ lên góc dưới-phải bong
+   bóng (không còn là nút tròn to nằm trong hàng công cụ) — rỗng (chỉ viền +
+   icon thích outline) khi chưa ai thích, chuyển thành viên thuốc màu hiện
+   emoji + số lượng ngay khi có người thích, giống đúng kiểu Messenger/Zalo. */
+.khung-tin-nhan__cam-xuc-noi {
+  position: absolute;
+  bottom: -10px;
+  right: 6px;
+  z-index: 2;
 }
 
 .khung-tin-nhan__nut-cam-xuc {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
   border: 1px solid var(--mau-vien);
   background: var(--mau-nen-the);
+  color: var(--mau-chu-phu);
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 11px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.khung-tin-nhan__nut-cam-xuc--co {
+  border-color: transparent;
+  background: var(--mau-nen-the);
+  color: var(--mau-chu-dam);
+}
+
+.khung-tin-nhan__cam-xuc-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.khung-tin-nhan__cam-xuc-so {
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .khung-tin-nhan__popup-cam-xuc {
   position: absolute;
   bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   display: flex;
   gap: 2px;
   background: var(--mau-nen-the);
@@ -650,16 +680,4 @@
 
 .khung-tin-nhan__popup-cam-xuc button:hover {
   transform: scale(1.3);
-}
-
-.khung-tin-nhan__badge-cam-xuc {
-  align-self: flex-end;
-  background: var(--mau-nen-the);
-  border: 1px solid var(--mau-vien);
-  border-radius: 999px;
-  padding: 1px 6px;
-  font-size: 11px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  margin-top: -8px;
-  margin-right: -4px;
 }

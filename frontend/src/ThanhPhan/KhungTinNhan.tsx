@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongThichRong, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { Avatar } from './Avatar';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan, LoaiCamXuc } from '../KieuDuLieu';
@@ -432,15 +432,62 @@ export function KhungTinNhan({
                       {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
                     </>
                   )}
-                  {!tn.daThuHoi && tn.danhSachCamXuc.length > 0 && (
-                    <span className="khung-tin-nhan__badge-cam-xuc">
-                      {Array.from(new Set(tn.danhSachCamXuc.map((cx) => cx.loaiCamXuc)))
-                        .slice(0, 3)
-                        .map((loai) => EMOJI_CAM_XUC[loai])
-                        .join('')}
-                      {' '}
-                      {tn.danhSachCamXuc.length}
-                    </span>
+                  {!tn.daThuHoi && (
+                    <div className="khung-tin-nhan__cam-xuc-noi">
+                      <button
+                        type="button"
+                        className={`khung-tin-nhan__nut-cam-xuc${tn.danhSachCamXuc.length > 0 ? ' khung-tin-nhan__nut-cam-xuc--co' : ''}`}
+                        aria-label="Thích tin nhắn này"
+                        onClick={(su) => {
+                          su.stopPropagation();
+                          const daCoCuaMinh = tn.danhSachCamXuc.some((cx) => cx.nguoiDungId === idHienTai);
+                          if (daCoCuaMinh) onBoCamXuc(tn.id);
+                          else onThaCamXuc(tn.id, 'Thich');
+                        }}
+                        onMouseEnter={() => {
+                          if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                          homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
+                        }}
+                        onMouseLeave={() => {
+                          if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                        }}
+                      >
+                        {tn.danhSachCamXuc.length > 0 ? (
+                          <>
+                            <span className="khung-tin-nhan__cam-xuc-icon">
+                              {Array.from(new Set(tn.danhSachCamXuc.map((cx) => cx.loaiCamXuc)))
+                                .slice(0, 3)
+                                .map((loai) => EMOJI_CAM_XUC[loai])
+                                .join('')}
+                            </span>
+                            <span className="khung-tin-nhan__cam-xuc-so">{tn.danhSachCamXuc.length}</span>
+                          </>
+                        ) : (
+                          <BieuTuongThichRong />
+                        )}
+                      </button>
+                      {popupCamXucChoTinNhanId === tn.id && (
+                        <div
+                          className="khung-tin-nhan__popup-cam-xuc"
+                          onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
+                        >
+                          {THU_TU_CAM_XUC.map((loai) => (
+                            <button
+                              key={loai}
+                              type="button"
+                              aria-label={`Thả cảm xúc ${loai}`}
+                              onClick={(su) => {
+                                su.stopPropagation();
+                                onThaCamXuc(tn.id, loai);
+                                setPopupCamXucChoTinNhanId(null);
+                              }}
+                            >
+                              {EMOJI_CAM_XUC[loai]}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -460,51 +507,6 @@ export function KhungTinNhan({
                     <span className="khung-tin-nhan__thoi-gian-chan">{dinhDangGio(tn.thoiGianTao)}</span>
                   )}
                   <div className="khung-tin-nhan__chan-icon-cum">
-                    {!tn.daThuHoi && (
-                      <div className="khung-tin-nhan__cam-xuc-cum">
-                        <button
-                          type="button"
-                          className="khung-tin-nhan__nut-cam-xuc"
-                          aria-label="Thích tin nhắn này"
-                          onClick={(su) => {
-                            su.stopPropagation();
-                            const daCoCuaMinh = tn.danhSachCamXuc.some((cx) => cx.nguoiDungId === idHienTai);
-                            if (daCoCuaMinh) onBoCamXuc(tn.id);
-                            else onThaCamXuc(tn.id, 'Thich');
-                          }}
-                          onMouseEnter={() => {
-                            if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
-                            homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
-                          }}
-                          onMouseLeave={() => {
-                            if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
-                          }}
-                        >
-                          👍
-                        </button>
-                        {popupCamXucChoTinNhanId === tn.id && (
-                          <div
-                            className="khung-tin-nhan__popup-cam-xuc"
-                            onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
-                          >
-                            {THU_TU_CAM_XUC.map((loai) => (
-                              <button
-                                key={loai}
-                                type="button"
-                                aria-label={`Thả cảm xúc ${loai}`}
-                                onClick={(su) => {
-                                  su.stopPropagation();
-                                  onThaCamXuc(tn.id, loai);
-                                  setPopupCamXucChoTinNhanId(null);
-                                }}
-                              >
-                                {EMOJI_CAM_XUC[loai]}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                     <div className="khung-tin-nhan__chan-phu">
                       <button
                         type="button"

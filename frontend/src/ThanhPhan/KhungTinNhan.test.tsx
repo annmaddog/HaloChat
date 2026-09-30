@@ -484,7 +484,8 @@ describe('KhungTinNhan', () => {
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tin]} idHienTai="1" />);
 
-    expect(screen.getByText('👍❤️ 2')).toBeInTheDocument();
+    expect(screen.getByText('👍❤️')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
   it('tin da thu hoi khong hien badge cam xuc du danhSachCamXuc khong rong', () => {
