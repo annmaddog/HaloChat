@@ -293,4 +293,27 @@ public class TinNhanController : ControllerBase
         catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
         catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
     }
+
+    [HttpGet("{id}/thong-tin-ky-thuat")]
+    public async Task<IActionResult> LayThongTinKyThuat(string id)
+    {
+        if (IdHienTai is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!ObjectId.TryParse(id, out _))
+        {
+            return BadRequest(new { thongBao = "Id tin nhắn không hợp lệ." });
+        }
+
+        try
+        {
+            return Ok(await _dichVuTinNhan.LayThongTinKyThuatAsync(IdHienTai, id));
+        }
+        catch (TinNhanKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongCoQuyenTrenTinNhanException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+        catch (NhomKhongTonTaiException loi) { return NotFound(new { thongBao = loi.Message }); }
+        catch (KhongPhaiThanhVienNhomException loi) { return StatusCode(403, new { thongBao = loi.Message }); }
+    }
 }

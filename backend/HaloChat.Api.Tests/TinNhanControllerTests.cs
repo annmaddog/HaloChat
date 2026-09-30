@@ -206,6 +206,83 @@ public class TinNhanControllerTests : IClassFixture<ThietLapKiemThuTichHop>
     }
 
     [Fact]
+    public async Task LayThongTinKyThuat_ChuaDangNhap_TraVe401()
+    {
+        var phanHoi = await _client.GetAsync("/api/tinnhan/000000000000000000000000/thong-tin-ky-thuat");
+        Assert.Equal(HttpStatusCode.Unauthorized, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuat_IdKhongPhaiObjectIdHopLe_TraVe400()
+    {
+        var token = await DangKyVaDangNhapAsync("kythuatidxau");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/khong-phai-object-id/thong-tin-ky-thuat");
+
+        Assert.Equal(HttpStatusCode.BadRequest, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuat_TinKhongTonTai_TraVe404()
+    {
+        var token = await DangKyVaDangNhapAsync("kythuatkhongton");
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var phanHoi = await _client.GetAsync("/api/tinnhan/000000000000000000000000/thong-tin-ky-thuat");
+
+        Assert.Equal(HttpStatusCode.NotFound, phanHoi.StatusCode);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuat_ThuocCuocTroChuyenCuaMinh_TraVe200VaApDungDuoc()
+    {
+        var tokenA = await DangKyVaDangNhapAsync("kythuatnguoia");
+        var idA = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "kythuatnguoia").Id;
+        await DangKyVaDangNhapAsync("kythuatnguoib");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "kythuatnguoib").Id;
+
+        _factory.KhoTinNhanGiaLap.DanhSach.Add(new TinNhan
+        {
+            NguoiGuiId = idA,
+            NguoiNhanId = idB,
+            NoiDungTinNhan = "Xin chào",
+        });
+        var tinNhanId = _factory.KhoTinNhanGiaLap.DanhSach.Single().Id;
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenA);
+        var phanHoi = await _client.GetAsync($"/api/tinnhan/{tinNhanId}/thong-tin-ky-thuat");
+
+        Assert.Equal(HttpStatusCode.OK, phanHoi.StatusCode);
+        var ketQua = await phanHoi.Content.ReadFromJsonAsync<ThongTinKyThuatDto>();
+        Assert.True(ketQua!.ApDungDuoc);
+        Assert.False(ketQua.DaMaHoa);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuat_KhongThuocCuocTroChuyen_TraVe403()
+    {
+        var tokenA = await DangKyVaDangNhapAsync("kythuatnguoic");
+        var idA = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "kythuatnguoic").Id;
+        await DangKyVaDangNhapAsync("kythuatnguoid");
+        var idB = _factory.KhoGiaLap.DanhSach.Single(nd => nd.TenTaiKhoan == "kythuatnguoid").Id;
+        var tokenNgoai = await DangKyVaDangNhapAsync("kythuatnguoingoai");
+
+        _factory.KhoTinNhanGiaLap.DanhSach.Add(new TinNhan
+        {
+            NguoiGuiId = idA,
+            NguoiNhanId = idB,
+            NoiDungTinNhan = "Xin chào",
+        });
+        var tinNhanId = _factory.KhoTinNhanGiaLap.DanhSach.Single().Id;
+
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenNgoai);
+        var phanHoi = await _client.GetAsync($"/api/tinnhan/{tinNhanId}/thong-tin-ky-thuat");
+
+        Assert.Equal(HttpStatusCode.Forbidden, phanHoi.StatusCode);
+    }
+
+    [Fact]
     public async Task LayLichSuNhom_NhomKhongTonTai_TraVe404()
     {
         var token = await DangKyVaDangNhapAsync("tinnhannhomkhongton");
