@@ -865,4 +865,98 @@ public class DichVuTinNhanTests
 
         Assert.False(Assert.Single(lichSu).DaXacThucChuKy);
     }
+
+    // --- Thông tin kỹ thuật ---
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_TinDaMaHoaVaCoChuKy_TraVeDuSoLieu()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Chào Bình, tối nay học mật mã nhé!", null, null, null, null, null);
+
+        var thongTin = await dichVu.LayThongTinKyThuatAsync(IdNguoiGui, tinDaGui.Id);
+
+        Assert.True(thongTin.ApDungDuoc);
+        Assert.True(thongTin.DaMaHoa);
+        Assert.Equal("AES-256-GCM", thongTin.ThuatToanMaHoa);
+        Assert.True(thongTin.KichThuocMaHoaByte > 0);
+        Assert.True(thongTin.KichThuocGocByte > 0);
+        Assert.NotNull(thongTin.ThoiGianMaHoaMs);
+        Assert.NotNull(thongTin.ThoiGianGiaiMaMs);
+        Assert.True(thongTin.CoChuKy);
+        Assert.True(thongTin.DaXacThucChuKy);
+        Assert.Equal("RSA-PSS / SHA-256", thongTin.ThuatToanChuKy);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_TinKhongMaHoa_TraVeDaMaHoaFalseKhongCoThoiGian()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var thongTin = await dichVu.LayThongTinKyThuatAsync(IdNguoiGui, tinDaGui.Id);
+
+        Assert.True(thongTin.ApDungDuoc);
+        Assert.False(thongTin.DaMaHoa);
+        Assert.Null(thongTin.ThuatToanMaHoa);
+        Assert.Null(thongTin.ThoiGianMaHoaMs);
+        Assert.Null(thongTin.ThoiGianGiaiMaMs);
+        Assert.False(thongTin.CoChuKy);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_TinDaThuHoi_TraVeApDungDuocFalse()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+        await dichVu.ThuHoiAsync(IdNguoiGui, tinDaGui.Id);
+
+        var thongTin = await dichVu.LayThongTinKyThuatAsync(IdNguoiGui, tinDaGui.Id);
+
+        Assert.False(thongTin.ApDungDuoc);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_LoaiAnh_TraVeApDungDuocFalse()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439003", "a.png", 1024, "image/png", null);
+
+        var thongTin = await dichVu.LayThongTinKyThuatAsync(IdNguoiGui, tinDaGui.Id);
+
+        Assert.False(thongTin.ApDungDuoc);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_NguoiXemKhongCoBanKhoaPhienCuaMinh_TraVeCacFieldMaHoaNull()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+        khoTinNhan.DanhSach[0].DanhSachKhoaPhien.RemoveAll(k => k.NguoiDungId == IdNguoiGui);
+
+        var thongTin = await dichVu.LayThongTinKyThuatAsync(IdNguoiGui, tinDaGui.Id);
+
+        Assert.True(thongTin.ApDungDuoc);
+        Assert.True(thongTin.DaMaHoa);
+        Assert.Null(thongTin.ThoiGianMaHoaMs);
+        Assert.Null(thongTin.KichThuocGocByte);
+    }
+
+    [Fact]
+    public async Task LayThongTinKyThuatAsync_NguoiKhongThuocCuocTroChuyen_NemNgoaiLeQuyenHan()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        var tinDaGui = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        await Assert.ThrowsAsync<KhongCoQuyenTrenTinNhanException>(() =>
+            dichVu.LayThongTinKyThuatAsync("nguoi-khong-lien-quan", tinDaGui.Id));
+    }
 }

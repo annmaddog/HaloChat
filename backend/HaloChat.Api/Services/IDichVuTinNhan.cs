@@ -31,4 +31,6 @@ public interface IDichVuTinNhan
 
     Task<TinNhanDto> ThaCamXucAsync(string idHienTai, string tinNhanId, string loaiCamXuc);
     Task<TinNhanDto> BoCamXucAsync(string idHienTai, string tinNhanId);
+
+    Task<ThongTinKyThuatDto> LayThongTinKyThuatAsync(string idHienTai, string tinNhanId);
 }

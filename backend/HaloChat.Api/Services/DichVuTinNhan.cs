@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text;
 using HaloChat.Api.Dto;
 using HaloChat.Api.Models;
 using HaloChat.Api.Repositories;
@@ -613,6 +615,78 @@ public class DichVuTinNhan : IDichVuTinNhan
         tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == idHienTai);
         return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
+
+    public async Task<ThongTinKyThuatDto> LayThongTinKyThuatAsync(string idHienTai, string tinNhanId)
+    {
+        var tinNhan = await _khoTinNhan.TimTheoIdAsync(tinNhanId) ?? throw new TinNhanKhongTonTaiException();
+        await KiemTraQuyenTrenTinNhanAsync(idHienTai, tinNhan);
+
+        if (tinNhan.DaThuHoi || tinNhan.LoaiTinNhan != LoaiTinNhan.Text)
+        {
+            return new ThongTinKyThuatDto(false, false, null, null, null, null, null, null, null, null, null, false, null, null);
+        }
+
+        var daMaHoa = tinNhan.DanhSachKhoaPhien.Count > 0;
+        string? thuatToanMaHoa = null;
+        int? kichThuocGoc = null;
+        int? kichThuocMaHoa = null;
+        double? tyLePhinh = null;
+        string? ciphertextRutGon = null;
+        string? nonceRutGon = null;
+        string? authTagRutGon = null;
+        double? thoiGianMaHoaMs = null;
+        double? thoiGianGiaiMaMs = null;
+
+        if (daMaHoa)
+        {
+            thuatToanMaHoa = "AES-256-GCM";
+            var khoaCuaMinh = tinNhan.DanhSachKhoaPhien.FirstOrDefault(k => k.NguoiDungId == idHienTai);
+            var khoaBiMatHienTai = await LayKhoaBiMatAsync(idHienTai);
+
+            if (khoaCuaMinh is not null && !string.IsNullOrEmpty(khoaBiMatHienTai) &&
+                !string.IsNullOrEmpty(tinNhan.CiphertextTinNhan) && !string.IsNullOrEmpty(tinNhan.Nonce) && !string.IsNullOrEmpty(tinNhan.AuthTag))
+            {
+                var khoaPhien = _dichVuMaHoa.GiaiMaKhoaPhien(khoaCuaMinh.KhoaPhienDaMaHoa, khoaBiMatHienTai);
+
+                var dongHoGiaiMa = Stopwatch.StartNew();
+                var plaintext = _dichVuMaHoa.GiaiMaTinNhan(tinNhan.CiphertextTinNhan, tinNhan.Nonce, tinNhan.AuthTag, khoaPhien);
+                dongHoGiaiMa.Stop();
+                thoiGianGiaiMaMs = dongHoGiaiMa.Elapsed.TotalMilliseconds;
+
+                // Mã hóa LẠI bằng 1 khóa phiên MỚI chỉ để đo thời gian — không ghi đè
+                // gì vào tinNhan/MongoDB, kết quả bỏ đi ngay sau khi đo (spec §8).
+                var khoaPhienMoi = _dichVuMaHoa.SinhKhoaPhienAes();
+                var dongHoMaHoa = Stopwatch.StartNew();
+                _dichVuMaHoa.MaHoaTinNhan(plaintext, khoaPhienMoi);
+                dongHoMaHoa.Stop();
+                thoiGianMaHoaMs = dongHoMaHoa.Elapsed.TotalMilliseconds;
+
+                kichThuocGoc = Encoding.UTF8.GetByteCount(plaintext);
+                kichThuocMaHoa = Convert.FromBase64String(tinNhan.CiphertextTinNhan).Length;
+                tyLePhinh = kichThuocGoc > 0 ? (double)kichThuocMaHoa / kichThuocGoc.Value : null;
+                ciphertextRutGon = RutGonChuoi(tinNhan.CiphertextTinNhan);
+                nonceRutGon = RutGonChuoi(tinNhan.Nonce);
+                authTagRutGon = RutGonChuoi(tinNhan.AuthTag);
+            }
+        }
+        else
+        {
+            kichThuocGoc = Encoding.UTF8.GetByteCount(tinNhan.NoiDungTinNhan);
+        }
+
+        var coChuKy = !string.IsNullOrEmpty(tinNhan.ChuKySo);
+        bool? daXacThucChuKy = coChuKy ? await XacMinhChuKyNeuCoThe(tinNhan) : null;
+        string? thuatToanChuKy = coChuKy ? "RSA-PSS / SHA-256" : null;
+
+        return new ThongTinKyThuatDto(
+            true, daMaHoa, thuatToanMaHoa, kichThuocGoc, kichThuocMaHoa, tyLePhinh,
+            ciphertextRutGon, nonceRutGon, authTagRutGon, thoiGianMaHoaMs, thoiGianGiaiMaMs,
+            coChuKy, daXacThucChuKy, thuatToanChuKy);
+    }
+
+    /// <summary>Rút gọn 1 chuỗi Base64 dài thành "10 ký tự đầu...10 ký tự cuối" để hiện trong "Thông tin kỹ thuật".</summary>
+    private static string RutGonChuoi(string chuoi) =>
+        chuoi.Length <= 24 ? chuoi : $"{chuoi[..10]}...{chuoi[^10..]}";
 
     /// <summary>Lấy KhoaBiMat của idHienTai — dùng để giải mã tin nhắn dưới góc nhìn của họ.</summary>
     private async Task<string?> LayKhoaBiMatAsync(string idHienTai) =>
