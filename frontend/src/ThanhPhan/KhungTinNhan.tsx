@@ -78,7 +78,7 @@ interface PropsKhungTinNhan {
 }
 
 export function KhungTinNhan({
-  loaiHoiThoai, tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
+  tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui, layAnhDaiDienNguoiGui,
   onThuHoi, onGhim, onBoGhim, onAn, onChuyenTiep, onXemThongTinKyThuat, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
   onThaCamXuc, onBoCamXuc, duongDanAnh,
@@ -378,15 +378,12 @@ export function KhungTinNhan({
             {dangTaiLichSu ? 'Đang tải...' : 'Tải tin nhắn cũ hơn'}
           </button>
         )}
-        {danhSachTinNhan.map((tn, chiSo) => {
+        {danhSachTinNhan.map((tn) => {
           const laCuaMinh = tn.nguoiGuiId === idHienTai;
           // [Hiện avatar/tên người gửi] Không biết ai nhắn khi chat nhóm là vấn đề
-          // thật — chỉ tin của NGƯỜI KHÁC mới hiện avatar (mọi loại hội thoại) và
-          // tên (riêng nhóm, vì cá nhân chỉ có đúng 1 người kia nên không cần lặp
-          // lại tên). Tên chỉ hiện ở tin ĐẦU của 1 chuỗi liên tiếp cùng người gửi,
-          // tránh lặp tên trên từng dòng như ảnh tham khảo.
-          const tinTruoc = chiSo > 0 ? danhSachTinNhan[chiSo - 1] : undefined;
-          const laTinDauChuoi = !tinTruoc || tinTruoc.nguoiGuiId !== tn.nguoiGuiId;
+          // thật — chỉ tin của NGƯỜI KHÁC mới hiện avatar + tên (mọi loại hội
+          // thoại). Hiện tên ở MỖI tin (không gộp chuỗi liên tiếp) theo đúng yêu
+          // cầu — tránh nhầm lẫn khi các tin liên tiếp lại đổi người gửi.
           const tenNguoiGui = layTenNguoiGui ? layTenNguoiGui(tn.nguoiGuiId) : 'một người dùng';
           return (
             <div
@@ -403,7 +400,7 @@ export function KhungTinNhan({
                 </div>
               )}
               <div className="khung-tin-nhan__cot">
-                {!laCuaMinh && loaiHoiThoai === 'nhom' && laTinDauChuoi && (
+                {!laCuaMinh && (
                   <span className="khung-tin-nhan__ten-nguoi-gui">{tenNguoiGui}</span>
                 )}
                 <div
