@@ -88,9 +88,6 @@ export function KhungTinNhan({
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
-  // Chỉ hiện nhóm icon Trả lời/Chuyển tiếp/"..." khi rê chuột vào đúng tin nhắn này
-  // (nút Thích luôn hiện, không phụ thuộc state này) — theo đúng mẫu tham khảo.
-  const [dangDiChuotVaoId, setDangDiChuotVaoId] = useState<string | null>(null);
   const [popupCamXucChoTinNhanId, setPopupCamXucChoTinNhanId] = useState<string | null>(null);
   const homGioHanCamXucRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hienBangEmoji, setHienBangEmoji] = useState(false);
@@ -500,9 +497,7 @@ export function KhungTinNhan({
                     rê chuột vào tin nhắn (ẩn bằng opacity, không phải display:none, để
                     listener "bấm ra ngoài để đóng menu" vẫn thấy được phần tử trong DOM). */}
                 <div
-                  className={`khung-tin-nhan__chan${(dangDiChuotVaoId === tn.id || menuMoChoTinNhanId === tn.id) ? ' khung-tin-nhan__chan--hien-phu' : ''}`}
-                  onMouseEnter={() => setDangDiChuotVaoId(tn.id)}
-                  onMouseLeave={() => setDangDiChuotVaoId((truoc) => (truoc === tn.id ? null : truoc))}
+                  className={`khung-tin-nhan__chan${menuMoChoTinNhanId === tn.id ? ' khung-tin-nhan__chan--hien-phu' : ''}`}
                 >
                   {tinDangMoId === tn.id && (
                     <span className="khung-tin-nhan__thoi-gian-chan">{dinhDangGio(tn.thoiGianTao)}</span>

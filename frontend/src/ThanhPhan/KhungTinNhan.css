@@ -260,6 +260,12 @@
 }
 
 .khung-tin-nhan__chan {
+  position: relative;
+  /* Đè lên trên badge Thích nổi (.cam-xuc-noi, z-index:2) — badge lấn xuống
+     dưới mép bong bóng (bottom:-10px) nên có thể chồng lên vài px đầu của
+     hàng công cụ; không có z-index cao hơn thì vùng chồng lấn "nuốt" mất sự
+     kiện hover/click của các icon Trả lời/Chia sẻ/"..." nằm ngay dưới đó. */
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -294,11 +300,13 @@
   margin-left: auto;
 }
 
-/* Nhóm Trả lời/Chuyển tiếp/"..." — ẩn mặc định, chỉ hiện khi rê chuột vào
-   tin nhắn (class --hien-phu thêm ở .chan). Ẩn bằng opacity + pointer-events
-   (KHÔNG dùng display:none) để phần tử vẫn tồn tại trong DOM: listener "bấm
-   ra ngoài để đóng menu" (.closest('.khung-tin-nhan__chan-icon-cum')) vẫn
-   hoạt động đúng, và không tái diễn lỗi mất sự kiện click khi vừa hiện ra. */
+/* Nhóm Trả lời/Chuyển tiếp/"..." — ẩn mặc định, chỉ hiện khi rê chuột vào tin
+   nhắn (CSS :hover trên .cot bên dưới) hoặc khi menu "..." đang mở (class
+   --hien-phu thêm ở .chan qua state React, giữ hiện khi chuột rời tin nhắn).
+   Ẩn bằng opacity + pointer-events (KHÔNG dùng display:none) để phần tử vẫn
+   tồn tại trong DOM: listener "bấm ra ngoài để đóng menu"
+   (.closest('.khung-tin-nhan__chan-icon-cum')) vẫn hoạt động đúng, và không
+   tái diễn lỗi mất sự kiện click khi vừa hiện ra. */
 .khung-tin-nhan__chan-phu {
   display: flex;
   align-items: center;
@@ -308,7 +316,13 @@
   transition: opacity 0.1s ease;
 }
 
-.khung-tin-nhan__chan--hien-phu .khung-tin-nhan__chan-phu {
+.khung-tin-nhan__chan--hien-phu .khung-tin-nhan__chan-phu,
+/* [Sửa lỗi] Dùng CSS :hover thuần (không qua React state) để hiện nhóm icon
+   khi rê chuột vào BẤT KỲ đâu trong tin nhắn (cả bong bóng lẫn thanh công
+   cụ) — tránh gắn onMouseEnter/onMouseLeave qua nhiều lớp DOM lồng nhau
+   (từng gây tranh chấp sự kiện hover với icon Thích/popup cảm xúc bên
+   trong, khiến các icon còn lại "lúc bấm được lúc không"). */
+.khung-tin-nhan__cot:hover .khung-tin-nhan__chan-phu {
   opacity: 1;
   pointer-events: auto;
 }
