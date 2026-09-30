@@ -85,7 +85,7 @@ describe('TrangCaiDat', () => {
     expect(screen.getByText('Email')).toBeInTheDocument();
   });
 
-  it('chuyển sang mục Bảo mật hiển thị nội dung "sắp ra mắt"', async () => {
+  it('chuyển sang mục Bảo mật hiển thị mô tả cơ chế mã hóa', async () => {
     vi.spyOn(DichVuApi, 'LayThongTinCaNhan').mockResolvedValue({
       id: '1', tenTaiKhoan: 'A', email: 'a@gmail.com', choPhepTinNhanTuNguoiLa: false, hienThiTrangThaiHoatDong: true,
       choPhepThemVaoNhom: true, thongBaoTinNhanMoi: true, thongBaoLoiMoiKetBan: true, thongBaoNhom: true, tenHienThi: 'A',
@@ -94,7 +94,7 @@ describe('TrangCaiDat', () => {
     renderTrangCaiDat();
 
     await userEvent.click(screen.getByRole('button', { name: 'Bảo mật' }));
-    expect(await screen.findByText(/sắp ra mắt/)).toBeInTheDocument();
+    expect(await screen.findByText(/AES-256-GCM/)).toBeInTheDocument();
   });
 
   it('chuyển sang mục Thông báo hiển thị 3 công tắc thông báo', async () => {

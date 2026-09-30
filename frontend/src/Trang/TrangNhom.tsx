@@ -12,6 +12,7 @@ import { BieuTuongBanBe, BieuTuongMayAnh } from '../ThanhPhan/BieuTuong';
 import { PanelThongTinNhom } from './PanelThongTinNhom';
 import { PanelQuanLyNhom } from './PanelQuanLyNhom';
 import { PanelKhoMedia } from './PanelKhoMedia';
+import { ModalChuyenTiep, type MucTieuChuyenTiep } from '../ThanhPhan/ModalChuyenTiep';
 import type { Nhom, NguoiDungTomTat, TinNhan, LoaiCamXuc } from '../KieuDuLieu';
 import './TrangNhom.css';
 
@@ -54,6 +55,9 @@ export function TrangNhom() {
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
   const [tinNhanGhimTheoNhom, setTinNhanGhimTheoNhom] = useState<Record<string, TinNhan[]>>({});
   const [hienKhoMedia, setHienKhoMedia] = useState(false);
+  const [tinChuyenTiep, setTinChuyenTiep] = useState<TinNhanHienThi | null>(null);
+  const [dangChuyenTiep, setDangChuyenTiep] = useState(false);
+  const [loiChuyenTiep, setLoiChuyenTiep] = useState<string | null>(null);
   const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
 
   const nhomDangChon = danhSachNhom.find((n) => n.id === nhomDangChonId) ?? null;
@@ -211,6 +215,36 @@ export function TrangNhom() {
       .then((daTaiLen) => setDuongDanAnhNhomMoi(daTaiLen.duongDanFile))
       .catch(() => setLoi('Tải ảnh đại diện nhóm thất bại.'))
       .finally(() => setDangTaiAnhNhomMoi(false));
+  }
+
+  function moChuyenTiep(id: string) {
+    if (!nhomDangChon) return;
+    const tin = (tinNhanTheoNhom[nhomDangChon.id] ?? []).find((tn) => tn.id === id);
+    if (tin) {
+      setLoiChuyenTiep(null);
+      setTinChuyenTiep(tin);
+    }
+  }
+
+  function xacNhanChuyenTiep(danhSach: MucTieuChuyenTiep[]) {
+    if (!ketNoi || !tinChuyenTiep) return;
+    setDangChuyenTiep(true);
+    setLoiChuyenTiep(null);
+    Promise.all(
+      danhSach.map((muc) =>
+        ketNoi.invoke(
+          'GuiTinNhan',
+          muc.loai === 'nguoiDung' ? muc.id : null,
+          muc.loai === 'nhom' ? muc.id : null,
+          tinChuyenTiep.loaiTinNhan, tinChuyenTiep.noiDungTinNhan,
+          tinChuyenTiep.duongDanFile, tinChuyenTiep.tenFileGoc, tinChuyenTiep.kichThuocFile, tinChuyenTiep.loaiFile,
+          null,
+        ),
+      ),
+    )
+      .then(() => setTinChuyenTiep(null))
+      .catch((loiBat) => setLoiChuyenTiep(loiBat instanceof Error ? loiBat.message : 'Chuyển tiếp thất bại. Vui lòng thử lại.'))
+      .finally(() => setDangChuyenTiep(false));
   }
 
   function guiTinNhanVanBan(noiDungGui: string, traLoiId: string | null) {
@@ -490,6 +524,7 @@ export function TrangNhom() {
             onGhim={ghimTinNhan}
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
+            onChuyenTiep={moChuyenTiep}
             onThaCamXuc={thaCamXuc}
             onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nhomDangChon ? (tinNhanGhimTheoNhom[nhomDangChon.id] ?? []) : []}
@@ -623,6 +658,16 @@ export function TrangNhom() {
             </div>
           </div>
         </div>
+      )}
+
+      {tinChuyenTiep && (
+        <ModalChuyenTiep
+          token={token ?? ''}
+          dangGui={dangChuyenTiep}
+          loi={loiChuyenTiep}
+          onDong={() => setTinChuyenTiep(null)}
+          onXacNhan={xacNhanChuyenTiep}
+        />
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import { useChat } from '../NguCanh/NguCanhChat';
 import { KhungTinNhan, type TinNhanHienThi } from '../ThanhPhan/KhungTinNhan';
 import { Avatar } from '../ThanhPhan/Avatar';
 import { ModalHoanTatHoSo } from '../ThanhPhan/ModalHoanTatHoSo';
+import { ModalChuyenTiep, type MucTieuChuyenTiep } from '../ThanhPhan/ModalChuyenTiep';
 import { PanelKhoMedia } from './PanelKhoMedia';
 import type { NguoiDungTomTat, HoiThoaiTomTat, TinNhan, LoaiCamXuc, HoSoCaNhan } from '../KieuDuLieu';
 import './TrangChat.css';
@@ -54,6 +55,9 @@ export function TrangChat() {
   const [conThemLichSu, setConThemLichSu] = useState<Record<string, boolean>>({});
   const [tinNhanGhimTheoDoiTac, setTinNhanGhimTheoDoiTac] = useState<Record<string, TinNhan[]>>({});
   const [hienKhoMedia, setHienKhoMedia] = useState(false);
+  const [tinChuyenTiep, setTinChuyenTiep] = useState<TinNhanHienThi | null>(null);
+  const [dangChuyenTiep, setDangChuyenTiep] = useState(false);
+  const [loiChuyenTiep, setLoiChuyenTiep] = useState<string | null>(null);
   const [danhSachMedia, setDanhSachMedia] = useState<TinNhan[]>([]);
   const [hoSo, setHoSo] = useState<HoSoCaNhan | null>(null);
   const [hienModalHoanTatHoSo, setHienModalHoanTatHoSo] = useState(false);
@@ -204,6 +208,35 @@ export function TrangChat() {
     () => (nguoiDangChon ? (tinNhanTheoNguoiDung[nguoiDangChon.id] ?? []) : []),
     [nguoiDangChon, tinNhanTheoNguoiDung],
   );
+
+  function moChuyenTiep(id: string) {
+    const tin = tinNhanDangHien.find((tn) => tn.id === id);
+    if (tin) {
+      setLoiChuyenTiep(null);
+      setTinChuyenTiep(tin);
+    }
+  }
+
+  function xacNhanChuyenTiep(danhSach: MucTieuChuyenTiep[]) {
+    if (!ketNoi || !tinChuyenTiep) return;
+    setDangChuyenTiep(true);
+    setLoiChuyenTiep(null);
+    Promise.all(
+      danhSach.map((muc) =>
+        ketNoi.invoke(
+          'GuiTinNhan',
+          muc.loai === 'nguoiDung' ? muc.id : null,
+          muc.loai === 'nhom' ? muc.id : null,
+          tinChuyenTiep.loaiTinNhan, tinChuyenTiep.noiDungTinNhan,
+          tinChuyenTiep.duongDanFile, tinChuyenTiep.tenFileGoc, tinChuyenTiep.kichThuocFile, tinChuyenTiep.loaiFile,
+          null,
+        ),
+      ),
+    )
+      .then(() => setTinChuyenTiep(null))
+      .catch((loiBat) => setLoiChuyenTiep(loiBat instanceof Error ? loiBat.message : 'Chuyển tiếp thất bại. Vui lòng thử lại.'))
+      .finally(() => setDangChuyenTiep(false));
+  }
 
   function guiTinNhanVanBan(noiDungGui: string, traLoiId: string | null) {
     if (!ketNoi || !nguoiDangChon) return;
@@ -470,6 +503,7 @@ export function TrangChat() {
             onGhim={ghimTinNhan}
             onBoGhim={boGhimTinNhan}
             onAn={anTinNhanCucBo}
+            onChuyenTiep={moChuyenTiep}
             onThaCamXuc={thaCamXuc}
             onBoCamXuc={boCamXuc}
             danhSachTinNhanGhim={nguoiDangChon ? (tinNhanGhimTheoDoiTac[nguoiDangChon.id] ?? []) : []}
@@ -494,6 +528,16 @@ export function TrangChat() {
             if (hoSoMoi) setHoSo(hoSoMoi);
             setHienModalHoanTatHoSo(false);
           }}
+        />
+      )}
+
+      {tinChuyenTiep && (
+        <ModalChuyenTiep
+          token={token ?? ''}
+          dangGui={dangChuyenTiep}
+          loi={loiChuyenTiep}
+          onDong={() => setTinChuyenTiep(null)}
+          onXacNhan={xacNhanChuyenTiep}
         />
       )}
     </div>

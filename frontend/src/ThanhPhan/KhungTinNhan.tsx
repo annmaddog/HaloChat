@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { Avatar } from './Avatar';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan, LoaiCamXuc } from '../KieuDuLieu';
@@ -65,6 +65,7 @@ interface PropsKhungTinNhan {
   onGhim: (id: string) => void;
   onBoGhim: (id: string) => void;
   onAn: (id: string) => void;
+  onChuyenTiep: (id: string) => void;
   danhSachTinNhanGhim: TinNhan[];
   onMoKhoMedia: () => void;
   onTimKiem: (tuKhoa: string) => Promise<TinNhan[]>;
@@ -77,7 +78,7 @@ interface PropsKhungTinNhan {
 export function KhungTinNhan({
   tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
   coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
-  onThuHoi, onGhim, onBoGhim, onAn, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
+  onThuHoi, onGhim, onBoGhim, onAn, onChuyenTiep, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
   onThaCamXuc, onBoCamXuc, duongDanAnh,
 }: PropsKhungTinNhan) {
   const inputTepRef = useRef<HTMLInputElement | null>(null);
@@ -149,14 +150,15 @@ export function KhungTinNhan({
   }
 
   // Đóng menu "..." khi bấm ra ngoài hoặc bấm Escape — bấm bên trong
-  // `.khung-tin-nhan__icon-noi` (icon Trả lời/"..."/chính menu) không tính
-  // là "ra ngoài", để không tự đóng ngay khi vừa mở hoặc khi thao tác trong menu.
+  // `.khung-tin-nhan__chan-icon-cum` (icon Thích/Trả lời/Chuyển tiếp/"..."/chính
+  // menu) không tính là "ra ngoài", để không tự đóng ngay khi vừa mở hoặc khi
+  // thao tác trong menu.
   useEffect(() => {
     if (!menuMoChoTinNhanId) return;
 
     function xuLyBamNgoai(su: MouseEvent) {
       const dich = su.target as HTMLElement;
-      if (!dich.closest('.khung-tin-nhan__icon-noi')) {
+      if (!dich.closest('.khung-tin-nhan__chan-icon-cum')) {
         setMenuMoChoTinNhanId(null);
       }
     }
@@ -385,142 +387,161 @@ export function KhungTinNhan({
               }}
               className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}${idDangNoiBat === tn.id ? ' khung-tin-nhan__hang--noi-bat' : ''}`}
             >
-              <div className="khung-tin-nhan__icon-noi">
-                {!tn.daThuHoi && (
-                  <div className="khung-tin-nhan__cam-xuc-cum">
+              <div className="khung-tin-nhan__cot">
+                <div
+                  className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
+                  onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {tn.traLoi && (
+                    <div className="khung-tin-nhan__trich-dan">
+                      <span className="khung-tin-nhan__trich-dan-ten">{tn.traLoi.tenNguoiGui}</span>
+                      <span className="khung-tin-nhan__trich-dan-noi-dung">{tn.traLoi.noiDungTomTat}</span>
+                    </div>
+                  )}
+                  {tn.daThuHoi ? (
+                    <span className="khung-tin-nhan__da-thu-hoi">Tin nhắn đã được thu hồi.</span>
+                  ) : (
+                    <>
+                      {tn.loaiTinNhan === 'Anh' && (
+                        <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
+                      )}
+                      {tn.loaiTinNhan === 'File' && (
+                        <div className="khung-tin-nhan__file">
+                          <span className="khung-tin-nhan__file-icon"><BieuTuongTaiLieu /></span>
+                          <div className="khung-tin-nhan__file-thong-tin">
+                            <span className="khung-tin-nhan__file-ten">{tn.tenFileGoc}</span>
+                            <span className="khung-tin-nhan__file-size">{dinhDangKichThuoc(tn.kichThuocFile ?? 0)}</span>
+                          </div>
+                          <a
+                            className="khung-tin-nhan__file-nut-tai"
+                            href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(su) => su.stopPropagation()}
+                            aria-label={`Tải xuống ${tn.tenFileGoc}`}
+                          >
+                            <BieuTuongTai />
+                          </a>
+                        </div>
+                      )}
+                      {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
+                    </>
+                  )}
+                  {!tn.daThuHoi && tn.danhSachCamXuc.length > 0 && (
+                    <span className="khung-tin-nhan__badge-cam-xuc">
+                      {Array.from(new Set(tn.danhSachCamXuc.map((cx) => cx.loaiCamXuc)))
+                        .slice(0, 3)
+                        .map((loai) => EMOJI_CAM_XUC[loai])
+                        .join('')}
+                      {' '}
+                      {tn.danhSachCamXuc.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* [Sửa lỗi] Thanh công cụ luôn hiện đúng dưới chân bong bóng (không còn
+                    đè lên bong bóng bằng position:absolute như trước) — trước đây bấm gần
+                    nút Thích thì đúng vị trí đó lại là icon "vô hình" đè lên bong bóng bên
+                    dưới ăn mất sự kiện click của các icon còn lại. */}
+                <div className="khung-tin-nhan__chan">
+                  {tinDangMoId === tn.id && (
+                    <span className="khung-tin-nhan__thoi-gian-chan">{dinhDangGio(tn.thoiGianTao)}</span>
+                  )}
+                  <div className="khung-tin-nhan__chan-icon-cum">
+                    {!tn.daThuHoi && (
+                      <div className="khung-tin-nhan__cam-xuc-cum">
+                        <button
+                          type="button"
+                          className="khung-tin-nhan__nut-cam-xuc"
+                          aria-label="Thích tin nhắn này"
+                          onClick={(su) => {
+                            su.stopPropagation();
+                            const daCoCuaMinh = tn.danhSachCamXuc.some((cx) => cx.nguoiDungId === idHienTai);
+                            if (daCoCuaMinh) onBoCamXuc(tn.id);
+                            else onThaCamXuc(tn.id, 'Thich');
+                          }}
+                          onMouseEnter={() => {
+                            if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                            homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
+                          }}
+                          onMouseLeave={() => {
+                            if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
+                          }}
+                        >
+                          👍
+                        </button>
+                        {popupCamXucChoTinNhanId === tn.id && (
+                          <div
+                            className="khung-tin-nhan__popup-cam-xuc"
+                            onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
+                          >
+                            {THU_TU_CAM_XUC.map((loai) => (
+                              <button
+                                key={loai}
+                                type="button"
+                                aria-label={`Thả cảm xúc ${loai}`}
+                                onClick={(su) => {
+                                  su.stopPropagation();
+                                  onThaCamXuc(tn.id, loai);
+                                  setPopupCamXucChoTinNhanId(null);
+                                }}
+                              >
+                                {EMOJI_CAM_XUC[loai]}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <button
                       type="button"
-                      className="khung-tin-nhan__nut-cam-xuc"
-                      aria-label="Thích tin nhắn này"
-                      onClick={(su) => {
-                        su.stopPropagation();
-                        const daCoCuaMinh = tn.danhSachCamXuc.some((cx) => cx.nguoiDungId === idHienTai);
-                        if (daCoCuaMinh) onBoCamXuc(tn.id);
-                        else onThaCamXuc(tn.id, 'Thich');
-                      }}
-                      onMouseEnter={() => {
-                        if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
-                        homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
-                      }}
-                      onMouseLeave={() => {
-                        if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
-                      }}
+                      className="khung-tin-nhan__nut-tra-loi"
+                      onClick={(su) => { su.stopPropagation(); setDangTraLoiId(tn.id); noiDungRef.current?.focus(); }}
+                      aria-label="Trả lời tin nhắn này"
                     >
-                      👍
+                      <BieuTuongTraLoi />
                     </button>
-                    {popupCamXucChoTinNhanId === tn.id && (
-                      <div
-                        className="khung-tin-nhan__popup-cam-xuc"
-                        onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
+                    {!tn.daThuHoi && (
+                      <button
+                        type="button"
+                        className="khung-tin-nhan__nut-chuyen-tiep"
+                        onClick={(su) => { su.stopPropagation(); onChuyenTiep(tn.id); }}
+                        aria-label="Chuyển tiếp tin nhắn này"
                       >
-                        {THU_TU_CAM_XUC.map((loai) => (
-                          <button
-                            key={loai}
-                            type="button"
-                            aria-label={`Thả cảm xúc ${loai}`}
-                            onClick={(su) => {
-                              su.stopPropagation();
-                              onThaCamXuc(tn.id, loai);
-                              setPopupCamXucChoTinNhanId(null);
-                            }}
-                          >
-                            {EMOJI_CAM_XUC[loai]}
-                          </button>
-                        ))}
+                        <BieuTuongChuyenTiep />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="khung-tin-nhan__nut-them"
+                      onClick={(su) => { su.stopPropagation(); setMenuMoChoTinNhanId((truoc) => (truoc === tn.id ? null : tn.id)); }}
+                      aria-label="Thêm tùy chọn"
+                    >
+                      <BieuTuongBaCham />
+                    </button>
+                    {menuMoChoTinNhanId === tn.id && (
+                      <div className="khung-tin-nhan__menu" onClick={(su) => su.stopPropagation()}>
+                        {!tn.daThuHoi && tn.loaiTinNhan !== 'Text' && (
+                          <a href={`${DIA_CHI_GOC}${tn.duongDanFile}`} download target="_blank" rel="noreferrer" onClick={() => setMenuMoChoTinNhanId(null)}>
+                            Lưu về thiết bị
+                          </a>
+                        )}
+                        {!tn.daThuHoi && !tn.daGhim && (
+                          <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
+                        )}
+                        {!tn.daThuHoi && tn.daGhim && (
+                          <button onClick={() => { onBoGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Bỏ ghim</button>
+                        )}
+                        {laCuaMinh && !tn.daThuHoi && (
+                          <button onClick={() => { onThuHoi(tn.id); setMenuMoChoTinNhanId(null); }}>Thu hồi tin nhắn</button>
+                        )}
+                        <button className="khung-tin-nhan__menu-nguy-hiem" onClick={() => { onAn(tn.id); setMenuMoChoTinNhanId(null); }}>Xóa</button>
                       </div>
                     )}
                   </div>
-                )}
-                <button
-                  type="button"
-                  className="khung-tin-nhan__nut-tra-loi"
-                  onClick={(su) => { su.stopPropagation(); setDangTraLoiId(tn.id); noiDungRef.current?.focus(); }}
-                  aria-label="Trả lời tin nhắn này"
-                >
-                  <BieuTuongTraLoi />
-                </button>
-                <button
-                  type="button"
-                  className="khung-tin-nhan__nut-them"
-                  onClick={(su) => { su.stopPropagation(); setMenuMoChoTinNhanId((truoc) => (truoc === tn.id ? null : tn.id)); }}
-                  aria-label="Thêm tùy chọn"
-                >
-                  <BieuTuongBaCham />
-                </button>
-                {menuMoChoTinNhanId === tn.id && (
-                  <div className="khung-tin-nhan__menu" onClick={(su) => su.stopPropagation()}>
-                    {!tn.daThuHoi && tn.loaiTinNhan !== 'Text' && (
-                      <a href={`${DIA_CHI_GOC}${tn.duongDanFile}`} download target="_blank" rel="noreferrer" onClick={() => setMenuMoChoTinNhanId(null)}>
-                        Lưu về thiết bị
-                      </a>
-                    )}
-                    {!tn.daThuHoi && !tn.daGhim && (
-                      <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
-                    )}
-                    {!tn.daThuHoi && tn.daGhim && (
-                      <button onClick={() => { onBoGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Bỏ ghim</button>
-                    )}
-                    {laCuaMinh && !tn.daThuHoi && (
-                      <button onClick={() => { onThuHoi(tn.id); setMenuMoChoTinNhanId(null); }}>Thu hồi tin nhắn</button>
-                    )}
-                    <button className="khung-tin-nhan__menu-nguy-hiem" onClick={() => { onAn(tn.id); setMenuMoChoTinNhanId(null); }}>Xóa</button>
-                  </div>
-                )}
-              </div>
-              <div
-                className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
-                onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}
-                role="button"
-                tabIndex={0}
-              >
-                {tn.traLoi && (
-                  <div className="khung-tin-nhan__trich-dan">
-                    <span className="khung-tin-nhan__trich-dan-ten">{tn.traLoi.tenNguoiGui}</span>
-                    <span className="khung-tin-nhan__trich-dan-noi-dung">{tn.traLoi.noiDungTomTat}</span>
-                  </div>
-                )}
-                {tn.daThuHoi ? (
-                  <span className="khung-tin-nhan__da-thu-hoi">Tin nhắn đã được thu hồi.</span>
-                ) : (
-                  <>
-                    {tn.loaiTinNhan === 'Anh' && (
-                      <img className="khung-tin-nhan__anh" src={`${DIA_CHI_GOC}${tn.duongDanFile}`} alt={tn.tenFileGoc ?? 'ảnh'} />
-                    )}
-                    {tn.loaiTinNhan === 'File' && (
-                      <div className="khung-tin-nhan__file">
-                        <span className="khung-tin-nhan__file-icon"><BieuTuongTaiLieu /></span>
-                        <div className="khung-tin-nhan__file-thong-tin">
-                          <span className="khung-tin-nhan__file-ten">{tn.tenFileGoc}</span>
-                          <span className="khung-tin-nhan__file-size">{dinhDangKichThuoc(tn.kichThuocFile ?? 0)}</span>
-                        </div>
-                        <a
-                          className="khung-tin-nhan__file-nut-tai"
-                          href={`${DIA_CHI_GOC}${tn.duongDanFile}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(su) => su.stopPropagation()}
-                          aria-label={`Tải xuống ${tn.tenFileGoc}`}
-                        >
-                          <BieuTuongTai />
-                        </a>
-                      </div>
-                    )}
-                    {tn.loaiTinNhan === 'Text' && tn.noiDungTinNhan}
-                  </>
-                )}
-                {!tn.daThuHoi && tn.danhSachCamXuc.length > 0 && (
-                  <span className="khung-tin-nhan__badge-cam-xuc">
-                    {Array.from(new Set(tn.danhSachCamXuc.map((cx) => cx.loaiCamXuc)))
-                      .slice(0, 3)
-                      .map((loai) => EMOJI_CAM_XUC[loai])
-                      .join('')}
-                    {' '}
-                    {tn.danhSachCamXuc.length}
-                  </span>
-                )}
-                {tinDangMoId === tn.id && (
-                  <span className="khung-tin-nhan__thoi-gian">{dinhDangGio(tn.thoiGianTao)}</span>
-                )}
+                </div>
               </div>
             </div>
           );

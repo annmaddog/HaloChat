@@ -70,7 +70,6 @@
 }
 
 .khung-tin-nhan__bong {
-  max-width: 60%;
   padding: 10px 14px;
   border-radius: var(--ban-kinh-o);
   background: var(--mau-nen-tren);
@@ -239,32 +238,45 @@
   justify-content: flex-end;
 }
 
-.khung-tin-nhan__icon-noi {
-  position: absolute;
-  top: -14px;
-  /* Mặc định (tin của người khác, bong bóng căn trái): icon nổi bám sát
-     mép trái của bong bóng. Tin của mình override sang phải ngay dưới. */
-  left: 8px;
-  display: none;
-  gap: 4px;
-}
-
-.khung-tin-nhan__hang--minh .khung-tin-nhan__icon-noi {
-  left: auto;
-  right: 8px;
-}
-
-.khung-tin-nhan__hang--minh .khung-tin-nhan__menu {
-  left: auto;
-  right: 8px;
-}
-
-.khung-tin-nhan__hang:hover .khung-tin-nhan__icon-noi,
-.khung-tin-nhan__hang--mo .khung-tin-nhan__icon-noi {
+/* [Sửa lỗi] Bố cục cột: bong bóng ở trên, thanh công cụ (chân) ở dưới, KHÔNG
+   còn đè absolute lên bong bóng như .icon-noi trước đây — đó chính là
+   nguyên nhân chỉ bấm được đúng 1 icon (icon nằm ngoài rìa bong bóng), các
+   icon còn lại bị bong bóng (nằm sau trong DOM, cùng vị trí) chặn mất sự
+   kiện click dù vẫn nhìn thấy khi rê chuột qua. */
+.khung-tin-nhan__cot {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 60%;
 }
 
-.khung-tin-nhan__nut-tra-loi {
+.khung-tin-nhan__hang--minh .khung-tin-nhan__cot {
+  align-items: flex-end;
+}
+
+.khung-tin-nhan__chan {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+}
+
+.khung-tin-nhan__thoi-gian-chan {
+  font-size: 11px;
+  color: var(--mau-chu-phu);
+  flex-shrink: 0;
+}
+
+.khung-tin-nhan__chan-icon-cum {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.khung-tin-nhan__nut-tra-loi,
+.khung-tin-nhan__nut-chuyen-tiep {
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -397,12 +409,11 @@
 
 .khung-tin-nhan__menu {
   position: absolute;
-  top: 16px;
-  /* Mặc định (tin người khác): menu neo trái, mở rộng sang phải — cùng
-     phía với .khung-tin-nhan__icon-noi (đã bám trái). Neo theo hướng
-     ngược lại (right:8px như trước) sẽ khiến menu bắn ngược sang trái
-     ra ngoài màn hình vì container icon-noi hẹp nằm gần mép trái. */
-  left: 8px;
+  /* Neo vào .chan-icon-cum (rìa phải luôn khớp nút "..." vì cụm icon căn
+     phải bằng margin-left:auto), mở rộng xuống dưới — đúng dưới chân tin
+     nhắn thay vì đè lên bong bóng như bản cũ. */
+  top: calc(100% + 4px);
+  right: 0;
   z-index: 5;
   min-width: 160px;
   background: var(--mau-nen-the);
