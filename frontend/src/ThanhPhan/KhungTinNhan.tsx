@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongThichRong, BieuTuongChuKyHopLe, BieuTuongChuKyKhongHopLe, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { Avatar } from './Avatar';
 import { DIA_CHI_GOC } from '../DichVuApi';
@@ -36,6 +37,29 @@ const EMOJI_CAM_XUC: Record<LoaiCamXuc, string> = {
   Thich: '👍', YeuThich: '❤️', Haha: '😂', Wow: '😮', Buon: '😢', PhanNo: '😠',
 };
 const THU_TU_CAM_XUC: LoaiCamXuc[] = ['Thich', 'YeuThich', 'Haha', 'Wow', 'Buon', 'PhanNo'];
+
+// Kích thước ước lượng của popup 6 cảm xúc (6 nút ~28px + gap 2px*5 + đệm
+// 6px*2) — dùng để ghim vị trí trong khung nhìn TRƯỚC khi popup thực sự
+// render (tránh phải render 2 lần mới đo được kích thước thật).
+const RONG_POPUP_CAM_XUC = 196;
+const CAO_POPUP_CAM_XUC = 40;
+const LE_AN_TOAN = 8;
+
+// [Sửa lỗi] Popup vốn absolute bên trong hàng tin nhắn, bị mép cuộn của
+// danh sách tin nhắn (overflow-y:auto kéo theo overflow-x:auto) xén mất khi
+// tin nằm sát mép trái/phải — nhất là tin của chính mình canh phải. Tính vị
+// trí cố định (fixed) so với khung nhìn từ nút Thích, ghim trong khung nhìn,
+// để portal ra document.body (xem createPortal bên dưới) không bao giờ bị cắt.
+function tinhViTriPopupCamXuc(nutCamXuc: HTMLElement): { top: number; left: number } {
+  const hcn = nutCamXuc.getBoundingClientRect();
+  const leMongMuon = hcn.right - RONG_POPUP_CAM_XUC;
+  const left = Math.min(
+    Math.max(LE_AN_TOAN, leMongMuon),
+    window.innerWidth - RONG_POPUP_CAM_XUC - LE_AN_TOAN,
+  );
+  const top = Math.max(LE_AN_TOAN, hcn.top - CAO_POPUP_CAM_XUC - 6);
+  return { top, left };
+}
 
 function trichNoiDungTinNhan(tn: TinNhan): string {
   if (tn.daThuHoi) return 'Tin nhắn đã được thu hồi.';
@@ -90,6 +114,13 @@ export function KhungTinNhan({
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
   const [popupCamXucChoTinNhanId, setPopupCamXucChoTinNhanId] = useState<string | null>(null);
+  // [Sửa lỗi] Danh sách tin nhắn cha có overflow-y:auto — theo quy tắc CSS,
+  // điều này ép overflow-x thành 'auto' luôn, khiến popup 6 cảm xúc (vốn
+  // absolute trong hàng tin) bị xén mất phần vượt ra ngoài mép trái/phải
+  // (thường thấy nhất ở tin của chính mình, canh sát mép phải). Portal popup
+  // ra document.body với position:fixed, tọa độ tính từ getBoundingClientRect
+  // và ghim (clamp) trong khung nhìn để không bao giờ bị cắt nữa.
+  const [vitriPopupCamXuc, setVitriPopupCamXuc] = useState<{ top: number; left: number } | null>(null);
   const homGioHanCamXucRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hienBangEmoji, setHienBangEmoji] = useState(false);
   const [hienOTimKiem, setHienOTimKiem] = useState(false);
@@ -210,7 +241,11 @@ export function KhungTinNhan({
 
     function xuLyBamNgoai(su: MouseEvent) {
       const dich = su.target as HTMLElement;
-      if (!dich.closest('.khung-tin-nhan__cam-xuc-noi')) {
+      // Popup được portal ra document.body (xem tinhViTriPopupCamXuc) nên
+      // không còn nằm trong cây DOM của .cam-xuc-noi — phải kiểm tra thêm
+      // .popup-cam-xuc, nếu không mọi cú bấm vào popup lại bị coi là "bấm
+      // ra ngoài" và đóng ngay trước khi kịp chọn, y hệt lỗi vừa sửa.
+      if (!dich.closest('.khung-tin-nhan__cam-xuc-noi') && !dich.closest('.khung-tin-nhan__popup-cam-xuc')) {
         setPopupCamXucChoTinNhanId(null);
       }
     }
@@ -456,9 +491,13 @@ export function KhungTinNhan({
                           if (daCoCuaMinh) onBoCamXuc(tn.id);
                           else onThaCamXuc(tn.id, 'Thich');
                         }}
-                        onMouseEnter={() => {
+                        onMouseEnter={(su) => {
                           if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
-                          homGioHanCamXucRef.current = setTimeout(() => setPopupCamXucChoTinNhanId(tn.id), 400);
+                          const nutCamXuc = su.currentTarget;
+                          homGioHanCamXucRef.current = setTimeout(() => {
+                            setVitriPopupCamXuc(tinhViTriPopupCamXuc(nutCamXuc));
+                            setPopupCamXucChoTinNhanId(tn.id);
+                          }, 400);
                         }}
                         onMouseLeave={() => {
                           if (homGioHanCamXucRef.current) clearTimeout(homGioHanCamXucRef.current);
@@ -478,9 +517,10 @@ export function KhungTinNhan({
                           <BieuTuongThichRong />
                         )}
                       </button>
-                      {popupCamXucChoTinNhanId === tn.id && (
+                      {popupCamXucChoTinNhanId === tn.id && vitriPopupCamXuc && createPortal(
                         <div
                           className="khung-tin-nhan__popup-cam-xuc"
+                          style={{ top: vitriPopupCamXuc.top, left: vitriPopupCamXuc.left }}
                           onMouseLeave={() => setPopupCamXucChoTinNhanId(null)}
                         >
                           {THU_TU_CAM_XUC.map((loai) => (
@@ -497,7 +537,8 @@ export function KhungTinNhan({
                               {EMOJI_CAM_XUC[loai]}
                             </button>
                           ))}
-                        </div>
+                        </div>,
+                        document.body,
                       )}
                     </div>
                   )}

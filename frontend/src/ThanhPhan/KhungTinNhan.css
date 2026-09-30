@@ -703,10 +703,12 @@
   font-weight: 700;
 }
 
+/* [Sửa lỗi] position:fixed + portal ra document.body (xem createPortal và
+   tinhViTriPopupCamXuc trong KhungTinNhan.tsx) — top/left do JS tính và ghim
+   trong khung nhìn, không còn bị overflow-x:auto của danh sách tin nhắn xén
+   mất phần vượt mép trái/phải nữa (rõ nhất ở tin của chính mình canh phải). */
 .khung-tin-nhan__popup-cam-xuc {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  right: 0;
+  position: fixed;
   display: flex;
   gap: 2px;
   background: var(--mau-nen-the);
@@ -714,7 +716,7 @@
   border-radius: 999px;
   padding: 4px 6px;
   box-shadow: var(--bong-the);
-  z-index: 7;
+  z-index: 50;
 }
 
 .khung-tin-nhan__popup-cam-xuc button {
