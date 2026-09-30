@@ -83,4 +83,9 @@ public class TinNhan
     public string? CiphertextTinNhan { get; set; }
     public string? Nonce { get; set; }
     public string? AuthTag { get; set; }
+
+    // [Chữ ký số] Base64 chữ ký RSA-PSS/SHA-256 của NGƯỜI GỬI trên chính nội dung đang lưu ở
+    // NoiDungTinNhan (plaintext hoặc bản mã, tùy tin có mã hóa hay không) — null khi người gửi
+    // chưa có khóa RSA lúc gửi (tài khoản cũ, dữ liệu test) hoặc tin không phải loại Text.
+    public string? ChuKySo { get; set; }
 }

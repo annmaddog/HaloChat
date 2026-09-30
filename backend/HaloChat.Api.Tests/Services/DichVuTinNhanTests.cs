@@ -20,7 +20,7 @@ public class DichVuTinNhanTests
         var khoDocNhom = new DocNhomGiaLap();
         var khoTinNhanAn = new TinNhanAnGiaLap();
         var quanLyKetNoi = new QuanLyKetNoiChat();
-        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoDocNhom, quanLyKetNoi, khoTinNhanAn, new DichVuMaHoa());
+        var dichVu = new DichVuTinNhan(khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoDocNhom, quanLyKetNoi, khoTinNhanAn, new DichVuMaHoa(), new DichVuChuKySo());
         return (dichVu, khoTinNhan, khoNguoiDung, khoLoiMoiKetBan, khoNhom, khoTinNhanAn);
     }
 
@@ -767,5 +767,47 @@ public class DichVuTinNhanTests
         var ketQua = await dichVu.TimKiemTheoNhomAsync(IdNguoiNhan, IdNhom, "họp");
 
         Assert.Equal("Họp nhóm 5 giờ chiều", Assert.Single(ketQua).NoiDungTinNhan);
+    }
+
+    // --- Chữ ký số ---
+
+    [Fact]
+    public async Task GuiTinNhanAsync_NguoiGuiCoKhoaRsa_ChuKySoKhacNull()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
+        Assert.False(string.IsNullOrEmpty(tinNhanTrongKho.ChuKySo));
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_NguoiGuiChuaCoKhoaRsa_ChuKySoRongDuKhongMaHoa()
+    {
+        // Người nhận CÓ khóa (đủ điều kiện nếu logic ký lỡ dùng nhầm điều kiện mã hóa),
+        // nhưng người gửi thì KHÔNG — ChuKySo phải rỗng vì ký chỉ phụ thuộc người GỬI.
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiNhan, "NguoiNhan"));
+
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
+        Assert.Null(tinNhanTrongKho.ChuKySo);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_LoaiAnh_KhongKy()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Anh", "", "/api/tinnhan/file/507f1f77bcf86cd799439003", "a.png", 1024, "image/png", null);
+
+        var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
+        Assert.Null(tinNhanTrongKho.ChuKySo);
     }
 }

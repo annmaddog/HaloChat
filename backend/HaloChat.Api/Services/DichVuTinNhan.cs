@@ -27,11 +27,12 @@ public class DichVuTinNhan : IDichVuTinNhan
     private readonly IQuanLyKetNoiChat _quanLyKetNoi;
     private readonly ITinNhanAnRepository _khoTinNhanAn;
     private readonly IDichVuMaHoa _dichVuMaHoa;
+    private readonly IDichVuChuKySo _dichVuChuKySo;
 
     public DichVuTinNhan(
         ITinNhanRepository khoTinNhan, INguoiDungRepository khoNguoiDung, ILoiMoiKetBanRepository khoLoiMoiKetBan,
         INhomRepository khoNhom, IDocNhomRepository khoDocNhom, IQuanLyKetNoiChat quanLyKetNoi,
-        ITinNhanAnRepository khoTinNhanAn, IDichVuMaHoa dichVuMaHoa)
+        ITinNhanAnRepository khoTinNhanAn, IDichVuMaHoa dichVuMaHoa, IDichVuChuKySo dichVuChuKySo)
     {
         _khoTinNhan = khoTinNhan;
         _khoNguoiDung = khoNguoiDung;
@@ -41,6 +42,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         _quanLyKetNoi = quanLyKetNoi;
         _khoTinNhanAn = khoTinNhanAn;
         _dichVuMaHoa = dichVuMaHoa;
+        _dichVuChuKySo = dichVuChuKySo;
     }
 
     public async Task<TinNhanDto> GuiTinNhanAsync(
@@ -219,6 +221,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         }
 
         MaHoaNoiDungNeuCoThe(tinNhan, tinNhan.NoiDungTinNhan, nguoiThamGia, nguoiGui, soNguoiThamGiaDuKien);
+        KyTinNhanNeuCoThe(tinNhan, nguoiGui);
 
         await _khoTinNhan.ThemMoiAsync(tinNhan);
         return AnhXaDto(tinNhan, nguoiGuiId, nguoiGui?.KhoaBiMat);
@@ -268,6 +271,22 @@ public class DichVuTinNhan : IDichVuTinNhan
         // Trường nội dung lưu chính bản mã (Base64) — trong MongoDB chỉ thấy chuỗi vô nghĩa, không có plaintext.
         // Phân biệt tin đã mã hóa bằng DanhSachKhoaPhien không rỗng, KHÔNG dựa vào NoiDungTinNhan.
         tinNhan.NoiDungTinNhan = ketQuaMaHoa.Ciphertext;
+    }
+
+    /// <summary>
+    /// [Chữ ký số] Ký NỘI DUNG ĐANG LƯU (tinNhan.NoiDungTinNhan — đã ở giá trị cuối cùng sau
+    /// MaHoaNoiDungNeuCoThe ở trên, có thể là plaintext hoặc bản mã) bằng khóa bí mật của NGƯỜI
+    /// GỬI. Điều kiện ký khác điều kiện mã hóa: chỉ cần NGƯỜI GỬI có khóa (không cần biết khóa
+    /// người nhận, vì ký là hành động 1 chiều — ai cũng xác minh được bằng khóa công khai người gửi).
+    /// </summary>
+    private void KyTinNhanNeuCoThe(TinNhan tinNhan, NguoiDung? nguoiGui)
+    {
+        if (tinNhan.LoaiTinNhan != LoaiTinNhan.Text || nguoiGui is null || string.IsNullOrWhiteSpace(nguoiGui.KhoaBiMat))
+        {
+            return;
+        }
+
+        tinNhan.ChuKySo = _dichVuChuKySo.KyDuLieu(tinNhan.NoiDungTinNhan, nguoiGui.KhoaBiMat);
     }
 
     /// <summary>
