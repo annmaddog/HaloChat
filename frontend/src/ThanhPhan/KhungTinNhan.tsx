@@ -61,6 +61,7 @@ interface PropsKhungTinNhan {
   onQuayLai?: () => void;
   onBamTieuDe?: () => void;
   layTenNguoiGui?: (nguoiGuiId: string) => string;
+  layAnhDaiDienNguoiGui?: (nguoiGuiId: string) => string | null | undefined;
   onThuHoi: (id: string) => void;
   onGhim: (id: string) => void;
   onBoGhim: (id: string) => void;
@@ -77,8 +78,8 @@ interface PropsKhungTinNhan {
 }
 
 export function KhungTinNhan({
-  tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
-  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui,
+  loaiHoiThoai, tenHienThi, phuDe, danhSachTinNhan, idHienTai, dangKetNoi, dangTaiLichSu,
+  coTheTaiThem, onTaiThemLichSuCu, onGuiVanBan, onGuiTep, dangTaiTep, loi, onQuayLai, onBamTieuDe, layTenNguoiGui, layAnhDaiDienNguoiGui,
   onThuHoi, onGhim, onBoGhim, onAn, onChuyenTiep, onXemThongTinKyThuat, danhSachTinNhanGhim, onMoKhoMedia, onTimKiem, onNhayToiTinNhan,
   onThaCamXuc, onBoCamXuc, duongDanAnh,
 }: PropsKhungTinNhan) {
@@ -377,8 +378,16 @@ export function KhungTinNhan({
             {dangTaiLichSu ? 'Đang tải...' : 'Tải tin nhắn cũ hơn'}
           </button>
         )}
-        {danhSachTinNhan.map((tn) => {
+        {danhSachTinNhan.map((tn, chiSo) => {
           const laCuaMinh = tn.nguoiGuiId === idHienTai;
+          // [Hiện avatar/tên người gửi] Không biết ai nhắn khi chat nhóm là vấn đề
+          // thật — chỉ tin của NGƯỜI KHÁC mới hiện avatar (mọi loại hội thoại) và
+          // tên (riêng nhóm, vì cá nhân chỉ có đúng 1 người kia nên không cần lặp
+          // lại tên). Tên chỉ hiện ở tin ĐẦU của 1 chuỗi liên tiếp cùng người gửi,
+          // tránh lặp tên trên từng dòng như ảnh tham khảo.
+          const tinTruoc = chiSo > 0 ? danhSachTinNhan[chiSo - 1] : undefined;
+          const laTinDauChuoi = !tinTruoc || tinTruoc.nguoiGuiId !== tn.nguoiGuiId;
+          const tenNguoiGui = layTenNguoiGui ? layTenNguoiGui(tn.nguoiGuiId) : 'một người dùng';
           return (
             <div
               key={tn.id}
@@ -388,7 +397,15 @@ export function KhungTinNhan({
               }}
               className={`khung-tin-nhan__hang${laCuaMinh ? ' khung-tin-nhan__hang--minh' : ''}${tinDangMoId === tn.id ? ' khung-tin-nhan__hang--mo' : ''}${idDangNoiBat === tn.id ? ' khung-tin-nhan__hang--noi-bat' : ''}`}
             >
+              {!laCuaMinh && (
+                <div className="khung-tin-nhan__avatar-nguoi-gui">
+                  <Avatar id={tn.nguoiGuiId} ten={tenNguoiGui} kichThuoc="nho" duongDanAnh={layAnhDaiDienNguoiGui ? layAnhDaiDienNguoiGui(tn.nguoiGuiId) : undefined} />
+                </div>
+              )}
               <div className="khung-tin-nhan__cot">
+                {!laCuaMinh && loaiHoiThoai === 'nhom' && laTinDauChuoi && (
+                  <span className="khung-tin-nhan__ten-nguoi-gui">{tenNguoiGui}</span>
+                )}
                 <div
                   className={`khung-tin-nhan__bong${laCuaMinh ? ' khung-tin-nhan__bong--minh' : ''}`}
                   onClick={() => setTinDangMoId((truoc) => (truoc === tn.id ? null : tn.id))}

@@ -498,6 +498,7 @@ export function TrangChat() {
             onGuiVanBan={guiTinNhanVanBan}
             onGuiTep={guiTep}
             layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nguoiDangChon?.tenHienThi ?? 'một người dùng'))}
+            layAnhDaiDienNguoiGui={(id) => (id === idHienTai ? null : nguoiDangChon?.duongDanAnhDaiDien)}
             dangTaiTep={dangTaiTep}
             loi={loi}
             onQuayLai={() => setNguoiDangChon(null)}

@@ -518,6 +518,7 @@ export function TrangNhom() {
             onGuiVanBan={guiTinNhanVanBan}
             onGuiTep={guiTep}
             layTenNguoiGui={(id) => (id === idHienTai ? 'Bạn' : (nhomDangChon?.thanhVien.find((tv) => tv.id === id)?.tenHienThi ?? 'một người dùng'))}
+            layAnhDaiDienNguoiGui={(id) => (id === idHienTai ? null : nhomDangChon?.thanhVien.find((tv) => tv.id === id)?.duongDanAnhDaiDien)}
             dangTaiTep={dangTaiTep}
             loi={loi}
             onQuayLai={() => setNhomDangChonId(null)}

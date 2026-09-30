@@ -237,10 +237,25 @@
 .khung-tin-nhan__hang {
   position: relative;
   display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .khung-tin-nhan__hang--minh {
   justify-content: flex-end;
+}
+
+/* [Avatar/tên người gửi] Chỉ hiện ở tin của NGƯỜI KHÁC — tin của mình
+   (.hang--minh) không có avatar này trong DOM nên không cần loại trừ riêng. */
+.khung-tin-nhan__avatar-nguoi-gui {
+  flex-shrink: 0;
+}
+
+.khung-tin-nhan__ten-nguoi-gui {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mau-chu-phu);
+  padding-left: 2px;
 }
 
 /* [Sửa lỗi] Bố cục cột: bong bóng ở trên, thanh công cụ (chân) ở dưới, KHÔNG
@@ -654,7 +669,10 @@
   height: 22px;
   padding: 0 6px;
   border-radius: 999px;
-  border: 1px solid var(--mau-vien);
+  /* [Sửa] Viền cũ dùng --mau-vien quá nhạt, gần như biến mất trên nền bong
+     bóng sáng màu — đổi sang màu đậm hơn (--mau-chu-phu) để badge luôn nổi
+     rõ, dễ nhìn dù đè lên bong bóng màu gì. */
+  border: 1.5px solid var(--mau-chu-phu);
   background: var(--mau-nen-the);
   color: var(--mau-chu-phu);
   display: flex;
