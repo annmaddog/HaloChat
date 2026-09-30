@@ -53,7 +53,7 @@ export function ModalChuyenTiep({ token, dangGui, loi, onDong, onXacNhan }: Prop
     <div className="modal-chuyen-tiep__nen" onClick={onDong}>
       <div className="modal-chuyen-tiep__hop" onClick={(su) => su.stopPropagation()}>
         <div className="modal-chuyen-tiep__dau">
-          <h2>Chuyển tiếp tin nhắn</h2>
+          <h2>Chia sẻ tin nhắn</h2>
           <button type="button" onClick={onDong} aria-label="Đóng"><BieuTuongDong /></button>
         </div>
 

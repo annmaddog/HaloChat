@@ -519,7 +519,7 @@ export function KhungTinNhan({
                           type="button"
                           className="khung-tin-nhan__nut-chuyen-tiep"
                           onClick={(su) => { su.stopPropagation(); onChuyenTiep(tn.id); }}
-                          aria-label="Chuyển tiếp tin nhắn này"
+                          aria-label="Chia sẻ tin nhắn này"
                         >
                           <BieuTuongChuyenTiep />
                         </button>
