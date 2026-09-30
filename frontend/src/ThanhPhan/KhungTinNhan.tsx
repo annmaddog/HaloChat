@@ -210,7 +210,7 @@ export function KhungTinNhan({
 
     function xuLyBamNgoai(su: MouseEvent) {
       const dich = su.target as HTMLElement;
-      if (!dich.closest('.khung-tin-nhan__cam-xuc-cum')) {
+      if (!dich.closest('.khung-tin-nhan__cam-xuc-noi')) {
         setPopupCamXucChoTinNhanId(null);
       }
     }
