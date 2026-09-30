@@ -18,4 +18,5 @@ public record TinNhanDto(
     bool DaThuHoi,
     bool DaGhim,
     DateTime? ThoiGianGhim,
-    List<CamXucDto> DanhSachCamXuc);
+    List<CamXucDto> DanhSachCamXuc,
+    bool? DaXacThucChuKy);

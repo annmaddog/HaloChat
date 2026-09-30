@@ -810,4 +810,59 @@ public class DichVuTinNhanTests
         var tinNhanTrongKho = Assert.Single(khoTinNhan.DanhSach);
         Assert.Null(tinNhanTrongKho.ChuKySo);
     }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_CoChuKy_DocLaiTraVeDaXacThucChuKyTrue()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        Assert.True(ketQua.DaXacThucChuKy);
+    }
+
+    [Fact]
+    public async Task GuiTinNhanAsync_KhongCoChuKy_DocLaiTraVeDaXacThucChuKyNull()
+    {
+        var (dichVu, _, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+
+        var ketQua = await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        Assert.Null(ketQua.DaXacThucChuKy);
+    }
+
+    [Fact]
+    public async Task LayLichSuAsync_TinBiSuaNoiDungSauKhiKy_TraVeDaXacThucChuKyFalse()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        // Giả lập ai đó sửa thẳng dữ liệu trong Mongo sau khi tin đã được ký.
+        khoTinNhan.DanhSach[0].NoiDungTinNhan = "Xin chào (đã bị sửa)";
+
+        var lichSu = await dichVu.LayLichSuAsync(IdNguoiGui, IdNguoiNhan, null, 30);
+
+        Assert.False(Assert.Single(lichSu).DaXacThucChuKy);
+    }
+
+    [Fact]
+    public async Task LayLichSuAsync_NguoiGuiBiXoaSauKhiDaKy_TraVeDaXacThucChuKyFalseKhongNemLoi()
+    {
+        var (dichVu, khoTinNhan, khoNguoiDung, _, _, _) = TaoDichVu();
+        khoNguoiDung.DanhSach.Add(TaoNguoiDungCoKhoaRsa(IdNguoiGui, "NguoiGui"));
+        khoNguoiDung.DanhSach.Add(TaoNguoiNhanChoPhepNguoiLa());
+        await dichVu.GuiTinNhanAsync(IdNguoiGui, IdNguoiNhan, null, "Text", "Xin chào", null, null, null, null, null);
+
+        // Giả lập tài khoản người gửi bị xóa hẳn khỏi hệ thống sau khi đã ký.
+        khoNguoiDung.DanhSach.RemoveAll(nd => nd.Id == IdNguoiGui);
+
+        var lichSu = await dichVu.LayLichSuAsync(IdNguoiNhan, IdNguoiGui, null, 30);
+
+        Assert.False(Assert.Single(lichSu).DaXacThucChuKy);
+    }
 }

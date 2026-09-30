@@ -224,7 +224,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         KyTinNhanNeuCoThe(tinNhan, nguoiGui);
 
         await _khoTinNhan.ThemMoiAsync(tinNhan);
-        return AnhXaDto(tinNhan, nguoiGuiId, nguoiGui?.KhoaBiMat);
+        return await AnhXaDto(tinNhan, nguoiGuiId, nguoiGui?.KhoaBiMat);
     }
 
     /// <summary>
@@ -290,6 +290,29 @@ public class DichVuTinNhan : IDichVuTinNhan
     }
 
     /// <summary>
+    /// [Chữ ký số] Xác minh chữ ký của NGƯỜI GỬI trên nội dung ĐANG LƯU (t.NoiDungTinNhan —
+    /// plaintext hoặc bản mã tùy tin có mã hóa hay không), KHÔNG phải trên nội dung đã giải mã
+    /// — vì chữ ký được tính lúc gửi TRÊN GIÁ TRỊ CUỐI CÙNG sẽ lưu (xem KyTinNhanNeuCoThe).
+    /// Trả null khi tin không có chữ ký (tin cũ / không phải Text) — không hiển thị badge gì
+    /// trên UI; true/false khi có chữ ký, kết quả xác minh đúng/sai.
+    /// </summary>
+    private async Task<bool?> XacMinhChuKyNeuCoThe(TinNhan t)
+    {
+        if (t.LoaiTinNhan != LoaiTinNhan.Text || string.IsNullOrEmpty(t.ChuKySo))
+        {
+            return null;
+        }
+
+        var nguoiGui = await _khoNguoiDung.TimTheoIdAsync(t.NguoiGuiId);
+        if (nguoiGui is null || string.IsNullOrWhiteSpace(nguoiGui.KhoaCongKhai))
+        {
+            return false;
+        }
+
+        return _dichVuChuKySo.XacMinhChuKy(t.NoiDungTinNhan, t.ChuKySo, nguoiGui.KhoaCongKhai);
+    }
+
+    /// <summary>
     /// [GĐ6] Đọc lại nội dung THẬT của 1 tin nhắn Text dưới góc nhìn của
     /// idHienTai. Rỗng/không có DanhSachKhoaPhien = tin chưa mã hóa (loại
     /// khác Text, tin cũ, hoặc lúc gửi có bên thiếu khóa) — đọc thẳng
@@ -325,7 +348,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var lichSu = await _khoTinNhan.LayLichSuTheoNguoiDungAsync(nguoiHienTaiId, nguoiKiaId, truocId, soLuong);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(nguoiHienTaiId, lichSu.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(nguoiHienTaiId);
-        return lichSu.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, nguoiHienTaiId, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(lichSu.Where(t => !idDaAn.Contains(t.Id)), nguoiHienTaiId, khoaBiMat);
     }
 
     public async Task<List<TinNhanDto>> LayLichSuNhomAsync(string nguoiHienTaiId, string nhomId, string? truocId, int soLuong)
@@ -339,7 +362,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var lichSu = await _khoTinNhan.LayLichSuNhomAsync(nhomId, truocId, soLuong);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(nguoiHienTaiId, lichSu.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(nguoiHienTaiId);
-        return lichSu.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, nguoiHienTaiId, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(lichSu.Where(t => !idDaAn.Contains(t.Id)), nguoiHienTaiId, khoaBiMat);
     }
 
     private async Task KiemTraQuyenTrenTinNhanAsync(string idHienTai, TinNhan tinNhan)
@@ -368,7 +391,7 @@ public class DichVuTinNhan : IDichVuTinNhan
 
         await _khoTinNhan.DanhDauThuHoiAsync(tinNhanId);
         tinNhan.DaThuHoi = true;
-        return AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
+        return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
 
     public async Task<TinNhanDto> GhimAsync(string idHienTai, string tinNhanId)
@@ -380,7 +403,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         await _khoTinNhan.DatGhimAsync(tinNhanId, true, thoiGian);
         tinNhan.DaGhim = true;
         tinNhan.ThoiGianGhim = thoiGian;
-        return AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
+        return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
 
     public async Task<TinNhanDto> BoGhimAsync(string idHienTai, string tinNhanId)
@@ -391,7 +414,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         await _khoTinNhan.DatGhimAsync(tinNhanId, false, null);
         tinNhan.DaGhim = false;
         tinNhan.ThoiGianGhim = null;
-        return AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
+        return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
 
     public async Task AnAsync(string idHienTai, string tinNhanId)
@@ -406,7 +429,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var ghim = await _khoTinNhan.LayTinDaGhimTheoNguoiDungAsync(idHienTai, doiTacId);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ghim.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
-        return ghim.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(ghim.Where(t => !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     public async Task<List<TinNhanDto>> LayTinDaGhimTheoNhomAsync(string idHienTai, string nhomId)
@@ -420,7 +443,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var ghim = await _khoTinNhan.LayTinDaGhimTheoNhomAsync(nhomId);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ghim.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
-        return ghim.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(ghim.Where(t => !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     public Task DanhDauDaDocAsync(string nguoiHienTaiId, string nguoiGuiId) =>
@@ -490,7 +513,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var media = await _khoTinNhan.LayMediaTheoNguoiDungAsync(idHienTai, doiTacId);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, media.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
-        return media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     public async Task<List<TinNhanDto>> LayMediaTheoNhomAsync(string idHienTai, string nhomId)
@@ -504,7 +527,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var media = await _khoTinNhan.LayMediaTheoNhomAsync(nhomId);
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, media.Select(t => t.Id));
         var khoaBiMat = await LayKhoaBiMatAsync(idHienTai);
-        return media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(media.Where(t => !t.DaThuHoi && !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     public async Task<List<TinNhanDto>> TimKiemTheoNguoiDungAsync(string idHienTai, string doiTacId, string tuKhoa)
@@ -521,7 +544,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var ketQua = GomKetQuaTimKiem(ketQuaPlaintext, ungVienMaHoa, idHienTai, khoaBiMat, tuKhoaChuan);
 
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
-        return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(ketQua.Where(t => !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     /// <summary>
@@ -562,7 +585,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         var ketQua = GomKetQuaTimKiem(ketQuaPlaintext, ungVienMaHoa, idHienTai, khoaBiMat, tuKhoaChuan);
 
         var idDaAn = await _khoTinNhanAn.LayDanhSachIdDaAnAsync(idHienTai, ketQua.Select(t => t.Id));
-        return ketQua.Where(t => !idDaAn.Contains(t.Id)).Select(t => AnhXaDto(t, idHienTai, khoaBiMat)).ToList();
+        return await AnhXaDanhSachDto(ketQua.Where(t => !idDaAn.Contains(t.Id)), idHienTai, khoaBiMat);
     }
 
     public async Task<TinNhanDto> ThaCamXucAsync(string idHienTai, string tinNhanId, string loaiCamXuc)
@@ -578,7 +601,7 @@ public class DichVuTinNhan : IDichVuTinNhan
         await _khoTinNhan.ThaCamXucAsync(tinNhanId, idHienTai, loai);
         tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == idHienTai);
         tinNhan.DanhSachCamXuc.Add(new CamXucTinNhan { NguoiDungId = idHienTai, LoaiCamXuc = loai });
-        return AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
+        return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
 
     public async Task<TinNhanDto> BoCamXucAsync(string idHienTai, string tinNhanId)
@@ -588,14 +611,14 @@ public class DichVuTinNhan : IDichVuTinNhan
 
         await _khoTinNhan.BoCamXucAsync(tinNhanId, idHienTai);
         tinNhan.DanhSachCamXuc.RemoveAll(cx => cx.NguoiDungId == idHienTai);
-        return AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
+        return await AnhXaDto(tinNhan, idHienTai, await LayKhoaBiMatAsync(idHienTai));
     }
 
     /// <summary>Lấy KhoaBiMat của idHienTai — dùng để giải mã tin nhắn dưới góc nhìn của họ.</summary>
     private async Task<string?> LayKhoaBiMatAsync(string idHienTai) =>
         (await _khoNguoiDung.TimTheoIdAsync(idHienTai))?.KhoaBiMat;
 
-    private TinNhanDto AnhXaDto(TinNhan t, string idHienTai, string? khoaBiMatHienTai)
+    private async Task<TinNhanDto> AnhXaDto(TinNhan t, string idHienTai, string? khoaBiMatHienTai)
     {
         var traLoi = t.TraLoi is null ? null : new TraLoiThongTinDto(t.TraLoi.Id, t.TraLoi.TenNguoiGui, t.TraLoi.NoiDungTomTat, t.TraLoi.LoaiTinNhan.ToString());
         var danhSachCamXuc = t.DaThuHoi
@@ -607,17 +630,30 @@ public class DichVuTinNhan : IDichVuTinNhan
             return new(
                 t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(),
                 "Tin nhắn đã được thu hồi.", null, null, null, null,
-                t.DaDoc, t.DaNhan, t.ThoiGianTao, traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc);
+                t.DaDoc, t.DaNhan, t.ThoiGianTao, traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc,
+                null); // [Chữ ký số] Tin đã thu hồi không hiện trạng thái chữ ký.
         }
 
         // [GĐ6] Giải mã (nếu tin này có mã hóa) dưới góc nhìn của idHienTai
         // trước khi trả DTO — client không bao giờ thấy Ciphertext/khóa RSA,
         // chỉ thấy đúng NoiDungTinNhan như thể chưa từng mã hóa.
         var noiDungThucTe = GiaiMaNoiDungThucTe(t, idHienTai, khoaBiMatHienTai);
+        var daXacThucChuKy = await XacMinhChuKyNeuCoThe(t);
 
         return new(
             t.Id, t.NguoiGuiId, t.NguoiNhanId, t.NhomId, t.LoaiTinNhan.ToString(), noiDungThucTe,
             t.DuongDanFile, t.TenFileGoc, t.KichThuocFile, t.LoaiFile, t.DaDoc, t.DaNhan, t.ThoiGianTao,
-            traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc);
+            traLoi, t.DaThuHoi, t.DaGhim, t.ThoiGianGhim, danhSachCamXuc, daXacThucChuKy);
+    }
+
+    /// <summary>Áp dụng AnhXaDto cho cả 1 danh sách — thay cho .Select(...).ToList() vì AnhXaDto giờ là async.</summary>
+    private async Task<List<TinNhanDto>> AnhXaDanhSachDto(IEnumerable<TinNhan> danhSach, string idHienTai, string? khoaBiMatHienTai)
+    {
+        var ketQua = new List<TinNhanDto>();
+        foreach (var t in danhSach)
+        {
+            ketQua.Add(await AnhXaDto(t, idHienTai, khoaBiMatHienTai));
+        }
+        return ketQua;
     }
 }
