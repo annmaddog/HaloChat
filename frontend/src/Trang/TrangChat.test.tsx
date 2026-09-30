@@ -62,7 +62,7 @@ function taoTinNhanGiaLap(gan: Partial<Awaited<ReturnType<typeof DichVuApi.LayLi
     daThuHoi: false,
     daGhim: false,
     thoiGianGhim: null,
-    danhSachCamXuc: [],
+    danhSachCamXuc: [], daXacThucChuKy: null,
     ...gan,
   };
 }

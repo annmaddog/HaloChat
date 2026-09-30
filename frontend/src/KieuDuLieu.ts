@@ -43,6 +43,7 @@ export interface TinNhan {
   daGhim: boolean;
   thoiGianGhim: string | null;
   danhSachCamXuc: CamXuc[];
+  daXacThucChuKy: boolean | null;
 }
 
 export interface TepTinDaTaiLen {

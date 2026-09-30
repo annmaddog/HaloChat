@@ -246,7 +246,7 @@ export function TrangChat() {
       loaiTinNhan: 'Text', noiDungTinNhan: noiDungGui, duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
       thoiGianTao: new Date().toISOString(), dangGui: true, traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     setTinNhanTheoNguoiDung((truoc) => ({ ...truoc, [nguoiDangChon.id]: [...(truoc[nguoiDangChon.id] ?? []), tinNhanTam] }));
 

@@ -71,7 +71,7 @@ describe('TrangNhom', () => {
       id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
       noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     }]);
 
     renderTrangNhom();
@@ -290,7 +290,7 @@ describe('TrangNhom', () => {
       id: 'm-anh', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Anh',
       noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439001', tenFileGoc: 'a.png',
       kichThuocFile: 1024, loaiFile: 'image/png', daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z',
-      traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      traLoi: null, daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     }]);
 
     renderTrangNhom();
@@ -325,13 +325,13 @@ describe('TrangNhom', () => {
       id: 'm-cu-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
       noiDungTinNhan: 'Tin dau tien', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[], daXacThucChuKy: null,
     };
     const tinXa = {
       id: 'm-xa-nhat', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text' as const,
       noiDungTinNhan: 'Xin chao rat xa', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [] as CamXuc[], daXacThucChuKy: null,
     };
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinCu]);
     vi.spyOn(DichVuApi, 'LayLichSuNhom').mockResolvedValueOnce([tinXa]);
@@ -357,7 +357,7 @@ describe('TrangNhom', () => {
       id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',
       noiDungTinNhan: 'Chào nhóm', duongDanFile: null, tenFileGoc: null, kichThuocFile: null,
       loaiFile: null, daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     }]);
     ketNoiGiaLap.invoke.mockResolvedValue({
       id: 'm1', nguoiGuiId: '2', nguoiNhanId: null, nhomId: 'n1', loaiTinNhan: 'Text',

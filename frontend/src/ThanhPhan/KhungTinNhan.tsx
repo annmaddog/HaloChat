@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ChangeEvent, type ClipboardEvent } from 'react';
-import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongThichRong, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
+import { BieuTuongGhim, BieuTuongTraLoi, BieuTuongChuyenTiep, BieuTuongThichRong, BieuTuongChuKyHopLe, BieuTuongChuKyKhongHopLe, BieuTuongTaiLieu, BieuTuongTai, BieuTuongBaCham, BieuTuongMatCuoi, BieuTuongKhoLuuTru, BieuTuongTimKiem } from './BieuTuong';
 import { Avatar } from './Avatar';
 import { DIA_CHI_GOC } from '../DichVuApi';
 import type { TinNhan, LoaiCamXuc } from '../KieuDuLieu';
@@ -505,6 +505,16 @@ export function KhungTinNhan({
                 >
                   {tinDangMoId === tn.id && (
                     <span className="khung-tin-nhan__thoi-gian-chan">{dinhDangGio(tn.thoiGianTao)}</span>
+                  )}
+                  {tn.daXacThucChuKy === true && (
+                    <span className="khung-tin-nhan__chu-ky khung-tin-nhan__chu-ky--hop-le" aria-label="Đã xác thực chữ ký người gửi" title="Đã xác thực chữ ký người gửi">
+                      <BieuTuongChuKyHopLe />
+                    </span>
+                  )}
+                  {tn.daXacThucChuKy === false && (
+                    <span className="khung-tin-nhan__chu-ky khung-tin-nhan__chu-ky--khong-hop-le" aria-label="Chữ ký không hợp lệ — nội dung có thể đã bị thay đổi" title="Chữ ký không hợp lệ — nội dung có thể đã bị thay đổi">
+                      <BieuTuongChuKyKhongHopLe />
+                    </span>
                   )}
                   <div className="khung-tin-nhan__chan-icon-cum">
                     <div className="khung-tin-nhan__chan-phu">

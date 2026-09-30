@@ -50,7 +50,7 @@ const TIN_NHAN_MAU = {
   daThuHoi: false,
   daGhim: false,
   thoiGianGhim: null,
-  danhSachCamXuc: [],
+  danhSachCamXuc: [], daXacThucChuKy: null,
 };
 
 describe('KhungTinNhan', () => {
@@ -96,7 +96,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
@@ -113,7 +113,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
     await userEvent.click(screen.getByRole('button', { name: 'Trả lời tin nhắn này' }));
@@ -129,7 +129,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Xin chào bạn', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     const onGuiVanBan = vi.fn();
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinGoc]} idHienTai="toi" tenHienThi="Nguoi Kia" onGuiVanBan={onGuiVanBan} />);
@@ -147,7 +147,7 @@ describe('KhungTinNhan', () => {
       kichThuocFile: null, loaiFile: null, daDoc: false, daNhan: false,
       thoiGianTao: '2026-01-01T00:01:00Z',
       traLoi: { id: 'm1', tenNguoiGui: 'Nguoi Kia', noiDungTomTat: 'Xin chào bạn', loaiTinNhan: 'Text' },
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinTraLoi]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
@@ -163,14 +163,14 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai A', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     const tinB: TinNhan = {
       id: 'b1', nguoiGuiId: 'nguoi-b', nguoiNhanId: 'toi', nhomId: null,
       loaiTinNhan: 'Text', noiDungTinNhan: 'Tin cua hoi thoai B', duongDanFile: null, tenFileGoc: null,
       kichThuocFile: null, loaiFile: null, daDoc: true, daNhan: true,
       thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     const onGuiVanBan = vi.fn();
     const { rerender } = render(
@@ -195,7 +195,7 @@ describe('KhungTinNhan', () => {
       loaiTinNhan: 'File', noiDungTinNhan: '', duongDanFile: '/api/tinnhan/file/507f1f77bcf86cd799439099',
       tenFileGoc: 'bao-cao.docx', kichThuocFile: 15360, loaiFile: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       daDoc: false, daNhan: false, thoiGianTao: '2026-01-01T00:00:00Z', traLoi: null,
-      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [],
+      daThuHoi: false, daGhim: false, thoiGianGhim: null, danhSachCamXuc: [], daXacThucChuKy: null,
     };
     render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinFile]} idHienTai="toi" tenHienThi="Nguoi Kia" />);
 
@@ -510,5 +510,27 @@ describe('KhungTinNhan', () => {
     render(<KhungTinNhan {...PROPS_MAC_DINH} duongDanAnh={null} />);
 
     expect(screen.queryByAltText('Nhóm CNTT')).not.toBeInTheDocument();
+  });
+
+  it('tin co chu ky hop le hien icon xac thuc mau xanh', () => {
+    const tinCoChuKyHopLe = { ...TIN_NHAN_MAU, id: 'm1', daXacThucChuKy: true };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinCoChuKyHopLe]} />);
+
+    expect(screen.getByLabelText('Đã xác thực chữ ký người gửi')).toBeInTheDocument();
+  });
+
+  it('tin co chu ky khong hop le hien icon canh bao', () => {
+    const tinChuKySai = { ...TIN_NHAN_MAU, id: 'm1', daXacThucChuKy: false };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinChuKySai]} />);
+
+    expect(screen.getByLabelText('Chữ ký không hợp lệ — nội dung có thể đã bị thay đổi')).toBeInTheDocument();
+  });
+
+  it('tin khong co chu ky khong hien icon nao', () => {
+    const tinKhongKy = { ...TIN_NHAN_MAU, id: 'm1', daXacThucChuKy: null };
+    render(<KhungTinNhan {...PROPS_MAC_DINH} danhSachTinNhan={[tinKhongKy]} />);
+
+    expect(screen.queryByLabelText('Đã xác thực chữ ký người gửi')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Chữ ký không hợp lệ — nội dung có thể đã bị thay đổi')).not.toBeInTheDocument();
   });
 });

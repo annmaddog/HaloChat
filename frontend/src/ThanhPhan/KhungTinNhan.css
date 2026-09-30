@@ -272,6 +272,20 @@
   flex-shrink: 0;
 }
 
+.khung-tin-nhan__chu-ky {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.khung-tin-nhan__chu-ky--hop-le {
+  color: var(--mau-chinh-dam);
+}
+
+.khung-tin-nhan__chu-ky--khong-hop-le {
+  color: var(--mau-loi);
+}
+
 .khung-tin-nhan__chan-icon-cum {
   position: relative;
   display: flex;
