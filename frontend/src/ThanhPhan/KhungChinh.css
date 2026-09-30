@@ -57,13 +57,12 @@
 .khung-chinh__noi-dung {
   flex: 1;
   min-width: 0;
+  min-height: 0;
 }
 
 @media (max-width: 640px) {
   .khung-chinh {
     flex-direction: column-reverse;
-    height: auto;
-    min-height: 100vh;
   }
 
   .khung-chinh__rail {
@@ -71,6 +70,16 @@
     flex-direction: row;
     justify-content: space-around;
     padding: 8px 0;
+    flex-shrink: 0;
+  }
+
+  /* Đang mở 1 cuộc trò chuyện (chat 1-1 hoặc nhóm) trên mobile: ẩn hẳn
+     thanh điều hướng (Tin nhắn/Bạn bè/Nhóm/Cài đặt/Đăng xuất) để khung
+     chat chiếm trọn màn hình, bấm nút quay lại (mũi tên "←") trong
+     khung chat để trở lại danh sách + thanh điều hướng như cũ. */
+  .khung-chinh:has(.trang-chat--da-chon) .khung-chinh__rail,
+  .khung-chinh:has(.trang-nhom--da-chon) .khung-chinh__rail {
+    display: none;
   }
 }
 

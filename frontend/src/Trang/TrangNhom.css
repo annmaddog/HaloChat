@@ -1,5 +1,5 @@
 .trang-nhom {
-  height: 100vh;
+  height: 100%;
   display: flex;
 }
 
@@ -324,8 +324,6 @@
 @media (max-width: 640px) {
   .trang-nhom {
     flex-direction: column;
-    height: auto;
-    min-height: 100vh;
   }
 
   .trang-nhom__sidebar {
@@ -342,11 +340,6 @@
   }
 
   .trang-nhom:not(.trang-nhom--da-chon) .trang-nhom__sidebar {
-    display: flex;
-    width: 100%;
-  }
-
-  .trang-nhom:not(.trang-nhom--da-chon) .trang-nhom__trong-rong {
     display: flex;
     width: 100%;
   }

@@ -1,5 +1,5 @@
 .trang-chat {
-  height: 100vh;
+  height: 100%;
   display: flex;
 }
 
@@ -112,21 +112,12 @@
 }
 
 @media (max-width: 640px) {
-  .trang-chat {
-    height: 100vh;
-  }
-
   .trang-chat__sidebar,
   .trang-chat__trong-rong {
     display: none;
   }
 
   .trang-chat:not(.trang-chat--da-chon) .trang-chat__sidebar {
-    display: flex;
-    width: 100%;
-  }
-
-  .trang-chat:not(.trang-chat--da-chon) .trang-chat__trong-rong {
     display: flex;
     width: 100%;
   }
