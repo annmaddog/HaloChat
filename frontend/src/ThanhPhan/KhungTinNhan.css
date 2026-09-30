@@ -237,7 +237,10 @@
 .khung-tin-nhan__hang {
   position: relative;
   display: flex;
-  align-items: flex-end;
+  /* [Sửa] flex-end trước đây kéo avatar xuống ngang hàng công cụ (đáy dòng),
+     lệch hẳn khỏi tên/bong bóng ở trên — đổi sang flex-start để avatar luôn
+     thẳng hàng với tên người gửi/bong bóng, đúng kiểu Messenger tham khảo. */
+  align-items: flex-start;
   gap: 8px;
 }
 
