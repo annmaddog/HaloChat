@@ -1,4 +1,4 @@
-# HaloChat — Chữ ký số xác thực người gửi tin nhắn
+# HaloChat — Chữ ký số xác thực người gửi tin nhắn + Bảng "Thông tin kỹ thuật" mỗi tin nhắn
 
 Ngày viết: 2026-09-30
 Trạng thái: đã được duyệt trong phiên brainstorming, sẵn sàng chuyển sang lập kế hoạch triển khai.
@@ -198,8 +198,109 @@ xem `tinDangMoId`), thêm 1 icon nhỏ ngay cạnh:
   trả `DaXacThucChuKy = false`.
 - Frontend: test `KhungTinNhan.test.tsx` thêm case hiển thị đúng icon theo 3 trạng thái
   `daXacThucChuKy`.
+- `DichVuTinNhanTests` (thêm cho `LayThongTinKyThuatAsync`): tin đã mã hóa → `DaMaHoa = true`,
+  `KichThuocMaHoaByte > KichThuocGocByte`, `ThoiGianMaHoaMs`/`ThoiGianGiaiMaMs` khác null; tin không
+  mã hóa → `DaMaHoa = false`, các field mã hóa/thời gian null; tin đã thu hồi hoặc loại Ảnh/File →
+  `ApDungDuoc = false`; người không thuộc cuộc trò chuyện gọi API → ném đúng exception quyền hạn
+  (giống `KiemTraQuyenTrenTinNhanAsync` ở các hành động khác).
+- `TinNhanControllerTests`: gọi endpoint `GET /api/tinnhan/{id}/thong-tin-ky-thuat` trả đúng
+  `200`/dữ liệu khi có quyền, `403`/`404` khi không.
+- Frontend: test mới `ModalThongTinKyThuat.test.tsx` — hiện đúng badge theo từng trạng thái
+  (đã mã hóa/không mã hóa, có chữ ký hợp lệ/không hợp lệ/không có, không áp dụng).
 
-## 8. Ngoài phạm vi (không làm trong lần này)
+## 8. Bảng "Thông tin kỹ thuật" cho mỗi tin nhắn
+
+Mục mới trong menu "..." đã có sẵn trên mỗi tin nhắn (cạnh "Lưu về thiết bị"/"Ghim"/"Thu hồi"/"Xóa"
+trong `KhungTinNhan.tsx`), mở 1 modal hiển thị gọn 3 nhóm thông tin phục vụ trực tiếp 3 mục "Đánh
+giá" của đề bài (thời gian mã hóa/giải mã, kích thước dữ liệu sau mã hóa, mức độ an toàn):
+
+```
+┌─ Thông tin kỹ thuật ───────────────────────── ✕ ┐
+│ Người gửi: <tên> · Loại: Text                   │
+│                                                  │
+│ 🔒 MÃ HÓA                    [Đã mã hóa]        │
+│   Thuật toán: AES-256-GCM                       │
+│   Kích thước gốc:     .. byte                   │
+│   Kích thước sau mã hóa: .. byte (~x.xx lần)    │
+│   Bản mã (rút gọn): ........·10 ký tự đầu/cuối  │
+│   Nonce / AuthTag (rút gọn tương tự)            │
+│                                                  │
+│ ⏱ THỜI GIAN (đo lại ngay lúc bấm xem)           │
+│   Mã hóa lại để đo:   .. ms                     │
+│   Giải mã:            .. ms                     │
+│                                                  │
+│ ✒ CHỮ KÝ SỐ              [✓ Hợp lệ / ...]       │
+│   Thuật toán: RSA-PSS / SHA-256                 │
+└──────────────────────────────────────────────────┘
+```
+
+- Tin **không mã hóa**: phần MÃ HÓA chỉ hiện badge `[Không mã hóa]`, ẩn Ciphertext/Nonce/AuthTag và
+  cả phần THỜI GIAN (không có gì để đo).
+- Tin **không có chữ ký** (tin cũ): phần CHỮ KÝ SỐ hiện `[Không có chữ ký]`, không có badge màu.
+- Tin **đã thu hồi** hoặc **không phải Text** (Ảnh/File): cả bảng hiện "Không áp dụng cho loại tin
+  nhắn này" — không phân tích nội dung đã bị thu hồi hay file đính kèm.
+- **Thời gian đo lại ngay lúc bấm xem**, không lưu số liệu lịch sử: khi bấm "Thông tin kỹ thuật",
+  server giải mã tin đó (nếu có mã hóa) để lấy lại plaintext + đo `Stopwatch` quanh bước giải mã,
+  rồi **mã hóa lại plaintext đó bằng 1 khóa phiên AES mới** (không dùng lại khóa cũ, không ghi đè gì
+  vào MongoDB — chỉ để đo, kết quả bỏ đi) và đo `Stopwatch` quanh bước mã hóa. Cách này không cần
+  thêm field lưu trữ, áp dụng đồng nhất cho mọi tin nhắn kể cả tin cũ.
+
+### Backend
+
+**DTO mới** `ThongTinKyThuatDto.cs`:
+
+```csharp
+public record ThongTinKyThuatDto(
+    bool ApDungDuoc,             // false = tin thu hồi/không phải Text — các field dưới đều null/mặc định
+    bool DaMaHoa,
+    string? ThuatToanMaHoa,      // "AES-256-GCM"
+    int? KichThuocGocByte,
+    int? KichThuocMaHoaByte,
+    double? TyLePhinh,
+    string? CiphertextRutGon,
+    string? NonceRutGon,
+    string? AuthTagRutGon,
+    double? ThoiGianMaHoaMs,
+    double? ThoiGianGiaiMaMs,
+    bool CoChuKy,
+    bool? DaXacThucChuKy,
+    string? ThuatToanChuKy);     // "RSA-PSS / SHA-256"
+```
+
+**Endpoint mới** `GET /api/tinnhan/{id}/thong-tin-ky-thuat` trong `TinNhanController` (`[Authorize]`),
+gọi `DichVuTinNhan.LayThongTinKyThuatAsync(idHienTai, tinNhanId)` — dùng lại đúng
+`KiemTraQuyenTrenTinNhanAsync` đã có (chỉ người trong cuộc trò chuyện mới xem được, giống các hành
+động khác trên tin nhắn).
+
+**`DichVuTinNhan.LayThongTinKyThuatAsync`** — hàm mới, KHÔNG tái dùng `GiaiMaNoiDungThucTe`/
+`AnhXaDto` (2 hàm đó phục vụ đường hiển thị bình thường, không nên chỉnh sửa chỉ để đo lường):
+1. Tìm tin nhắn, kiểm tra quyền.
+2. Nếu `DaThuHoi` hoặc `LoaiTinNhan != Text` → trả `ApDungDuoc = false`, các field còn lại mặc định.
+3. `DaMaHoa = t.DanhSachKhoaPhien.Count > 0`.
+4. Nếu `DaMaHoa`: tìm bản khóa phiên của `idHienTai` trong `DanhSachKhoaPhien`, giải mã ra khóa AES
+   bằng khóa bí mật người xem — bọc `Stopwatch` quanh đúng lời gọi `GiaiMaTinNhan` (không tính thời
+   gian tìm khóa/giải mã khóa phiên RSA) để lấy `ThoiGianGiaiMaMs` + plaintext. Sau đó
+   `SinhKhoaPhienAes()` + `MaHoaTinNhan(plaintext, khoaMoi)` bọc `Stopwatch` riêng để lấy
+   `ThoiGianMaHoaMs` (kết quả mã hóa lại này không lưu, chỉ lấy số đo). `KichThuocGocByte` = độ dài
+   byte UTF-8 của plaintext; `KichThuocMaHoaByte` = độ dài byte sau `Convert.FromBase64String` của
+   `t.CiphertextTinNhan`; `TyLePhinh` = tỷ lệ 2 số trên. Cắt rút gọn Ciphertext/Nonce/AuthTag
+   (10 ký tự đầu + "..." + 10 ký tự cuối, hoặc nguyên chuỗi nếu ngắn hơn 24 ký tự).
+5. Nếu không mã hóa: `KichThuocGocByte` = độ dài byte UTF-8 của `t.NoiDungTinNhan` (chính là
+   plaintext); các field mã hóa/thời gian còn lại null.
+6. `CoChuKy = t.ChuKySo is not null`; nếu có, gọi lại `IDichVuChuKySo.XacMinhChuKy(...)` với khóa
+   công khai người gửi (`nguoiGui.KhoaCongKhai`) → `DaXacThucChuKy`.
+
+### Frontend
+
+- `DichVuApi.ts`: thêm `LayThongTinKyThuat(token, tinNhanId)` gọi endpoint trên.
+- `KieuDuLieu.ts`: thêm interface `ThongTinKyThuat` khớp DTO trên.
+- `KhungTinNhan.tsx`: thêm mục "Thông tin kỹ thuật" vào menu "..." đã có, gọi callback mới
+  `onXemThongTinKyThuat(id)` (theo đúng pattern các callback khác — `onGhim`, `onThuHoi`...).
+- `TrangChat.tsx`/`TrangNhom.tsx`: thêm state (id đang xem + dữ liệu đã tải), gọi API khi mở modal.
+- Component mới `ModalThongTinKyThuat.tsx` (+ `.css`): hiện đúng bố cục ở trên, đặt cạnh
+  `ModalHoanTatHoSo.tsx` trong `ThanhPhan/` (theo đúng quy ước modal hiện có).
+
+## 9. Ngoài phạm vi (không làm trong lần này)
 
 - Ký cho tin nhắn nhóm theo mô hình khác (tin nhóm dùng lại đúng cơ chế trên, không cần xử lý riêng
   vì việc ký chỉ phụ thuộc người gửi, không phụ thuộc số người nhận).
@@ -207,3 +308,4 @@ xem `tinDangMoId`), thêm 1 icon nhỏ ngay cạnh:
 - Sinh cặp khóa ký riêng biệt khỏi khóa mã hóa (có thể cân nhắc trong 1 lần cải tiến sau nếu cần
   đúng chuẩn mật mã học hơn).
 - Cơ chế thu hồi/xoay khóa (key rotation) khi nghi ngờ khóa bị lộ.
+- Lưu lại lịch sử số liệu thời gian mã hóa/giải mã qua nhiều lần đo (chỉ hiện số đo tức thời).
