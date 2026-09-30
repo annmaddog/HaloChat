@@ -87,6 +87,9 @@ export function KhungTinNhan({
   const [tinDangMoId, setTinDangMoId] = useState<string | null>(null);
   const [dangTraLoiId, setDangTraLoiId] = useState<string | null>(null);
   const [menuMoChoTinNhanId, setMenuMoChoTinNhanId] = useState<string | null>(null);
+  // Chỉ hiện nhóm icon Trả lời/Chuyển tiếp/"..." khi rê chuột vào đúng tin nhắn này
+  // (nút Thích luôn hiện, không phụ thuộc state này) — theo đúng mẫu tham khảo.
+  const [dangDiChuotVaoId, setDangDiChuotVaoId] = useState<string | null>(null);
   const [popupCamXucChoTinNhanId, setPopupCamXucChoTinNhanId] = useState<string | null>(null);
   const homGioHanCamXucRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hienBangEmoji, setHienBangEmoji] = useState(false);
@@ -441,11 +444,18 @@ export function KhungTinNhan({
                   )}
                 </div>
 
-                {/* [Sửa lỗi] Thanh công cụ luôn hiện đúng dưới chân bong bóng (không còn
-                    đè lên bong bóng bằng position:absolute như trước) — trước đây bấm gần
-                    nút Thích thì đúng vị trí đó lại là icon "vô hình" đè lên bong bóng bên
-                    dưới ăn mất sự kiện click của các icon còn lại. */}
-                <div className="khung-tin-nhan__chan">
+                {/* [Sửa lỗi] Thanh công cụ nằm đúng dưới chân bong bóng theo luồng bình
+                    thường (không còn đè lên bong bóng bằng position:absolute như trước)
+                    — trước đây bấm gần nút Thích thì đúng vị trí đó lại là icon "vô hình"
+                    đè lên bong bóng bên dưới ăn mất sự kiện click của các icon còn lại.
+                    Nút Thích luôn hiện; nhóm Trả lời/Chuyển tiếp/"..." chỉ hiện thêm khi
+                    rê chuột vào tin nhắn (ẩn bằng opacity, không phải display:none, để
+                    listener "bấm ra ngoài để đóng menu" vẫn thấy được phần tử trong DOM). */}
+                <div
+                  className={`khung-tin-nhan__chan${(dangDiChuotVaoId === tn.id || menuMoChoTinNhanId === tn.id) ? ' khung-tin-nhan__chan--hien-phu' : ''}`}
+                  onMouseEnter={() => setDangDiChuotVaoId(tn.id)}
+                  onMouseLeave={() => setDangDiChuotVaoId((truoc) => (truoc === tn.id ? null : truoc))}
+                >
                   {tinDangMoId === tn.id && (
                     <span className="khung-tin-nhan__thoi-gian-chan">{dinhDangGio(tn.thoiGianTao)}</span>
                   )}
@@ -495,51 +505,53 @@ export function KhungTinNhan({
                         )}
                       </div>
                     )}
-                    <button
-                      type="button"
-                      className="khung-tin-nhan__nut-tra-loi"
-                      onClick={(su) => { su.stopPropagation(); setDangTraLoiId(tn.id); noiDungRef.current?.focus(); }}
-                      aria-label="Trả lời tin nhắn này"
-                    >
-                      <BieuTuongTraLoi />
-                    </button>
-                    {!tn.daThuHoi && (
+                    <div className="khung-tin-nhan__chan-phu">
                       <button
                         type="button"
-                        className="khung-tin-nhan__nut-chuyen-tiep"
-                        onClick={(su) => { su.stopPropagation(); onChuyenTiep(tn.id); }}
-                        aria-label="Chuyển tiếp tin nhắn này"
+                        className="khung-tin-nhan__nut-tra-loi"
+                        onClick={(su) => { su.stopPropagation(); setDangTraLoiId(tn.id); noiDungRef.current?.focus(); }}
+                        aria-label="Trả lời tin nhắn này"
                       >
-                        <BieuTuongChuyenTiep />
+                        <BieuTuongTraLoi />
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      className="khung-tin-nhan__nut-them"
-                      onClick={(su) => { su.stopPropagation(); setMenuMoChoTinNhanId((truoc) => (truoc === tn.id ? null : tn.id)); }}
-                      aria-label="Thêm tùy chọn"
-                    >
-                      <BieuTuongBaCham />
-                    </button>
-                    {menuMoChoTinNhanId === tn.id && (
-                      <div className="khung-tin-nhan__menu" onClick={(su) => su.stopPropagation()}>
-                        {!tn.daThuHoi && tn.loaiTinNhan !== 'Text' && (
-                          <a href={`${DIA_CHI_GOC}${tn.duongDanFile}`} download target="_blank" rel="noreferrer" onClick={() => setMenuMoChoTinNhanId(null)}>
-                            Lưu về thiết bị
-                          </a>
-                        )}
-                        {!tn.daThuHoi && !tn.daGhim && (
-                          <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
-                        )}
-                        {!tn.daThuHoi && tn.daGhim && (
-                          <button onClick={() => { onBoGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Bỏ ghim</button>
-                        )}
-                        {laCuaMinh && !tn.daThuHoi && (
-                          <button onClick={() => { onThuHoi(tn.id); setMenuMoChoTinNhanId(null); }}>Thu hồi tin nhắn</button>
-                        )}
-                        <button className="khung-tin-nhan__menu-nguy-hiem" onClick={() => { onAn(tn.id); setMenuMoChoTinNhanId(null); }}>Xóa</button>
-                      </div>
-                    )}
+                      {!tn.daThuHoi && (
+                        <button
+                          type="button"
+                          className="khung-tin-nhan__nut-chuyen-tiep"
+                          onClick={(su) => { su.stopPropagation(); onChuyenTiep(tn.id); }}
+                          aria-label="Chuyển tiếp tin nhắn này"
+                        >
+                          <BieuTuongChuyenTiep />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="khung-tin-nhan__nut-them"
+                        onClick={(su) => { su.stopPropagation(); setMenuMoChoTinNhanId((truoc) => (truoc === tn.id ? null : tn.id)); }}
+                        aria-label="Thêm tùy chọn"
+                      >
+                        <BieuTuongBaCham />
+                      </button>
+                      {menuMoChoTinNhanId === tn.id && (
+                        <div className="khung-tin-nhan__menu" onClick={(su) => su.stopPropagation()}>
+                          {!tn.daThuHoi && tn.loaiTinNhan !== 'Text' && (
+                            <a href={`${DIA_CHI_GOC}${tn.duongDanFile}`} download target="_blank" rel="noreferrer" onClick={() => setMenuMoChoTinNhanId(null)}>
+                              Lưu về thiết bị
+                            </a>
+                          )}
+                          {!tn.daThuHoi && !tn.daGhim && (
+                            <button onClick={() => { onGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Ghim</button>
+                          )}
+                          {!tn.daThuHoi && tn.daGhim && (
+                            <button onClick={() => { onBoGhim(tn.id); setMenuMoChoTinNhanId(null); }}>Bỏ ghim</button>
+                          )}
+                          {laCuaMinh && !tn.daThuHoi && (
+                            <button onClick={() => { onThuHoi(tn.id); setMenuMoChoTinNhanId(null); }}>Thu hồi tin nhắn</button>
+                          )}
+                          <button className="khung-tin-nhan__menu-nguy-hiem" onClick={() => { onAn(tn.id); setMenuMoChoTinNhanId(null); }}>Xóa</button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

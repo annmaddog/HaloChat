@@ -275,6 +275,25 @@
   margin-left: auto;
 }
 
+/* Nhóm Trả lời/Chuyển tiếp/"..." — ẩn mặc định, chỉ hiện khi rê chuột vào
+   tin nhắn (class --hien-phu thêm ở .chan). Ẩn bằng opacity + pointer-events
+   (KHÔNG dùng display:none) để phần tử vẫn tồn tại trong DOM: listener "bấm
+   ra ngoài để đóng menu" (.closest('.khung-tin-nhan__chan-icon-cum')) vẫn
+   hoạt động đúng, và không tái diễn lỗi mất sự kiện click khi vừa hiện ra. */
+.khung-tin-nhan__chan-phu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.khung-tin-nhan__chan--hien-phu .khung-tin-nhan__chan-phu {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .khung-tin-nhan__nut-tra-loi,
 .khung-tin-nhan__nut-chuyen-tiep {
   width: 26px;
